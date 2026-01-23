@@ -1,16 +1,15 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import PageContainer from '../../shared/layout/PageContainer'
 import Button from '../../shared/components/Button'
-import { useAuthStore } from '../../store/auth.store'
-import { useWalletStore } from '../../store/wallet.store'
 import { ROUTES } from '../../config/routes'
 import { authService } from '../../auth/auth.service'
 
 const ProfilePage = () => {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
-  const { walletId } = useWalletStore()
+  const user = useSelector((state) => state.auth.user)
+  const walletId = useSelector((state) => state.wallet.walletId)
   
   const handleLogout = () => {
     authService.logout()
@@ -50,17 +49,6 @@ const ProfilePage = () => {
             </div>
             <span className="text-gray-400">›</span>
           </button>
-          
-          <button
-            onClick={() => navigate(ROUTES.CHANGE_PASSCODE)}
-            className="w-full flex items-center justify-between p-3 hover:bg-brand-surfaceMuted rounded-lg transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🔒</span>
-              <span className="font-medium text-brand-dark">Change Passcode</span>
-            </div>
-            <span className="text-gray-400">›</span>
-          </button>
         </div>
         
         <Button onClick={handleLogout} variant="outline" fullWidth>
@@ -72,4 +60,5 @@ const ProfilePage = () => {
 }
 
 export default ProfilePage
+
 

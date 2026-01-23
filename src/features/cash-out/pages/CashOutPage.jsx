@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import PageContainer from '../../../shared/layout/PageContainer'
 import AmountInput from '../../../shared/components/AmountInput'
 import Button from '../../../shared/components/Button'
 import { ROUTES } from '../../../config/routes'
-import { useWalletStore } from '../../../store/wallet.store'
 
 const CashOutPage = () => {
   const navigate = useNavigate()
-  const { balance } = useWalletStore()
+  const balance = useSelector((state) => state.wallet.balance)
   const [amount, setAmount] = useState('')
   const [error, setError] = useState('')
   
@@ -56,4 +56,5 @@ const CashOutPage = () => {
 }
 
 export default CashOutPage
+
 

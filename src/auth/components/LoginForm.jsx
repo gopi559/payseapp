@@ -88,7 +88,8 @@ const LoginForm = () => {
       const result = await authService.verifyOtp(mobileNumber, enteredOtp)
       
       if (result.success) {
-        navigate(ROUTES.PASSCODE)
+        // Navigate directly to home after OTP verification
+        navigate('/customer/home')
       } else {
         setError(result.error || 'Invalid OTP')
       }

@@ -1,4 +1,5 @@
-import { useAuthStore } from '../store/auth.store'
+import Store from '../Redux/store'
+import { login, logout } from '../Redux/auth.store'
 
 export const authService = {
   sendOtp: async (mobileNumber) => {
@@ -13,28 +14,27 @@ export const authService = {
   },
   
   verifyOtp: async (mobileNumber, otp) => {
-    const { verifyOtp } = useAuthStore.getState()
-    return verifyOtp(mobileNumber, otp)
+    // For demo, accept static OTP "111111"
+    if (otp === '111111') {
+      // Set user and authenticate directly
+      Store.dispatch(login({ username: mobileNumber, name: mobileNumber, mobileNumber }))
+      return { success: true }
+    }
+    return { success: false, error: 'Invalid OTP' }
   },
   
   login: async (username, password) => {
-    const { login } = useAuthStore.getState()
-    return login(username, password)
-  },
-  
-  verifyPasscode: async (passcode) => {
-    const { verifyPasscode } = useAuthStore.getState()
-    return verifyPasscode(passcode)
-  },
-  
-  setPasscode: async (passcode) => {
-    const { setPasscode } = useAuthStore.getState()
-    return setPasscode(passcode)
+    // Static login - password is 111111
+    if (password === '111111') {
+      Store.dispatch(login({ username, name: username }))
+      return { success: true }
+    }
+    return { success: false, error: 'Invalid credentials' }
   },
   
   logout: () => {
-    const { logout } = useAuthStore.getState()
-    logout()
+    Store.dispatch(logout())
+    localStorage.removeItem('reduxState')
   },
 }
 

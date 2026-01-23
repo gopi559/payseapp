@@ -1,15 +1,15 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import PageContainer from '../../shared/layout/PageContainer'
 import StatusBadge from '../../shared/components/StatusBadge'
 import { formatAmount, formatAmountShort } from '../../utils/formatAmount'
 import { formatDate } from '../../utils/formatDate'
-import { useTransactionStore } from '../../store/transaction.store'
 import { ROUTES } from '../../config/routes'
 
 const HistoryPage = () => {
   const navigate = useNavigate()
-  const { transactions } = useTransactionStore()
+  const transactions = useSelector((state) => state.transaction.transactions)
   
   const getTransactionIcon = (type) => {
     const icons = {
@@ -76,4 +76,5 @@ const HistoryPage = () => {
 }
 
 export default HistoryPage
+
 

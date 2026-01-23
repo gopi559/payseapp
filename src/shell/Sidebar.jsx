@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { IoHome, IoCashOutline } from 'react-icons/io5'
+import { MdOutlineArrowOutward } from 'react-icons/md'
+import { GoArrowDownLeft } from 'react-icons/go'
+import { FaHistory, FaCreditCard } from 'react-icons/fa'
+import { BsQrCodeScan, BsCashCoin } from 'react-icons/bs'
+import { CgProfile } from 'react-icons/cg'
 import { ROUTES } from '../config/routes'
-import { useAuthStore } from '../store/auth.store'
 import { authService } from '../auth/auth.service'
 
 const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
@@ -9,7 +15,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   const [isMobile, setIsMobile] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const user = useSelector((state) => state.auth.user)
 
   const handleLogout = () => {
     authService.logout()
@@ -30,15 +36,15 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   }, [])
 
   const menuItems = [
-    { icon: '🏠', label: 'Home', route: ROUTES.HOME },
-    { icon: '📜', label: 'History', route: ROUTES.HISTORY },
-    { icon: '💸', label: 'Send Money', route: ROUTES.SEND_START },
-    { icon: '💰', label: 'Receive', route: ROUTES.RECEIVE },
-    { icon: '📷', label: 'Scan QR', route: ROUTES.SCAN },
-    { icon: '💵', label: 'Cash In', route: ROUTES.CASH_IN },
-    { icon: '🏧', label: 'Cash Out', route: ROUTES.CASH_OUT },
-    { icon: '💳', label: 'Cards', route: ROUTES.CARDS },
-    { icon: '👤', label: 'Profile', route: ROUTES.PROFILE },
+    { icon: <IoHome />, label: 'Home', route: ROUTES.HOME, isComponent: true },
+    { icon: <FaHistory />, label: 'History', route: ROUTES.HISTORY, isComponent: true },
+    { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: ROUTES.SEND_START, isComponent: true },
+    { icon: <GoArrowDownLeft />, label: 'Receive', route: ROUTES.RECEIVE, isComponent: true },
+    { icon: <BsQrCodeScan />, label: 'Scan QR', route: ROUTES.SCAN, isComponent: true },
+    { icon: <BsCashCoin />, label: 'Cash In', route: ROUTES.CASH_IN, isComponent: true },
+    { icon: <IoCashOutline />, label: 'Cash Out', route: ROUTES.CASH_OUT, isComponent: true },
+    { icon: <FaCreditCard />, label: 'Cards', route: ROUTES.CARDS, isComponent: true },
+    { icon: <CgProfile />, label: 'Profile', route: ROUTES.PROFILE, isComponent: true },
   ]
 
   const SidebarContent = () => (
@@ -100,8 +106,12 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                   : 'text-brand-dark hover:bg-brand-surfaceMuted hover:shadow-sm'
               } ${isCollapsed ? 'justify-center px-2' : ''}`}
             >
-              <span className={`flex-none text-2xl ${isCollapsed ? 'text-2xl' : ''}`}>
-                {item.icon}
+              <span className={`flex-none text-2xl ${isCollapsed ? 'text-2xl' : ''} ${item.isComponent ? 'flex items-center justify-center' : ''}`}>
+                {item.isComponent ? (
+                  <span className="text-xl">{item.icon}</span>
+                ) : (
+                  item.icon
+                )}
               </span>
               {!isCollapsed && <span className="flex-1 truncate text-sm font-medium">{item.label}</span>}
             </button>

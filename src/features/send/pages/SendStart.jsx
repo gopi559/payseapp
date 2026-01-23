@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import PageContainer from '../../../shared/layout/PageContainer'
 import Input from '../../../shared/components/Input'
 import AmountInput from '../../../shared/components/AmountInput'
 import Button from '../../../shared/components/Button'
 import { ROUTES } from '../../../config/routes'
-import { useWalletStore } from '../../../store/wallet.store'
 
 const SendStart = () => {
   const navigate = useNavigate()
-  const { balance } = useWalletStore()
+  const balance = useSelector((state) => state.wallet.balance)
   const [recipient, setRecipient] = useState('')
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
@@ -43,41 +43,45 @@ const SendStart = () => {
   
   return (
     <PageContainer>
-      <div className="px-4 py-6">
-        <h1 className="text-2xl font-bold text-brand-dark mb-6">Send Money</h1>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-brand-dark mb-4 sm:mb-6">Send Money</h1>
         
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mb-4 text-sm">
             {error}
           </div>
         )}
         
-        <div className="space-y-6">
-          <Input
-            label="Recipient Name"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            placeholder="Enter recipient name"
-            required
-          />
-          
-          <AmountInput
-            label="Amount"
-            value={amount}
-            onChange={setAmount}
-            maxAmount={balance}
-          />
-          
-          <Input
-            label="Description (Optional)"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add a note"
-          />
-          
-          <Button onClick={handleContinue} fullWidth>
-            Continue
-          </Button>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <div className="space-y-4 sm:space-y-5">
+            <Input
+              label="Recipient Name"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              placeholder="Enter recipient name"
+              required
+            />
+            
+            <AmountInput
+              label="Amount"
+              value={amount}
+              onChange={setAmount}
+              maxAmount={balance}
+            />
+            
+            <Input
+              label="Description (Optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add a note"
+            />
+            
+            <div className="pt-2">
+              <Button onClick={handleContinue} fullWidth size="md">
+                Continue
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </PageContainer>
@@ -85,4 +89,5 @@ const SendStart = () => {
 }
 
 export default SendStart
+
 

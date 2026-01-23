@@ -1,16 +1,16 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import PageContainer from '../../shared/layout/PageContainer'
 import StatusBadge from '../../shared/components/StatusBadge'
 import { formatAmount } from '../../utils/formatAmount'
 import { formatDateTime } from '../../utils/formatDate'
-import { useTransactionStore } from '../../store/transaction.store'
 import { ROUTES } from '../../config/routes'
 
 const TransactionDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const transactions = useTransactionStore((state) => state.transactions)
+  const transactions = useSelector((state) => state.transaction.transactions)
   const transaction = transactions.find((t) => t.id === id)
   
   if (!transaction) {

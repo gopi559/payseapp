@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const ActionTile = ({ icon, label, route, onClick }) => {
+const ActionTile = ({ icon, label, route, onClick, isComponent = false }) => {
   const navigate = useNavigate()
   
   const handleClick = () => {
@@ -15,15 +15,20 @@ const ActionTile = ({ icon, label, route, onClick }) => {
   return (
     <button
       onClick={handleClick}
-      className="flex flex-col items-center justify-center p-4 bg-brand-surface rounded-xl hover:bg-brand-surfaceLight active:scale-95 transition-all duration-200"
+      className="flex flex-col items-center justify-center p-4 sm:p-5 bg-brand-soft rounded-xl hover:shadow-lg active:scale-95 transition-all duration-200 border border-white/20"
     >
-      <div className="w-12 h-12 bg-brand-primary rounded-full flex items-center justify-center mb-2">
-        <span className="text-2xl">{icon}</span>
+      <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 rounded-xl flex items-center justify-center mb-3 shadow-sm backdrop-blur-sm">
+        {isComponent ? (
+          <span className="text-2xl sm:text-3xl text-white">{icon}</span>
+        ) : (
+          <span className="text-2xl sm:text-3xl">{icon}</span>
+        )}
       </div>
-      <span className="text-sm font-medium text-brand-dark">{label}</span>
+      <span className="text-xs sm:text-sm font-medium text-white text-center leading-tight drop-shadow-sm">{label}</span>
     </button>
   )
 }
 
 export default ActionTile
+
 

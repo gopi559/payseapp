@@ -1,0 +1,2 @@
+export { customerRoutes } from './CustomerRoutes'
+

@@ -1,15 +1,28 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, Navigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import PasscodeInput from '../components/PasscodeInput'
 import { authService } from '../auth.service'
 import { ROUTES } from '../../config/routes'
-import { useAuthStore } from '../../store/auth.store'
 
 const PasscodePage = () => {
   const navigate = useNavigate()
-  const { isPasscodeSet } = useAuthStore()
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
+  const isPasscodeSet = useSelector((state) => state.auth.isPasscodeSet)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  // Redirect if not authenticated (should come from login/OTP first)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(ROUTES.LOGIN)
+    }
+  }, [isAuthenticated, navigate])
+  
+  // Redirect if already authenticated and passcode is set
+  if (isAuthenticated && isPasscodeSet) {
+    return <Navigate to="/customer/home" replace />
+  }
   
   const handlePasscodeComplete = async (passcode) => {
     setError('')
@@ -20,13 +33,13 @@ const PasscodePage = () => {
         // First time - set passcode
         const result = await authService.setPasscode(passcode)
         if (result.success) {
-          navigate(ROUTES.HOME)
+          navigate('/customer/home')
         }
       } else {
         // Verify passcode
         const result = await authService.verifyPasscode(passcode)
         if (result.success) {
-          navigate(ROUTES.HOME)
+          navigate('/customer/home')
         } else {
           setError(result.error || 'Invalid passcode')
         }
@@ -73,4 +86,5 @@ const PasscodePage = () => {
 }
 
 export default PasscodePage
+
 

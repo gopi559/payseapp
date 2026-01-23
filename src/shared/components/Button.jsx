@@ -10,7 +10,7 @@ const Button = ({
   type = 'button',
   className = '',
 }) => {
-  const baseClasses = 'font-semibold rounded-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
+  const baseClasses = 'font-medium rounded-md transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow'
   
   const variantClasses = {
     primary: 'bg-brand-primary text-white hover:bg-brand-action',
@@ -20,9 +20,9 @@ const Button = ({
   }
   
   const sizeClasses = {
-    sm: 'px-4 py-2 text-sm',
-    md: 'px-6 py-3 text-base',
-    lg: 'px-8 py-4 text-lg',
+    sm: 'px-3 py-1.5 text-xs',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-6 py-3 text-base',
   }
   
   const widthClass = fullWidth ? 'w-full' : ''
@@ -40,4 +40,5 @@ const Button = ({
 }
 
 export default Button
+
 

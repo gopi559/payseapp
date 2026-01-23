@@ -29,3 +29,4 @@ export const formatAmountShort = (amount) => {
   return `₹${numAmount.toFixed(0)}`
 }
 
+

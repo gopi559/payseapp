@@ -1,10 +1,19 @@
 import React from 'react'
+import { Navigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import Lottie from 'lottie-react'
 import LoginForm from '../components/LoginForm'
 import logoImage from '../../assets/Paysey Payment Logo white.png'
 import illustrationData from '../../assets/login-illstration-payse.json'
 
 const LoginPage = () => {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
+  
+  // If authenticated, redirect to home
+  if (isAuthenticated) {
+    return <Navigate to="/customer/home" replace />
+  }
+  
   return (
     <div className="min-h-screen flex">
       {/* Left Section - Illustration */}

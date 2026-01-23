@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 import PageContainer from '../../../shared/layout/PageContainer'
 import ConfirmCard from '../../../shared/components/ConfirmCard'
 import Button from '../../../shared/components/Button'
 import { ROUTES } from '../../../config/routes'
-import { useWalletStore } from '../../../store/wallet.store'
+import { updateBalance } from '../../../Redux/wallet.store'
 
 const CashOutConfirm = () => {
   const navigate = useNavigate()
-  const { updateBalance } = useWalletStore()
+  const dispatch = useDispatch()
   const [cashOutData, setCashOutData] = useState(null)
   const [loading, setLoading] = useState(false)
   
@@ -28,7 +29,7 @@ const CashOutConfirm = () => {
     
     // Simulate API call
     setTimeout(() => {
-      updateBalance(-parseFloat(cashOutData.amount))
+      dispatch(updateBalance(-parseFloat(cashOutData.amount)))
       sessionStorage.removeItem('cashOutData')
       setLoading(false)
       navigate(ROUTES.CASH_OUT_SUCCESS)
@@ -69,4 +70,5 @@ const CashOutConfirm = () => {
 }
 
 export default CashOutConfirm
+
 

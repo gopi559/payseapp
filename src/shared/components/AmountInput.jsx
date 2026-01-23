@@ -31,12 +31,12 @@ const AmountInput = ({
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-brand-dark mb-2">
+        <label className="block text-xs font-medium text-gray-600 mb-1.5">
           {label}
         </label>
       )}
       <div className="relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-brand-dark">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-semibold text-gray-600">
           ₹
         </div>
         <input
@@ -45,11 +45,11 @@ const AmountInput = ({
           onChange={handleChange}
           onKeyPress={handleKeyPress}
           placeholder="0.00"
-          className="w-full pl-12 pr-4 py-4 text-3xl font-bold rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent text-brand-dark"
+          className="w-full pl-9 pr-3 py-2.5 text-xl font-semibold rounded-md border border-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary text-brand-dark bg-white transition-colors"
         />
       </div>
       {maxAmount && (
-        <p className="mt-2 text-sm text-gray-600">
+        <p className="mt-1.5 text-xs text-gray-500">
           Available: {formatAmount(maxAmount)}
         </p>
       )}
@@ -58,4 +58,5 @@ const AmountInput = ({
 }
 
 export default AmountInput
+
 

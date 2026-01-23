@@ -1,10 +1,11 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import PageContainer from '../../shared/layout/PageContainer'
 import { formatAmount } from '../../utils/formatAmount'
-import { useWalletStore } from '../../store/wallet.store'
 
 const CardsPage = () => {
-  const { balance, walletId } = useWalletStore()
+  const balance = useSelector((state) => state.wallet.balance)
+  const walletId = useSelector((state) => state.wallet.walletId)
   
   return (
     <PageContainer>
@@ -48,4 +49,5 @@ const CardsPage = () => {
 }
 
 export default CardsPage
+
 

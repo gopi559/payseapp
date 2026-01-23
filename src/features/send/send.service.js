@@ -1,6 +1,7 @@
 import { paymentService } from '../../services/payment.service'
-import { useWalletStore } from '../../store/wallet.store'
-import { useTransactionStore } from '../../store/transaction.store'
+import Store from '../../Redux/store'
+import { updateBalance } from '../../Redux/wallet.store'
+import { addTransaction } from '../../Redux/transaction.store'
 
 export const sendService = {
   sendMoney: async (recipient, amount, description) => {
@@ -8,12 +9,10 @@ export const sendService = {
     
     if (result.success) {
       // Update wallet balance
-      const { updateBalance } = useWalletStore.getState()
-      updateBalance(-parseFloat(amount))
+      Store.dispatch(updateBalance(-parseFloat(amount)))
       
       // Add transaction
-      const { addTransaction } = useTransactionStore.getState()
-      addTransaction({
+      Store.dispatch(addTransaction({
         id: result.transactionId,
         type: 'send',
         amount: parseFloat(amount),
@@ -21,10 +20,11 @@ export const sendService = {
         status: 'completed',
         date: new Date().toISOString(),
         description: description || `Payment to ${recipient}`,
-      })
+      }))
     }
     
     return result
   },
 }
+
 

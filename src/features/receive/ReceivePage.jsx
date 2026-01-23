@@ -1,11 +1,10 @@
 import React from 'react'
+import { useSelector } from 'react-redux'
 import PageContainer from '../../shared/layout/PageContainer'
-import { useWalletStore } from '../../store/wallet.store'
-import { useAuthStore } from '../../store/auth.store'
 
 const ReceivePage = () => {
-  const { walletId } = useWalletStore()
-  const { user } = useAuthStore()
+  const walletId = useSelector((state) => state.wallet.walletId)
+  const user = useSelector((state) => state.auth.user)
   
   return (
     <PageContainer>
@@ -41,4 +40,5 @@ const ReceivePage = () => {
 }
 
 export default ReceivePage
+
 

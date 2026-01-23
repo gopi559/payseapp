@@ -1,14 +1,13 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import PageContainer from '../../shared/layout/PageContainer'
-import { useAuthStore } from '../../store/auth.store'
-import { useWalletStore } from '../../store/wallet.store'
 import { ROUTES } from '../../config/routes'
 
 const ProfileDetails = () => {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
-  const { walletId } = useWalletStore()
+  const user = useSelector((state) => state.auth.user)
+  const walletId = useSelector((state) => state.wallet.walletId)
   
   return (
     <PageContainer>
@@ -44,4 +43,5 @@ const ProfileDetails = () => {
 }
 
 export default ProfileDetails
+
 
