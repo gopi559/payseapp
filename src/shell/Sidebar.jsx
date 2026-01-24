@@ -7,6 +7,7 @@ import { GoArrowDownLeft } from 'react-icons/go'
 import { FaHistory, FaCreditCard } from 'react-icons/fa'
 import { BsQrCodeScan, BsCashCoin } from 'react-icons/bs'
 import { CgProfile } from 'react-icons/cg'
+import { CiLogout } from 'react-icons/ci'
 import { ROUTES } from '../config/routes'
 import { authService } from '../auth/auth.service'
 
@@ -132,8 +133,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
             isCollapsed ? 'w-full justify-center' : 'w-[70%] mx-auto'
           }`}
         >
-          <span className={`flex-none text-xl ${isCollapsed ? 'text-xl' : 'text-lg'}`}>
-            🚪
+          <span className={`flex-none ${isCollapsed ? 'text-xl' : 'text-lg'} flex items-center justify-center`}>
+            <CiLogout />
           </span>
           {!isCollapsed && <span className="flex-1 text-sm">Logout</span>}
         </button>

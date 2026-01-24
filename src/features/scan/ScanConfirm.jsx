@@ -36,8 +36,10 @@ const ScanConfirm = () => {
   if (showConfirm) {
     return (
       <PageContainer>
-        <div className="px-4 py-6">
-          <h1 className="text-2xl font-bold text-brand-dark mb-6">Confirm Payment</h1>
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <h1 className="text-xl sm:text-2xl font-semibold text-brand-dark mb-4 sm:mb-6">
+            Confirm Payment
+          </h1>
           
           <ConfirmCard
             items={[
@@ -47,14 +49,15 @@ const ScanConfirm = () => {
             total={parseFloat(amount)}
           />
           
-          <div className="mt-6 space-y-3">
-            <Button onClick={handleConfirm} fullWidth disabled={loading}>
+          <div className="mt-4 sm:mt-6 space-y-3">
+            <Button onClick={handleConfirm} fullWidth size="md" disabled={loading}>
               {loading ? 'Processing...' : 'Confirm Payment'}
             </Button>
             <Button
               onClick={() => setShowConfirm(false)}
               variant="outline"
               fullWidth
+              size="md"
               disabled={loading}
             >
               Back
@@ -67,25 +70,29 @@ const ScanConfirm = () => {
   
   return (
     <PageContainer>
-      <div className="px-4 py-6">
-        <h1 className="text-2xl font-bold text-brand-dark mb-6">Enter Amount</h1>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-brand-dark mb-4 sm:mb-6">
+          Enter Amount
+        </h1>
         
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <div className="text-center mb-4">
-            <p className="text-sm text-gray-600 mb-2">Paying to</p>
-            <p className="text-lg font-semibold text-brand-dark">QR Merchant</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="text-center mb-3 sm:mb-4">
+            <p className="text-xs sm:text-sm text-gray-600 mb-1 sm:mb-2">Paying to</p>
+            <p className="text-sm sm:text-lg font-semibold text-brand-dark">QR Merchant</p>
+          </div>
+          
+          <AmountInput
+            value={amount}
+            onChange={setAmount}
+            maxAmount={balance}
+          />
+          
+          <div className="pt-4">
+            <Button onClick={handleContinue} fullWidth size="md">
+              Continue
+            </Button>
           </div>
         </div>
-        
-        <AmountInput
-          value={amount}
-          onChange={setAmount}
-          maxAmount={balance}
-        />
-        
-        <Button onClick={handleContinue} fullWidth className="mt-6">
-          Continue
-        </Button>
       </div>
     </PageContainer>
   )

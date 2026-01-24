@@ -15,7 +15,7 @@ const Button = ({
   const variantClasses = {
     primary: 'bg-brand-primary text-white hover:bg-brand-action',
     secondary: 'bg-brand-secondary text-white hover:bg-brand-soft',
-    outline: 'border-2 border-brand-primary text-brand-primary hover:bg-brand-surfaceMuted',
+    outline: 'border border-brand-primary text-brand-primary hover:bg-brand-surfaceMuted',
     ghost: 'text-brand-primary hover:bg-brand-surfaceMuted',
   }
   

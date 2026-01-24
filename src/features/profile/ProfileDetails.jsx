@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import PageContainer from '../../shared/layout/PageContainer'
+import Button from '../../shared/components/Button'
 import { ROUTES } from '../../config/routes'
 
 const ProfileDetails = () => {
@@ -11,32 +12,36 @@ const ProfileDetails = () => {
   
   return (
     <PageContainer>
-      <div className="px-4 py-6">
-        <h1 className="text-2xl font-bold text-brand-dark mb-6">Profile Details</h1>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-brand-dark mb-4 sm:mb-6">Profile Details</h1>
         
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="space-y-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
+          <div className="space-y-3 sm:space-y-4">
             <div>
-              <label className="text-sm text-gray-600">Name</label>
-              <p className="text-lg font-semibold text-brand-dark mt-1">{user?.name || 'User'}</p>
+              <label className="text-xs sm:text-sm text-gray-600">Name</label>
+              <p className="text-sm sm:text-base font-semibold text-brand-dark mt-1">{user?.name || 'User'}</p>
             </div>
             <div>
-              <label className="text-sm text-gray-600">Username</label>
-              <p className="text-lg font-semibold text-brand-dark mt-1">{user?.username || 'N/A'}</p>
+              <label className="text-xs sm:text-sm text-gray-600">Username</label>
+              <p className="text-sm sm:text-base font-semibold text-brand-dark mt-1">{user?.username || 'N/A'}</p>
             </div>
             <div>
-              <label className="text-sm text-gray-600">Wallet ID</label>
-              <p className="text-lg font-semibold text-brand-dark font-mono mt-1">{walletId}</p>
+              <label className="text-xs sm:text-sm text-gray-600">Wallet ID</label>
+              <p className="text-sm sm:text-base font-semibold text-brand-dark font-mono mt-1">{walletId}</p>
             </div>
           </div>
         </div>
         
-        <button
-          onClick={() => navigate(ROUTES.PROFILE)}
-          className="w-full mt-6 bg-brand-primary text-white py-3 rounded-lg font-semibold"
-        >
-          Back
-        </button>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <Button
+            onClick={() => navigate(ROUTES.PROFILE)}
+            variant="outline"
+            fullWidth
+            size="md"
+          >
+            Back
+          </Button>
+        </div>
       </div>
     </PageContainer>
   )

@@ -22,26 +22,32 @@ const CashInPage = () => {
   
   return (
     <PageContainer>
-      <div className="px-4 py-6">
-        <h1 className="text-2xl font-bold text-brand-dark mb-6">Cash In</h1>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <h1 className="text-xl sm:text-2xl font-semibold text-brand-dark mb-4 sm:mb-6">
+          Cash In
+        </h1>
         
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mb-4 text-sm">
             {error}
           </div>
         )}
         
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-          <p className="text-sm text-gray-600 mb-4">Add money to your wallet</p>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+            Add money to your wallet
+          </p>
           <AmountInput
             value={amount}
             onChange={setAmount}
           />
+          
+          <div className="pt-4">
+            <Button onClick={handleContinue} fullWidth size="md">
+              Continue
+            </Button>
+          </div>
         </div>
-        
-        <Button onClick={handleContinue} fullWidth>
-          Continue
-        </Button>
       </div>
     </PageContainer>
   )
