@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+
 import Input from '../../shared/components/Input'
 import Button from '../../shared/components/Button'
 import OtpInput from '../../shared/components/OtpInput'
@@ -16,7 +17,7 @@ const LoginForm = () => {
   const [otpSent, setOtpSent] = useState(false)
   const [countdown, setCountdown] = useState(0)
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
       return () => clearTimeout(timer)
