@@ -50,7 +50,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-white">
-      {/* Header Section */}
       <div
         className={`px-6 py-8 border-b border-gray-100 bg-gradient-to-b from-brand-surfaceMuted to-white ${
           isCollapsed ? 'px-4 py-6' : ''
@@ -79,7 +78,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
         </Link>
       </div>
 
-      {/* Navigation Menu */}
       <nav
         className={`flex-1 overflow-y-auto bg-gradient-to-b from-white to-brand-surfaceMuted/30 space-y-2 ${
           isCollapsed ? 'px-2 py-3' : 'px-3 py-4'
@@ -120,7 +118,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
         })}
       </nav>
 
-      {/* Logout Button */}
       <div
         className={`px-3 py-3 border-t border-gray-100 bg-white/90 ${
           isCollapsed ? 'px-2' : ''
@@ -145,7 +142,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   if (isMobile) {
     return (
       <>
-        {/* Mobile Overlay */}
         {isOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40"
@@ -153,7 +149,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           />
         )}
 
-        {/* Mobile Sidebar */}
         <div
           className={`fixed top-0 left-0 h-full w-72 p-1 z-50 transition-transform transform ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -167,7 +162,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     )
   }
 
-  // Desktop Sidebar
   return (
     <div className={`h-screen p-1 ${isCollapsed ? 'w-20' : 'w-72'} transition-all duration-300`}>
       <div className="flex flex-col h-full w-full bg-white backdrop-blur-md shadow-[0_4px_25px_rgba(0,0,0,0.08)] rounded-3xl overflow-hidden border border-gray-200">

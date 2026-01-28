@@ -16,7 +16,6 @@ const AppShell = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-brand-surfaceMuted flex h-screen overflow-hidden">
-      {/* Desktop Sidebar */}
       <div className="hidden lg:block h-full">
         <Sidebar
           isOpen={true}
@@ -25,7 +24,6 @@ const AppShell = ({ children }) => {
         />
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <Header 
           onMenuClick={toggleSidebar} 
@@ -36,7 +34,6 @@ const AppShell = ({ children }) => {
         </main>
       </div>
 
-      {/* Mobile Sidebar */}
       <div className="lg:hidden">
         <Sidebar
           isOpen={isSidebarOpen}

@@ -19,7 +19,6 @@ const authSlice = createSlice({
     },
     login: (state, action) => {
       state.isAuthenticated = true
-      // Backward compatible: allow login(payload) or login({ user, token })
       if (action.payload && typeof action.payload === 'object' && ('user' in action.payload || 'token' in action.payload)) {
         state.user = action.payload.user ?? state.user
         state.token = action.payload.token ?? state.token

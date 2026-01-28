@@ -10,7 +10,6 @@ const ScanPage = () => {
   
   const handleScan = () => {
     setScanning(true)
-    // Simulate QR scan
     setTimeout(() => {
       setScanning(false)
       navigate(ROUTES.SCAN_CONFIRM)

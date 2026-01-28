@@ -4,7 +4,6 @@ import App from './App'
 import './index.css'
 import { initDeviceContext } from './services/api'
 
-// Initialize device headers once on app start
 initDeviceContext()
 
 ReactDOM.createRoot(document.getElementById('root')).render(

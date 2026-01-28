@@ -47,7 +47,6 @@ export const cacheCurrentLocation = ({ timeoutMs = 5000, maxAgeMs = 5 * 60 * 100
         try {
           localStorage.setItem('device_location', JSON.stringify(loc))
         } catch {
-          // ignore storage failures
         }
         finish(loc)
       },

@@ -1,8 +1,7 @@
-// API abstraction layer (manual headers on every call)
 import Store from '../Redux/store'
 import { getCachedDeviceLocation } from '../utils/deviceLocation'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:15042'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://backend.api-innovitegra.in'
 
 const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url)
 const toUrl = (endpoint) => (isAbsoluteUrl(endpoint) ? endpoint : `${API_BASE_URL}${endpoint}`)
@@ -16,7 +15,6 @@ function getDeviceId() {
   return id
 }
 
-// Step 1 — Create device once (on app start)
 export const deviceId = getDeviceId()
 
 export const deviceInfo = encodeURIComponent(
@@ -50,7 +48,6 @@ const getAuthToken = () => {
     const tokenFromStore = Store?.getState?.()?.auth?.token
     if (typeof tokenFromStore === 'string' && tokenFromStore.length) return tokenFromStore
   } catch {
-    // ignore
   }
 
   const persisted = safeJsonParse(localStorage.getItem('reduxState'))
@@ -60,33 +57,32 @@ const getAuthToken = () => {
 
 const buildHeaders = ({ extraHeaders } = {}) => {
   const token = getAuthToken()
-  const location = getCachedDeviceLocation()
+  //const location = getCachedDeviceLocation()
 
   const headers = {
     'Content-Type': 'application/json',
-    'x-device-id': deviceId,
-    'x-app-channel': 'WEB',
-    'x-app-name': import.meta.env.VITE_APP_NAME || 'MobilWebApp',
-    'x-device-info': deviceInfo,
+    // 'DeviceInfo': deviceId,
+    // 'x-app-channel': 'WEB',
+    // 'x-app-name': import.meta.env.VITE_APP_NAME || 'MobilWebApp',
+    // 'x-device-info': deviceInfo,
   }
 
-  if (location) {
-    headers['x-device-location-status'] = 'AVAILABLE'
-    headers['x-device-lat'] = String(location.lat)
-    headers['x-device-lng'] = String(location.lng)
-  } else {
-    headers['x-device-location-status'] = 'UNAVAILABLE'
-  }
+  // if (location) {
+  //   headers['x-device-location-status'] = 'AVAILABLE'
+  //   headers['x-device-lat'] = String(location.lat)
+  //   headers['x-device-lng'] = String(location.lng)
+  // } else {
+  //   headers['x-device-location-status'] = 'UNAVAILABLE'
+  // }
 
   if (token) headers.Authorization = `Bearer ${token}`
 
   return { ...headers, ...(extraHeaders || {}) }
 }
 
-// Step 2 — Create ONE helper for API calls
 export async function callApi(url, body, options = {}) {
   const resolvedUrl = toUrl(url)
-  const method = options.method || 'POST'
+  const method =  'POST'
 
   const response = await fetch(resolvedUrl, {
     method,
@@ -107,7 +103,6 @@ export async function callApi(url, body, options = {}) {
   return payload
 }
 
-// Backward compatible wrapper
 export const api = {
   get: (endpoint, options) => callApi(endpoint, undefined, { ...options, method: 'GET' }),
   post: (endpoint, data, options) => callApi(endpoint, data, { ...options, method: 'POST' }),

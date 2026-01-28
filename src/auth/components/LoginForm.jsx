@@ -16,7 +16,6 @@ const LoginForm = () => {
   const [otpSent, setOtpSent] = useState(false)
   const [countdown, setCountdown] = useState(0)
   
-  // Countdown timer for resend OTP
   React.useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
@@ -28,7 +27,6 @@ const LoginForm = () => {
     e.preventDefault()
     setError('')
     
-    // Validate mobile number
     const digitsOnly = mobileNumber.replace(/\D/g, '')
     if (!mobileNumber || digitsOnly.length < 10) {
       setError('Please enter a valid mobile number')
@@ -42,7 +40,7 @@ const LoginForm = () => {
       
       if (result.success) {
         setOtpSent(true)
-        setCountdown(60) // 60 seconds countdown
+        setCountdown(60)
         setIsFlipped(true)
       } else {
         setError(result.error || 'Failed to send OTP')
@@ -89,7 +87,6 @@ const LoginForm = () => {
       const result = await authService.verifyOtp(mobileNumber, enteredOtp)
       
       if (result.success) {
-        // Navigate directly to home after OTP verification
         navigate('/customer/home')
       } else {
         setError(result.error || 'Invalid OTP')
@@ -103,7 +100,6 @@ const LoginForm = () => {
   
   const handleOtpChange = (enteredOtp) => {
     setOtp(enteredOtp)
-    // Don't auto-submit - user must click Submit button
   }
   
   const handleBackToMobile = () => {
@@ -123,7 +119,6 @@ const LoginForm = () => {
   return (
     <div className="w-full">
       <div className="relative w-full" style={{ perspective: "1000px" }}>
-        {/* Flip Card Container */}
         <div
           className="relative w-full transition-transform duration-700"
           style={{
@@ -131,7 +126,6 @@ const LoginForm = () => {
             transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
           }}
         >
-          {/* Front Side - Mobile Number Card */}
           <div
             className="w-full relative bg-white rounded-2xl shadow-xl p-8 min-h-[500px] flex flex-col justify-center"
             style={{
@@ -155,11 +149,9 @@ const LoginForm = () => {
                 onChange={(e) => {
                   let value = e.target.value.trim()
                   value = value.replace(/[^\d+]/g, '')
-                  // allow max one '+' and only at start
                   if (value.includes('+')) {
                     value = `+${value.replace(/\+/g, '')}`
                   }
-                  // keep it reasonable (E.164 max is 15 digits, plus optional '+')
                   const maxLen = value.startsWith('+') ? 16 : 15
                   setMobileNumber(value.slice(0, maxLen))
                 }}
@@ -182,7 +174,6 @@ const LoginForm = () => {
             </form>
           </div>
 
-          {/* Back Side - OTP Card */}
           <div
             className="w-full absolute inset-0 bg-white rounded-2xl shadow-xl p-8 min-h-[500px] flex flex-col justify-center"
             style={{
