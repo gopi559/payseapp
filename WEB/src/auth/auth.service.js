@@ -1,6 +1,6 @@
 import Store from '../Redux/store'
 import { login, logout } from '../Redux/auth.store'
-import { callApi } from '../services/api'
+import { api } from '../services/api'
 import { CHECK_MOBILE, GENERATE_OTP, VERIFY_OTP } from '../utils/constant.jsx'
 import { cacheCurrentLocation } from '../utils/deviceLocation'
 
@@ -18,7 +18,7 @@ export const authService = {
       // Best-effort: cache location for subsequent API calls (will prompt on first run if allowed).
       cacheCurrentLocation({ timeoutMs: 5000 }).catch(() => {})
 
-      const check = await callApi(CHECK_MOBILE, { mobile: mobileNumber })
+      const check = await api.post(CHECK_MOBILE, { mobile: mobileNumber })
       if (!isSuccessResponse(check)) {
         return { success: false, error: check?.message || 'Failed to check mobile' }
       }
@@ -28,7 +28,7 @@ export const authService = {
         return { success: false, error: check?.message || 'Customer not found' }
       }
 
-      const otpRes = await callApi(GENERATE_OTP, { mobile: mobileNumber })
+      const otpRes = await api.post(GENERATE_OTP, { mobile: mobileNumber })
       if (!isSuccessResponse(otpRes)) {
         return { success: false, error: otpRes?.message || 'Failed to generate OTP' }
       }
@@ -43,7 +43,7 @@ export const authService = {
     try {
       cacheCurrentLocation({ timeoutMs: 5000 }).catch(() => {})
 
-      const res = await callApi(VERIFY_OTP, { mobile: mobileNumber, otp })
+      const res = await api.post(VERIFY_OTP, { mobile: mobileNumber, otp })
       if (!isSuccessResponse(res)) {
         return { success: false, error: res?.message || 'OTP verification failed' }
       }
