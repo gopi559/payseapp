@@ -1,5 +1,4 @@
-// Redux exports
-export { default as Store } from './store'
-export * from './auth.store'
-export * from './wallet.store'
-export * from './transaction.store'
+export { default as Store } from './store.jsx'
+export * from './store.jsx'
+export * from './MerchantSlice.jsx'
+export * from './MobileAppSlice.jsx'

@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
-import LoginPage from '../auth/pages/LoginPage'
+import LoginPage from '../Login/LoginPage.jsx'
 import ProtectedRoute from './ProtectRoute'
 import { customerRoutes } from './index'
 import { ROUTES } from '../config/routes'

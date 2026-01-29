@@ -1,38 +1,99 @@
-import { configureStore } from '@reduxjs/toolkit'
-import authReducer from './auth.store'
-import walletReducer from './wallet.store'
-import transactionReducer from './transaction.store'
-import { loadState, saveState } from './Middleware'
+import { configureStore, createSlice } from '@reduxjs/toolkit'
+import merchantReducer from './MerchantSlice.jsx'
+import mobileAppReducer from './MobileAppSlice.jsx'
+import { loadState, saveState } from './Middleware.jsx'
 
-// Load the persisted state safely
+const authSlice = createSlice({
+  name: 'auth',
+  initialState: {
+    isAuthenticated: false,
+    user: null,
+    token: null,
+  },
+  reducers: {
+    setUser: (state, action) => {
+      state.user = action.payload
+    },
+    setToken: (state, action) => {
+      state.token = action.payload
+    },
+    setAuthenticated: (state, action) => {
+      state.isAuthenticated = action.payload
+    },
+    login: (state, action) => {
+      state.isAuthenticated = true
+      if (action.payload && typeof action.payload === 'object' && ('user' in action.payload || 'token' in action.payload)) {
+        state.user = action.payload.user ?? state.user
+        state.token = action.payload.token ?? state.token
+      } else {
+        state.user = action.payload
+      }
+    },
+    logout: (state) => {
+      state.isAuthenticated = false
+      state.user = null
+      state.token = null
+    },
+  },
+})
+
+const walletSlice = createSlice({
+  name: 'wallet',
+  initialState: {
+    balance: 0,
+    walletId: '',
+  },
+  reducers: {
+    setWalletId: (state, action) => {
+      state.walletId = action.payload
+    },
+    setBalance: (state, action) => {
+      state.balance = action.payload
+    },
+    updateBalance: (state, action) => {
+      const delta = Number(action.payload) || 0
+      state.balance = Number(state.balance || 0) + delta
+    },
+  },
+})
+
+const transactionSlice = createSlice({
+  name: 'transaction',
+  initialState: {
+    transactions: [],
+  },
+  reducers: {
+    addTransaction: (state, action) => {
+      state.transactions.unshift(action.payload)
+    },
+    setTransactions: (state, action) => {
+      state.transactions = Array.isArray(action.payload) ? action.payload : []
+    },
+    clearTransactions: (state) => {
+      state.transactions = []
+    },
+  },
+})
+
+export const { setUser, setToken, setAuthenticated, login, logout } = authSlice.actions
+export const { setWalletId, setBalance, updateBalance } = walletSlice.actions
+export const { addTransaction, setTransactions, clearTransactions } = transactionSlice.actions
+
 const preloadedState = loadState()
 
 const Store = configureStore({
   reducer: {
-    auth: authReducer,
-    wallet: walletReducer,
-    transaction: transactionReducer,
+    auth: authSlice.reducer,
+    wallet: walletSlice.reducer,
+    transaction: transactionSlice.reducer,
+    merchant: merchantReducer,
+    mobileApp: mobileAppReducer,
   },
-  preloadedState: preloadedState || undefined, // Set the preloaded state
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-    serializableCheck: {
-      ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
-    },
-  }),
+  preloadedState: preloadedState || undefined,
 })
 
-// Save the state to localStorage whenever it changes
-let isSubscribed = false
-if (!isSubscribed) {
-  Store.subscribe(() => {
-    try {
-      saveState(Store.getState())
-    } catch (error) {
-      console.error('Error saving state:', error)
-    }
-  })
-  isSubscribed = true
-}
+Store.subscribe(() => {
+  saveState(Store.getState())
+})
 
 export default Store
-

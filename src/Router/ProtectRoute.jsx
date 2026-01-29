@@ -1,7 +1,7 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import AppShell from '../shell/AppShell'
+import AppShell from '../SidebarComponenets/AppShell'
 import { ROUTES } from '../config/routes'
 
 const ProtectedRoute = ({ element }) => {
