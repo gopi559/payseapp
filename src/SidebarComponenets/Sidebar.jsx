@@ -8,6 +8,7 @@ import { FaHistory, FaCreditCard } from 'react-icons/fa'
 import { BsQrCodeScan, BsCashCoin } from 'react-icons/bs'
 import { CgProfile } from 'react-icons/cg'
 import { CiLogout } from 'react-icons/ci'
+import { MdClose } from 'react-icons/md'
 import { ROUTES } from '../config/routes'
 import { authService } from '../Login/auth.service'
 
@@ -29,8 +30,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     setActiveLink(path)
   }, [location])
 
+  // Match AppShell breakpoint (lg = 1024px): overlay sidebar when < 1024 so inspect/responsive mode behaves correctly
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768)
+    const MOBILE_BREAKPOINT = 1024
+    const checkMobile = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -144,18 +147,36 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       <>
         {isOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black/50 z-40"
             onClick={onClose}
+            onKeyDown={(e) => e.key === 'Escape' && onClose()}
+            role="button"
+            tabIndex={0}
+            aria-label="Close sidebar to view content"
           />
         )}
 
+        {/* Always left-anchored overlay; close via X button or click outside to see page content */}
         <div
-          className={`fixed top-0 left-0 h-full w-72 p-1 z-50 transition-transform transform ${
+          className={`fixed top-0 bottom-0 left-0 right-auto h-full w-72 pt-1 px-1 pb-1 z-50 transition-transform duration-300 ease-out ${
             isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
+          style={{ willChange: 'transform' }}
         >
-          <div className="flex flex-col h-full w-full bg-white backdrop-blur-md shadow-[0_4px_25px_rgba(0,0,0,0.08)] rounded-3xl overflow-hidden border border-gray-200">
-            <SidebarContent />
+          <div className="flex flex-col h-full w-full bg-white backdrop-blur-md shadow-[0_4px_25px_rgba(0,0,0,0.08)] rounded-2xl overflow-hidden border border-gray-200">
+            <div className="flex items-center justify-end shrink-0 pr-2 pt-2 pb-1">
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+                aria-label="Close sidebar to view content"
+              >
+                <MdClose size={22} />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col -mt-1">
+              <SidebarContent />
+            </div>
           </div>
         </div>
       </>

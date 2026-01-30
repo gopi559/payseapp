@@ -9,6 +9,67 @@ import { ROUTES } from '../../config/routes'
 
 const NUM_DATA = 20
 
+const formatExpiry = (iso) => {
+  if (!iso) return '--/--'
+  const d = new Date(iso)
+  return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
+}
+
+const CardPreview = ({ card, onClick }) => (
+  <button
+    type="button"
+    onClick={() => onClick(card.id)}
+    className="relative w-full max-w-[320px] sm:max-w-[400px] h-[200px] sm:h-[240px] rounded-2xl overflow-hidden shadow-xl text-left transition-transform hover:scale-[1.02] active:scale-[0.98]"
+  >
+    {/* Base gradient – brand only */}
+    <div className="absolute inset-0 bg-gradient-to-br from-brand-primary via-brand-action to-brand-dark" />
+    {/* Soft overlay – brand surface */}
+    <div className="absolute inset-0 bg-gradient-to-tr from-brand-surface/60 via-transparent to-brand-surfaceLight/40" />
+    {/* Wave accent top */}
+    <svg
+      className="absolute top-0 left-0 w-full h-16 sm:h-20 opacity-30 fill-white/15"
+      viewBox="0 0 480 80"
+      xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="none"
+    >
+      <path d="M0 40 Q120 0 240 40 T480 40 L480 80 L0 80 Z" />
+    </svg>
+    {/* Badge */}
+    <span className="absolute top-3 left-4 bg-white text-brand-dark text-xs px-3 py-1 rounded-full font-semibold z-20">
+      {card.card_status_name || 'Personalized'}
+    </span>
+    {/* Logo */}
+    <span className="absolute top-3 right-4 text-white font-bold text-lg tracking-tight z-20">
+      Paysey
+    </span>
+    {/* Chip – brand light/dark */}
+    <div className="absolute left-4 top-12 sm:top-14 z-20 flex items-center gap-2">
+      <div className="w-9 h-6 sm:w-10 sm:h-7 rounded bg-brand-light flex items-center justify-center shadow-inner border border-brand-dark/40">
+        <div className="w-5 h-3 sm:w-6 sm:h-4 border border-brand-dark/60 rounded" />
+      </div>
+    </div>
+    {/* Card number */}
+    <div className="absolute left-4 right-4 top-20 sm:top-24 text-brand-light text-base sm:text-lg font-mono tracking-[0.2em] sm:tracking-[0.35em] z-20 truncate">
+      {card.masked_card || '**** **** **** ****'}
+    </div>
+    {/* Cardholder */}
+    <div className="absolute left-4 bottom-4 z-20 text-brand-light">
+      <p className="text-xs opacity-80">cardholder</p>
+      <p className="font-semibold text-sm sm:text-base truncate max-w-[140px] sm:max-w-[180px]">
+        {card.name_on_card || '—'}
+      </p>
+    </div>
+    {/* Valid Thru + card icon */}
+    <div className="absolute right-4 bottom-4 z-20 flex flex-col items-end gap-0.5">
+      <div className="text-brand-light text-right">
+        <p className="text-xs opacity-80">Valid Thru</p>
+        <p className="font-semibold text-sm sm:text-base">{formatExpiry(card.expiry_on)}</p>
+      </div>
+      <span className="text-white/70 text-xs font-mono">▭</span>
+    </div>
+  </button>
+)
+
 const CardsPage = () => {
   const navigate = useNavigate()
   const balance = useSelector((state) => state.wallet.balance)
@@ -82,35 +143,13 @@ const CardsPage = () => {
             <p className="text-gray-600 text-center py-8">No cards yet.</p>
           ) : (
             <>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {cards.map((card) => (
-                  <button
+                  <CardPreview
                     key={card.id ?? Math.random()}
-                    type="button"
-                    onClick={() => handleCardClick(card.id)}
-                    className="w-full text-left bg-gray-50 hover:bg-brand-surfaceMuted rounded-xl p-4 flex items-center justify-between transition-colors border border-gray-100"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">💳</span>
-                      <div>
-                        <p className="font-medium text-brand-dark">
-                          {card.name_on_card ?? `Card ${card.id ?? '—'}`}
-                        </p>
-                        {card.masked_card && (
-                          <p className="text-sm text-gray-600 font-mono">{card.masked_card}</p>
-                        )}
-                        {card.card_status_name && (
-                          <p className="text-xs text-gray-500">{card.card_status_name}</p>
-                        )}
-                        {card.expiry_on && (
-                          <p className="text-xs text-gray-500">
-                            Expiry: {new Date(card.expiry_on).toLocaleDateString('en-GB', { month: '2-digit', year: '2-digit' })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <span className="text-gray-400">›</span>
-                  </button>
+                    card={card}
+                    onClick={handleCardClick}
+                  />
                 ))}
               </div>
               {hasMore && (

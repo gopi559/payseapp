@@ -1,13 +1,17 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { MdPerson, MdLogout } from 'react-icons/md'
 import { formatAmount } from '../utils/formatAmount'
 import { ROUTES } from '../config/routes'
+import { authService } from '../Login/auth.service'
 
 const Header = ({ onMenuClick, onToggleSidebar }) => {
   const navigate = useNavigate()
+  const dropdownRef = useRef(null)
   const user = useSelector((state) => state.auth.user)
   const balance = useSelector((state) => state.wallet.balance)
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
@@ -20,6 +24,34 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
     if (hour < 12) return 'Good Morning'
     if (hour < 18) return 'Good Afternoon'
     return 'Good Evening'
+  }
+
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev)
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleProfileDetails = () => {
+    navigate(ROUTES.PROFILE_DETAILS)
+    setIsDropdownOpen(false)
+  }
+
+  const handleProfile = () => {
+    navigate(ROUTES.PROFILE)
+    setIsDropdownOpen(false)
+  }
+
+  const handleLogout = () => {
+    authService.logout()
+    navigate(ROUTES.LOGIN)
+    setIsDropdownOpen(false)
   }
 
   return (
@@ -47,14 +79,61 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
             <h2 className="text-lg font-bold">{displayName}</h2>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => navigate(ROUTES.PROFILE_DETAILS)}
-          className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer shrink-0"
-          aria-label="Profile details"
-        >
-          <span className="text-lg">👤</span>
-        </button>
+
+        <div className="relative shrink-0" ref={dropdownRef}>
+          <button
+            type="button"
+            onClick={toggleDropdown}
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer"
+            aria-label="Profile menu"
+            aria-expanded={isDropdownOpen}
+          >
+            <span className="text-lg">👤</span>
+          </button>
+
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-white text-gray-800 border border-gray-200 shadow-lg rounded-lg z-50 overflow-hidden">
+              <div className="p-3 border-b border-gray-100 bg-gray-50">
+                <p className="font-semibold text-brand-dark truncate">{displayName}</p>
+                {regInfo?.mobile && (
+                  <p className="text-xs text-gray-500 truncate mt-0.5">{regInfo.mobile}</p>
+                )}
+              </div>
+              <ul className="py-1">
+                <li>
+                  <button
+                    type="button"
+                    onClick={handleProfileDetails}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-gray-100 transition-colors"
+                  >
+                    <MdPerson className="text-gray-600 shrink-0" size={18} />
+                    Profile Details
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    onClick={handleProfile}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-gray-100 transition-colors"
+                  >
+                    <span className="text-base shrink-0">👤</span>
+                    Profile
+                  </button>
+                </li>
+                <li className="border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-gray-100 text-red-600 transition-colors"
+                  >
+                    <MdLogout className="shrink-0" size={18} />
+                    Logout
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
       
       <div className="mt-2">
