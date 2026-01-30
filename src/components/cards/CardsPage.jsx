@@ -8,7 +8,6 @@ import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import { formatAmount } from '../../utils/formatAmount'
 import { cardService } from './card.service'
-import { ROUTES } from '../../config/routes'
 import { callApi } from '../../services/api'
 import { CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '../../utils/constant'
 
@@ -20,11 +19,13 @@ const formatExpiry = (iso) => {
   return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
 }
 
-const CardPreview = ({ card, onClick, selectable = true }) => (
+const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) => (
   <button
     type="button"
     onClick={() => selectable && onClick?.(card.id)}
-    className={`relative w-full max-w-[320px] sm:max-w-[400px] h-[200px] sm:h-[240px] rounded-2xl overflow-hidden shadow-xl text-left transition-transform ${selectable ? 'hover:scale-[1.02] active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
+    className={`relative h-[200px] sm:h-[240px] rounded-2xl overflow-hidden shadow-xl text-left transition-transform ${
+      fullWidth ? 'w-full' : 'w-full max-w-[320px] sm:max-w-[400px]'
+    } ${selectable ? 'hover:scale-[1.02] active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
   >
     {/* Base gradient – brand only */}
     <div className="absolute inset-0 bg-gradient-to-br from-brand-primary via-brand-action to-brand-dark" />
@@ -143,10 +144,10 @@ const CardPreview = ({ card, onClick, selectable = true }) => (
 const MetaRow = ({ icon: Icon, label, value }) => (
   <>
     <div className="flex items-center gap-2">
-      {Icon && <Icon className="text-brand-primary w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
-      <span className="text-sm text-gray-500 font-medium">{label}</span>
+      {Icon && <Icon className="text-blue-500 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
+      <span className="font-medium text-gray-500 text-sm">{label}</span>
     </div>
-    <span className="text-sm font-semibold text-brand-dark break-all">{value ?? '—'}</span>
+    <span className="font-semibold text-gray-800 break-words text-sm">{value ?? '—'}</span>
   </>
 )
 
@@ -165,6 +166,7 @@ const CardsPage = () => {
   const [loadingActions, setLoadingActions] = useState(false)
   const [selectedCardAction, setSelectedCardAction] = useState(null)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [cardSearchQuery, setCardSearchQuery] = useState('')
 
   const loadList = async (pageNum = 1, append = false) => {
     try {
@@ -198,8 +200,17 @@ const CardsPage = () => {
       setLoadingActions(true)
       try {
         const res = await callApi(CUSTOMER_GET_ACTIONS_CARD, {})
-        if (!cancelled && res?.success && Array.isArray(res?.data)) {
-          setAvailableActions(res.data)
+        const ok = res?.success === true || res?.code === 1
+        const list = Array.isArray(res?.data) ? res.data : []
+        if (!cancelled && ok && list.length) {
+          setAvailableActions(
+            list.map((item) => ({
+              id: item.id,
+              action_name: item.action_name ?? item.card_status ?? String(item.id),
+            }))
+          )
+        } else if (!cancelled) {
+          setAvailableActions([])
         }
       } catch {
         if (!cancelled) setAvailableActions([])
@@ -217,33 +228,29 @@ const CardsPage = () => {
 
   const getAvailableActions = (currentStatus) => {
     if (!availableActions?.length) return []
-    if (currentStatus === 'Closed' || currentStatus === 'Lost/Stolen') return []
-    if (currentStatus === 'Block') {
+    const status = (currentStatus ?? '').trim()
+    if (status === 'Closed' || status === 'Lost/Stolen' || status === 'Lost' || status === 'Stolen') return []
+    if (status === 'Block' || status === 'Blocked') {
       return availableActions.filter((a) =>
-        ['Unblock', 'Lost/Stolen', 'Closed'].includes(a.action_name)
+        ['Active'].includes(a.action_name)
       )
     }
-    if (currentStatus === 'Active') {
+    if (status === 'Active') {
       return availableActions.filter((a) =>
-        ['Block', 'Closed', 'Lost/Stolen'].includes(a.action_name)
+        ['Blocked', 'Block', 'Closed', 'Lost', 'Stolen'].includes(a.action_name)
       )
     }
-    if (currentStatus === 'Unblock') {
-      return availableActions.filter((a) =>
-        ['Block', 'Closed', 'Lost/Stolen'].includes(a.action_name)
-      )
-    }
-    return []
+    return availableActions
   }
 
   const handleCardStatusUpdate = async () => {
-    const cardId = selectedCard?.pre_id ?? selectedCard?.id
+    const cardId = selectedCard?.id
     if (!cardId || selectedCardAction == null) return
     setIsUpdatingStatus(true)
     setError('')
     try {
       const res = await callApi(UPDATE_CARD_STATUS, {
-        pre_id: cardId,
+        card_id: cardId,
         card_status: selectedCardAction,
       })
       if (res?.success !== true && res?.code !== 1) {
@@ -263,24 +270,49 @@ const CardsPage = () => {
   }
 
   const handleViewDetails = () => {
-    if (selectedCard?.id) navigate(ROUTES.CARD_DETAILS.replace(':id', String(selectedCard.id)))
+    if (!selectedCard?.id) return
+    navigate(`/customer/cards/${selectedCard.id}`)
   }
 
   const handleLoadMore = () => {
     loadList(page + 1, true)
   }
 
+  const handleCardSearchChange = (e) => setCardSearchQuery(e.target.value ?? '')
+
+  const getStatusColorClass = (status) => {
+    switch (status) {
+      case 'Active':
+        return 'text-green-600 bg-green-100 px-2 py-0.5 rounded-full text-xs'
+      case 'Closed':
+      case 'Lost/Stolen':
+      case 'Block':
+        return 'text-red-600 bg-red-100 px-2 py-0.5 rounded-full text-xs'
+      default:
+        return 'text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full text-xs'
+    }
+  }
+
+  const filteredCards = cards.filter((card) => {
+    if (!cardSearchQuery.trim()) return true
+    const q = cardSearchQuery.toLowerCase()
+    const name = (card.name_on_card ?? '').toLowerCase()
+    const masked = (card.masked_card ?? '').toLowerCase()
+    const status = (card.card_status_name ?? '').toLowerCase()
+    return name.includes(q) || masked.includes(q) || status.includes(q)
+  })
+
   return (
     <PageContainer>
       <div className="px-4 py-6">
         <h1 className="text-2xl font-bold text-brand-dark mb-6">My Cards</h1>
 
-        {/* Wallet summary card: green background, white text, balance + wallet ID */}
+        {/* Wallet summary card: green background, white text, Available balance + wallet ID */}
         {/* <div className="bg-gradient-to-br from-brand-primary to-brand-action rounded-xl p-6 text-white mb-6 shadow-lg"> */}
-          {/* Top section: Wallet Balance (label + amount) and credit card icon */}
+          {/* Top section: Available balance (label + amount) and credit card icon */}
           {/* <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="text-sm opacity-90 mb-1">Wallet Balance</p>
+              <p className="text-sm opacity-90 mb-1">Available balance</p>
               <p className="text-3xl font-bold">{formatAmount(balance)}</p>
             </div>
             <span className="text-3xl">💳</span>
@@ -303,47 +335,88 @@ const CardsPage = () => {
         ) : cards.length === 0 ? (
           <p className="text-gray-600 text-center py-8">No cards yet.</p>
         ) : (
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Left: card list */}
-            <div className="flex-1 min-w-0 bg-white rounded-xl shadow-sm p-4">
-              <h3 className="font-semibold text-brand-dark mb-3">Cards</h3>
-              <div className="space-y-2 max-h-[360px] overflow-y-auto">
-                {cards.map((card) => (
-                  <button
-                    key={card.id ?? Math.random()}
-                    type="button"
-                    onClick={() => handleSelectCard(card)}
-                    className={`w-full text-left rounded-xl p-3 flex items-center gap-3 transition-colors border ${
-                      selectedCard?.id === card.id
-                        ? 'bg-brand-surfaceLight border-brand-primary shadow-sm'
-                        : 'bg-gray-50 border-gray-100 hover:bg-brand-surfaceMuted'
-                    }`}
-                  >
-                    <span className="text-2xl">💳</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-brand-dark truncate">
-                        {card.name_on_card ?? `Card ${card.id ?? '—'}`}
-                      </p>
-                      {card.masked_card && (
-                        <p className="text-sm text-gray-600 font-mono truncate">{card.masked_card}</p>
-                      )}
-                      {card.card_status_name && (
-                        <p className="text-xs text-gray-500">{card.card_status_name}</p>
-                      )}
-                    </div>
-                    {selectedCard?.id === card.id && (
-                      <span className="text-brand-primary shrink-0">✓</span>
-                    )}
-                  </button>
-                ))}
+          <div className="flex flex-col xl:flex-row gap-4 lg:gap-6 w-full min-w-0">
+            {/* Left: Table with Search Bar – only this area scrolls (reference layout) */}
+            <div className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-4 bg-white rounded-lg shadow-sm p-2 sm:p-3 lg:p-4 w-full h-[80vh]">
+              <div className="flex items-center justify-between p-2 gap-2 sm:gap-4 flex-shrink-0">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="bg-blue-100 p-2 rounded-lg">
+                    <HiCreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800">
+                    Card information
+                  </h3>
+                </div>
+                <div className="relative flex items-center max-w-[200px] sm:max-w-xs">
+                  <input
+                    type="search"
+                    placeholder="Search card"
+                    value={cardSearchQuery}
+                    onChange={handleCardSearchChange}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                  />
+                </div>
+              </div>
+              <div className="flex-1 min-h-0 overflow-hidden rounded-lg bg-white shadow-sm flex flex-col">
+                <div className="overflow-y-auto flex-1 min-h-0">
+                  <table className="w-full text-sm text-left">
+                    <thead className="sticky top-0 bg-gray-50 border-b border-gray-200 text-gray-600 font-medium">
+                      <tr>
+                        <th className="p-2 w-10"></th>
+                        <th className="p-2">CHN</th>
+                        <th className="p-2">Name on card</th>
+                        <th className="p-2">Cardholder</th>
+                        <th className="p-2">Status</th>
+                        <th className="p-2">Expiry</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredCards.map((card) => {
+                        const isDisabled =
+                          card.card_status_name === 'Closed' || card.card_status_name === 'Lost/Stolen'
+                        const isSelected = selectedCard?.id === card.id
+                        return (
+                          <tr
+                            key={card.id ?? Math.random()}
+                            className={`border-b border-gray-100 last:border-0 ${
+                              isSelected ? 'bg-brand-surfaceLight' : 'hover:bg-gray-50'
+                            } ${isDisabled ? 'opacity-60' : ''}`}
+                          >
+                            <td className="p-2">
+                              <input
+                                type="radio"
+                                name="cardSelection"
+                                checked={isSelected}
+                                onChange={() => !isDisabled && handleSelectCard(card)}
+                                disabled={isDisabled}
+                                className="h-4 w-4 text-brand-primary focus:ring-brand-primary border-gray-300 cursor-pointer disabled:cursor-not-allowed"
+                              />
+                            </td>
+                            <td className="p-2 font-mono text-gray-800">{card.masked_card ?? '—'}</td>
+                            <td className="p-2 text-gray-800">{card.name_on_card ?? '—'}</td>
+                            <td className="p-2 text-gray-800">{card.name_on_card ?? '—'}</td>
+                            <td className="p-2">
+                              <span className={getStatusColorClass(card.card_status_name)}>
+                                {card.card_status_name ?? '—'}
+                              </span>
+                            </td>
+                            <td className="p-2 text-gray-800">
+                              {card.expiry_on ? formatExpiry(card.expiry_on) : '—'}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               {hasMore && (
-                <div className="mt-4">
+                <div className="mt-3 flex-shrink-0">
                   <Button
                     onClick={handleLoadMore}
                     variant="outline"
                     fullWidth
-                    size="md"
+                    size="sm"
                     disabled={loadingMore}
                   >
                     {loadingMore ? 'Loading...' : 'Load more'}
@@ -352,15 +425,16 @@ const CardsPage = () => {
               )}
             </div>
 
-            {/* Right: selected card preview + meta info */}
-            <div className="w-full lg:w-[400px] xl:w-[440px] flex-shrink-0 flex flex-col gap-4">
+            {/* Right: Card Preview + Meta Info (reference layout) */}
+            <div className="w-full xl:w-[480px] min-h-[500px] flex-shrink-0 flex flex-col gap-4 lg:gap-6">
               {selectedCard ? (
                 <>
-                  <div className="flex flex-col items-center sm:items-start">
-                    <CardPreview card={selectedCard} selectable={false} />
+                  <div className="w-full">
+                    <CardPreview card={selectedCard} selectable={false} fullWidth />
                   </div>
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                  {/* Card Meta Info (reference: rounded-2xl, border-blue-100, grid) */}
+                  <div className="w-full bg-white rounded-2xl shadow-xl border border-blue-100 p-2 sm:p-2 lg:p-4 min-h-0 overflow-visible flex flex-col justify-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2 lg:gap-2 text-sm sm:text-base z-10">
                       <MetaRow icon={HiCreditCard} label="Card type" value={selectedCard.card_status_name || 'Card'} />
                       <MetaRow icon={PiCreditCardLight} label="Card number" value={selectedCard.masked_card} />
                       <MetaRow icon={HiUserCircle} label="Name on card" value={selectedCard.name_on_card} />
@@ -372,12 +446,10 @@ const CardsPage = () => {
                         value={selectedCard.expiry_on ? formatExpiry(selectedCard.expiry_on) : null}
                       />
                       <div className="flex items-center gap-2">
-                        {MdBrowserUpdated && (
-                          <MdBrowserUpdated className="text-brand-primary w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                        )}
-                        <span className="text-sm text-gray-500 font-medium">Select Action</span>
+                        <MdBrowserUpdated className="text-blue-500 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                        <span className="font-medium text-gray-500">Select Action</span>
                       </div>
-                      <div className="font-semibold text-brand-dark">
+                      <div className="font-semibold text-gray-800">
                         {loadingActions ? (
                           <span className="text-sm text-gray-400">Loading actions...</span>
                         ) : (
@@ -393,7 +465,7 @@ const CardsPage = () => {
                               selectedCard.card_status_name === 'Closed' ||
                               selectedCard.card_status_name === 'Lost/Stolen'
                             }
-                            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-brand-dark focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary disabled:bg-gray-100 disabled:text-gray-400"
+                            className="w-full h-8 sm:h-10 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary disabled:bg-gray-100 disabled:text-gray-400"
                           >
                             <option value="">Select action</option>
                             {getAvailableActions(selectedCard?.card_status_name).map((action) => (
@@ -405,11 +477,10 @@ const CardsPage = () => {
                         )}
                       </div>
                     </div>
-                    <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                      <Button
+                    <div className="mt-2 sm:mt-2 pt-2 sm:pt-2 border-t border-gray-100">
+                      <button
+                        type="button"
                         onClick={handleCardStatusUpdate}
-                        fullWidth
-                        size="md"
                         disabled={
                           selectedCardAction == null ||
                           isUpdatingStatus ||
@@ -417,17 +488,33 @@ const CardsPage = () => {
                           selectedCard.card_status_name === 'Closed' ||
                           selectedCard.card_status_name === 'Lost/Stolen'
                         }
+                        className={`w-full px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium transition-colors duration-200 text-sm sm:text-base ${
+                          selectedCardAction == null ||
+                          isUpdatingStatus ||
+                          !selectedCard ||
+                          selectedCard?.card_status_name === 'Closed' ||
+                          selectedCard?.card_status_name === 'Lost/Stolen'
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
                       >
-                        {isUpdatingStatus ? 'Updating...' : 'Update'}
-                      </Button>
-                      <Button
+                        {isUpdatingStatus ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <span className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            Updating...
+                          </span>
+                        ) : (
+                          'Update'
+                        )}
+                      </button>
+                      {/* <Button
                         onClick={handleViewDetails}
                         fullWidth
-                        size="md"
+                        size="sm"
                         variant="outline"
                       >
                         View full details
-                      </Button>
+                      </Button> */}
                     </div>
                   </div>
                 </>

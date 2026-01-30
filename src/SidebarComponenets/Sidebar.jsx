@@ -9,8 +9,7 @@ import { BsQrCodeScan, BsCashCoin } from 'react-icons/bs'
 import { CgProfile } from 'react-icons/cg'
 import { CiLogout } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
-import { ROUTES } from '../config/routes'
-import { authService } from '../Login/auth.service'
+import authService from '../Login/auth.service.jsx'
 
 const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   const [activeLink, setActiveLink] = useState('')
@@ -21,7 +20,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 
   const handleLogout = () => {
     authService.logout()
-    navigate(ROUTES.LOGIN)
+    navigate('/login')
     onClose()
   }
 
@@ -40,15 +39,15 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   }, [])
 
   const menuItems = [
-    { icon: <IoHome />, label: 'Home', route: ROUTES.HOME, isComponent: true },
-    { icon: <FaHistory />, label: 'History', route: ROUTES.HISTORY, isComponent: true },
-    { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: ROUTES.SEND_START, isComponent: true },
-    { icon: <GoArrowDownLeft />, label: 'Receive', route: ROUTES.RECEIVE, isComponent: true },
-    { icon: <BsQrCodeScan />, label: 'Scan QR', route: ROUTES.SCAN, isComponent: true },
-    { icon: <BsCashCoin />, label: 'Cash In', route: ROUTES.CASH_IN, isComponent: true },
-    { icon: <IoCashOutline />, label: 'Cash Out', route: ROUTES.CASH_OUT, isComponent: true },
-    { icon: <FaCreditCard />, label: 'Cards', route: ROUTES.CARDS, isComponent: true },
-    { icon: <CgProfile />, label: 'Profile', route: ROUTES.PROFILE, isComponent: true },
+    { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
+    { icon: <FaHistory />, label: 'History', route: '/customer/history', isComponent: true },
+    { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
+    { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
+    { icon: <BsQrCodeScan />, label: 'Scan QR', route: '/customer/scan', isComponent: true },
+    { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
+    { icon: <IoCashOutline />, label: 'Cash Out', route: '/customer/cash-out', isComponent: true },
+    { icon: <FaCreditCard />, label: 'Cards', route: '/customer/cards', isComponent: true },
+    { icon: <CgProfile />, label: 'Profile', route: '/customer/profile', isComponent: true },
   ]
 
   const SidebarContent = () => (
@@ -59,7 +58,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
         } flex justify-center`}
       >
         <Link
-          to={ROUTES.HOME}
+          to="/customer/home"
           className={`flex flex-col items-center cursor-pointer`}
           onClick={() => isMobile && onClose()}
         >
@@ -87,8 +86,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
         }`}
       >
         {menuItems.map((item, index) => {
-          const isActive = location.pathname === item.route || 
-            (item.route !== ROUTES.HOME && location.pathname.startsWith(item.route))
+          const isActive = location.pathname === item.route ||
+            (item.route !== '/customer/home' && location.pathname.startsWith(item.route))
           
           const handleClick = () => {
             navigate(item.route)

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Input from '../Reusable/Input'
 import Button from '../Reusable/Button'
 import OtpInput from '../Reusable/OtpInput'
-import { authService } from './auth.service.jsx'
+import authService from './auth.service.jsx'
 
 const LoginForm = () => {
   const navigate = useNavigate()

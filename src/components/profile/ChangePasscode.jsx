@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import PasscodeInput from '../../Login/PasscodeInput'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
-import { authService } from '../../Login/auth.service'
+import authService from '../../Login/auth.service.jsx'
 
 const ChangePasscode = () => {
   const navigate = useNavigate()
@@ -45,7 +44,7 @@ const ChangePasscode = () => {
     setLoading(false)
     
     if (result.success) {
-      navigate(ROUTES.PROFILE)
+      navigate('/customer/profile')
     } else {
       setError('Failed to update passcode')
     }
@@ -82,7 +81,7 @@ const ChangePasscode = () => {
         </div>
         
         <Button
-          onClick={() => navigate(ROUTES.PROFILE)}
+          onClick={() => navigate('/customer/profile')}
           variant="outline"
           fullWidth
           className="mt-6"

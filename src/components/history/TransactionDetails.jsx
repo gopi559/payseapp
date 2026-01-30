@@ -5,7 +5,6 @@ import PageContainer from '../../Reusable/PageContainer'
 import StatusBadge from '../../Reusable/StatusBadge'
 import { formatAmount } from '../../utils/formatAmount'
 import { formatDateTime } from '../../utils/formatDate'
-import { ROUTES } from '../../config/routes'
 
 const TransactionDetails = () => {
   const { id } = useParams()
@@ -88,7 +87,7 @@ const TransactionDetails = () => {
         </div>
         
         <button
-          onClick={() => navigate(ROUTES.HISTORY)}
+          onClick={() => navigate('/customer/history')}
           className="w-full bg-brand-primary text-white py-3 rounded-lg font-semibold"
         >
           Back to History

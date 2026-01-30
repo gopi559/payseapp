@@ -4,8 +4,6 @@ import { useSelector } from 'react-redux'
 import PageContainer from '../../Reusable/PageContainer'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
-
 const CashOutPage = () => {
   const navigate = useNavigate()
   const balance = useSelector((state) => state.wallet.balance)
@@ -24,7 +22,7 @@ const CashOutPage = () => {
     }
     
     sessionStorage.setItem('cashOutData', JSON.stringify({ amount }))
-    navigate(ROUTES.CASH_OUT_CONFIRM)
+    navigate('/customer/cash-out/confirm')
   }
   
   return (

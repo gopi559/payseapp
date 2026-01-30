@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
-
 const DetailRow = ({ label, value }) => (
   <div className="flex justify-between items-start gap-4 py-2 border-b border-gray-100 last:border-0">
     <span className="text-xs sm:text-sm text-gray-600 shrink-0">{label}</span>
@@ -63,7 +61,7 @@ const ProfileDetails = () => {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <Button
-            onClick={() => navigate(ROUTES.PROFILE)}
+            onClick={() => navigate('/customer/profile')}
             variant="outline"
             fullWidth
             size="md"

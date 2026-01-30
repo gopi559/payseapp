@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import { cardService } from '../cards/card.service'
-import { ROUTES } from '../../config/routes'
-
 const DetailRow = ({ label, value }) => (
   <div className="flex justify-between items-start gap-4 py-2 border-b border-gray-100 last:border-0">
     <span className="text-xs sm:text-sm text-gray-600 shrink-0">{label}</span>
@@ -48,7 +46,7 @@ const CardDetails = () => {
       <PageContainer>
         <div className="px-4 py-6">
           <p className="text-gray-600">No card selected.</p>
-          <Button className="mt-4" variant="outline" onClick={() => navigate(ROUTES.CARDS)}>
+          <Button className="mt-4" variant="outline" onClick={() => navigate('/customer/cards')}>
             Back to Cards
           </Button>
         </div>
@@ -93,7 +91,7 @@ const CardDetails = () => {
           variant="outline"
           fullWidth
           size="md"
-          onClick={() => navigate(ROUTES.CARDS)}
+          onClick={() => navigate('/customer/cards')}
           className="mt-4"
         >
           Back to Cards

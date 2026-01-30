@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import SuccessScreen from '../../Reusable/SuccessScreen'
-import { ROUTES } from '../../config/routes'
 
 const SendSuccess = () => {
   const navigate = useNavigate()
@@ -13,7 +12,7 @@ const SendSuccess = () => {
   }, [])
   
   const handleDone = () => {
-    navigate(ROUTES.HOME)
+    navigate('/customer/home')
   }
   
   return (

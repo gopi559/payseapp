@@ -4,8 +4,7 @@ import { useSelector } from 'react-redux'
 import { CiLogout } from 'react-icons/ci'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
-import { authService } from '../../Login/auth.service'
+import authService from '../../Login/auth.service.jsx'
 
 const ProfilePage = () => {
   const navigate = useNavigate()
@@ -21,7 +20,7 @@ const ProfilePage = () => {
 
   const handleLogout = () => {
     authService.logout()
-    navigate(ROUTES.LOGIN)
+    navigate('/login')
   }
 
   return (
@@ -61,7 +60,7 @@ const ProfilePage = () => {
         
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
           <button
-            onClick={() => navigate(ROUTES.PROFILE_DETAILS)}
+            onClick={() => navigate('/customer/profile/details')}
             className="w-full flex items-center justify-between py-2 px-2 hover:bg-brand-surfaceMuted rounded-md transition-colors"
           >
             <div className="flex items-center gap-2 sm:gap-3">

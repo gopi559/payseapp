@@ -5,8 +5,6 @@ import PageContainer from '../../Reusable/PageContainer'
 import StatusBadge from '../../Reusable/StatusBadge'
 import { formatAmount, formatAmountShort } from '../../utils/formatAmount'
 import { formatDate } from '../../utils/formatDate'
-import { ROUTES } from '../../config/routes'
-
 const HistoryPage = () => {
   const navigate = useNavigate()
   const transactions = useSelector((state) => state.transaction.transactions)
@@ -27,7 +25,7 @@ const HistoryPage = () => {
   }
   
   const handleTransactionClick = (id) => {
-    navigate(ROUTES.TRANSACTION_DETAILS.replace(':id', id))
+    navigate(`/customer/history/${id}`)
   }
   
   return (

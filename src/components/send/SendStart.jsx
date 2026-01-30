@@ -5,7 +5,6 @@ import PageContainer from '../../Reusable/PageContainer'
 import Input from '../../Reusable/Input'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
 
 const SendStart = () => {
   const navigate = useNavigate()
@@ -38,7 +37,7 @@ const SendStart = () => {
       description,
     }))
     
-    navigate(ROUTES.SEND_CONFIRM)
+    navigate('/customer/send/confirm')
   }
   
   return (

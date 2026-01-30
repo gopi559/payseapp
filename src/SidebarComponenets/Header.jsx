@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { MdPerson, MdLogout } from 'react-icons/md'
 import { formatAmount } from '../utils/formatAmount'
-import { ROUTES } from '../config/routes'
-import { authService } from '../Login/auth.service'
+import authService from '../Login/auth.service.jsx'
 
 const Header = ({ onMenuClick, onToggleSidebar }) => {
   const navigate = useNavigate()
@@ -39,18 +38,18 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
   }, [])
 
   const handleProfileDetails = () => {
-    navigate(ROUTES.PROFILE_DETAILS)
+    navigate('/customer/profile/details')
     setIsDropdownOpen(false)
   }
 
   const handleProfile = () => {
-    navigate(ROUTES.PROFILE)
+    navigate('/customer/profile')
     setIsDropdownOpen(false)
   }
 
   const handleLogout = () => {
     authService.logout()
-    navigate(ROUTES.LOGIN)
+    navigate('/login')
     setIsDropdownOpen(false)
   }
 
@@ -137,7 +136,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
       </div>
       
       <div className="mt-2">
-        <p className="text-xs opacity-90 mb-0.5">Wallet Balance</p>
+        <p className="text-xs opacity-90 mb-0.5">Available balance</p>
         <p className="text-2xl font-bold">{formatAmount(balance)}</p>
       </div>
     </div>

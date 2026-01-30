@@ -2,8 +2,6 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
-
 const ScanPage = () => {
   const navigate = useNavigate()
   const [scanning, setScanning] = useState(false)
@@ -12,7 +10,7 @@ const ScanPage = () => {
     setScanning(true)
     setTimeout(() => {
       setScanning(false)
-      navigate(ROUTES.SCAN_CONFIRM)
+      navigate('/customer/scan/confirm')
     }, 2000)
   }
   

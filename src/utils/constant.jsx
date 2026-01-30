@@ -10,7 +10,9 @@ export const CARD_LIST  = LOGIN_URL + "/card/list";
 export const CARD_FETCH = LOGIN_URL + "/card/fetch";
 
 export const CUSTOMER_GET_ACTIONS_CARD =
-  LOGIN_URL + "/ifmscust/cardStatus/get_card_status_actions";
+  LOGIN_URL + "/card/status/list";
 
 export const UPDATE_CARD_STATUS =
-  MAIN_API_URL + "/ifmscust/cardStatus/update_card_status";
+  MAIN_API_URL + "/card/status/update"; 
+
+export const CUSTOMER_BALANCE = MAIN_API_URL + "/account/cust_bal";

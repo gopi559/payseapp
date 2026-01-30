@@ -2,8 +2,6 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import LoginPage from '../Login/LoginPage.jsx'
 import ProtectedRoute from './ProtectRoute'
 import { customerRoutes } from './index'
-import { ROUTES } from '../config/routes'
-
 // Error component
 const Error = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -17,11 +15,11 @@ const Error = () => (
 const appRouter = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to={ROUTES.LOGIN} replace />,
+    element: <Navigate to="/login" replace />,
     errorElement: <Error />,
   },
   {
-    path: ROUTES.LOGIN,
+    path: '/login',
     element: <LoginPage />,
     errorElement: <Error />,
   },
@@ -39,7 +37,7 @@ const appRouter = createBrowserRouter([
   },
   {
     path: '*',
-    element: <Navigate to={ROUTES.LOGIN} replace />,
+    element: <Navigate to="/login" replace />,
   },
 ])
 

@@ -1,10 +1,31 @@
 import Store from "../Redux/store.jsx";
-import { login, logout, setWalletId } from "../Redux/store.jsx";
+import { login, logout, setWalletId, setBalance } from "../Redux/store.jsx";
 import { callApi } from "../services/api.jsx";
-import { CHECK_MOBILE, GENERATE_OTP, VERIFY_OTP } from "../utils/constant.jsx";
+import {
+  CHECK_MOBILE,
+  GENERATE_OTP,
+  VERIFY_OTP,
+  CUSTOMER_BALANCE,
+} from "../utils/constant.jsx";
 import { cacheCurrentLocation } from "../utils/deviceLocation.jsx";
 
-export const authService = {
+/** Fetch customer balance from /account/cust_bal and update Redux wallet (balance + acct_number). */
+const fetchCustomerBalance = async () => {
+  try {
+    const res = await callApi(CUSTOMER_BALANCE, {});
+    if (res?.code === 1 && res?.data) {
+      const { avail_bal, acct_number } = res.data;
+      Store.dispatch(setBalance(Number(avail_bal) ?? 0));
+      if (acct_number != null) Store.dispatch(setWalletId(String(acct_number)));
+      return res.data;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
+const authService = {
   sendOtp: async (mobile) => {
     try {
       cacheCurrentLocation({ timeoutMs: 5000 }).catch(() => {});
@@ -45,6 +66,7 @@ export const authService = {
       }
 
       const regInfo = res?.data?.reg_info || {};
+
       Store.dispatch(
         login({
           user: {
@@ -58,9 +80,12 @@ export const authService = {
           token: res?.data?.token || null,
         })
       );
+
       if (regInfo?.user_ref) {
         Store.dispatch(setWalletId(regInfo.user_ref));
       }
+
+      await fetchCustomerBalance();
 
       return { success: true, data: res?.data };
     } catch (error) {
@@ -70,6 +95,11 @@ export const authService = {
 
   logout: () => {
     Store.dispatch(logout());
+    Store.dispatch(setBalance(0));
+    Store.dispatch(setWalletId(""));
     localStorage.removeItem("reduxState");
   },
 };
+
+export { fetchCustomerBalance };
+export default authService;

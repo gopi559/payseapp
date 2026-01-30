@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 import Header from './Header'
 import Sidebar from './Sidebar'
+import { fetchCustomerBalance } from '../Login/auth.service.jsx'
 
 const DESKTOP_BREAKPOINT = 1024
 
@@ -10,10 +12,15 @@ const AppShell = ({ children }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const mainRef = useRef(null)
   const location = useLocation()
+  const token = useSelector((state) => state.auth.token)
 
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0)
   }, [location.pathname])
+
+  useEffect(() => {
+    if (token) fetchCustomerBalance()
+  }, [token])
 
   // When going fullscreen (inspect removed, viewport >= 1024), auto-expand sidebar to full view
   useEffect(() => {

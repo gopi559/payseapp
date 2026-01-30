@@ -4,7 +4,6 @@ import { useDispatch } from 'react-redux'
 import PageContainer from '../../Reusable/PageContainer'
 import ConfirmCard from '../../Reusable/ConfirmCard'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
 import { updateBalance } from '../../Redux/store'
 
 const CashInConfirm = () => {
@@ -16,7 +15,7 @@ const CashInConfirm = () => {
   useEffect(() => {
     const data = sessionStorage.getItem('cashInData')
     if (!data) {
-      navigate(ROUTES.CASH_IN)
+      navigate('/customer/cash-in')
       return
     }
     setCashInData(JSON.parse(data))
@@ -32,7 +31,7 @@ const CashInConfirm = () => {
       dispatch(updateBalance(parseFloat(cashInData.amount)))
       sessionStorage.removeItem('cashInData')
       setLoading(false)
-      navigate(ROUTES.CASH_IN_SUCCESS)
+      navigate('/customer/cash-in/success')
     }, 1500)
   }
   
@@ -56,7 +55,7 @@ const CashInConfirm = () => {
             {loading ? 'Processing...' : 'Confirm'}
           </Button>
           <Button
-            onClick={() => navigate(ROUTES.CASH_IN)}
+            onClick={() => navigate('/customer/cash-in')}
             variant="outline"
             fullWidth
             disabled={loading}

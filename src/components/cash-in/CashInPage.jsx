@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
-
 const CashInPage = () => {
   const navigate = useNavigate()
   const [amount, setAmount] = useState('')
@@ -17,7 +15,7 @@ const CashInPage = () => {
     }
     
     sessionStorage.setItem('cashInData', JSON.stringify({ amount }))
-    navigate(ROUTES.CASH_IN_CONFIRM)
+    navigate('/customer/cash-in/confirm')
   }
   
   return (

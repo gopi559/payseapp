@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import ConfirmCard from '../../Reusable/ConfirmCard'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
 import { sendService } from './send.service'
 
 const SendConfirm = () => {
@@ -15,7 +14,7 @@ const SendConfirm = () => {
   useEffect(() => {
     const data = sessionStorage.getItem('sendData')
     if (!data) {
-      navigate(ROUTES.SEND_START)
+      navigate('/customer/send')
       return
     }
     setSendData(JSON.parse(data))
@@ -36,7 +35,7 @@ const SendConfirm = () => {
       
       if (result.success) {
         sessionStorage.removeItem('sendData')
-        navigate(ROUTES.SEND_SUCCESS)
+        navigate('/customer/send/success')
       } else {
         setError(result.error || 'Transaction failed')
       }
@@ -74,7 +73,7 @@ const SendConfirm = () => {
             {loading ? 'Processing...' : 'Confirm Payment'}
           </Button>
           <Button
-            onClick={() => navigate(ROUTES.SEND_START)}
+            onClick={() => navigate('/customer/send')}
             variant="outline"
             fullWidth
             disabled={loading}

@@ -1,21 +1,19 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ROUTES } from '../config/routes'
-
 const BottomNav = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  
+
   const navItems = [
-    { icon: '🏠', label: 'Home', route: ROUTES.HOME },
-    { icon: '📜', label: 'History', route: ROUTES.HISTORY },
-    { icon: '💳', label: 'Pay', route: ROUTES.SEND_START, isPay: true },
-    { icon: '💳', label: 'Cards', route: ROUTES.CARDS },
-    { icon: '👤', label: 'Profile', route: ROUTES.PROFILE },
+    { icon: '🏠', label: 'Home', route: '/customer/home' },
+    { icon: '📜', label: 'History', route: '/customer/history' },
+    { icon: '💳', label: 'Pay', route: '/customer/send', isPay: true },
+    { icon: '💳', label: 'Cards', route: '/customer/cards' },
+    { icon: '👤', label: 'Profile', route: '/customer/profile' },
   ]
-  
+
   const isActive = (route) => {
-    if (route === ROUTES.HOME) {
+    if (route === '/customer/home') {
       return location.pathname === route
     }
     return location.pathname.startsWith(route)

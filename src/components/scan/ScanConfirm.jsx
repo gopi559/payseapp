@@ -5,8 +5,6 @@ import PageContainer from '../../Reusable/PageContainer'
 import AmountInput from '../../Reusable/AmountInput'
 import ConfirmCard from '../../Reusable/ConfirmCard'
 import Button from '../../Reusable/Button'
-import { ROUTES } from '../../config/routes'
-
 const ScanConfirm = () => {
   const navigate = useNavigate()
   const balance = useSelector((state) => state.wallet.balance)
@@ -29,7 +27,7 @@ const ScanConfirm = () => {
     // Simulate payment
     setTimeout(() => {
       setLoading(false)
-      navigate(ROUTES.SEND_SUCCESS)
+      navigate('/customer/send/success')
     }, 1500)
   }
   
