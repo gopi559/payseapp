@@ -1,5 +1,5 @@
 import Store from "../Redux/store.jsx";
-import { login, logout } from "../Redux/store.jsx";
+import { login, logout, setWalletId } from "../Redux/store.jsx";
 import { callApi } from "../services/api.js";
 import { CHECK_MOBILE, GENERATE_OTP, VERIFY_OTP } from "../utils/constant.jsx";
 import { cacheCurrentLocation } from "../utils/deviceLocation.js";
@@ -14,7 +14,7 @@ export const authService = {
         entity: "mobile",
       });
 
-      if (!(check?.code === 1 || check?.status === "SUCCESS")) {
+      if (!(check?.code === 1 || String(check?.status).toUpperCase() === "SUCCESS")) {
         return { success: false, error: check?.message };
       }
 
@@ -24,7 +24,7 @@ export const authService = {
 
       const otpRes = await callApi(GENERATE_OTP, { mobile });
 
-      if (!(otpRes?.code === 1 || otpRes?.status === "SUCCESS")) {
+      if (!(otpRes?.code === 1 || String(otpRes?.status).toUpperCase() === "SUCCESS")) {
         return { success: false, error: otpRes?.message };
       }
 
@@ -40,16 +40,27 @@ export const authService = {
 
       const res = await callApi(VERIFY_OTP, { mobile, otp });
 
-      if (!(res?.code === 1 || res?.status === "SUCCESS")) {
+      if (!(res?.code === 1 || String(res?.status).toUpperCase() === "SUCCESS")) {
         return { success: false, error: res?.message };
       }
 
+      const regInfo = res?.data?.reg_info || {};
       Store.dispatch(
         login({
-          user: res?.data?.reg_info || {},
+          user: {
+            reg_info: regInfo,
+            user_kyc: res?.data?.user_kyc || null,
+            mfa_id: res?.data?.mfa_id,
+            session_expiry_timeout: res?.data?.session_expiry_timeout,
+            session_expiry_unit: res?.data?.session_expiry_unit,
+            user_inactivity_timeout: res?.data?.user_inactivity_timeout,
+          },
           token: res?.data?.token || null,
         })
       );
+      if (regInfo?.user_ref) {
+        Store.dispatch(setWalletId(regInfo.user_ref));
+      }
 
       return { success: true, data: res?.data };
     } catch (error) {
