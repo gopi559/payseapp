@@ -43,7 +43,7 @@ const safeJsonParse = (value) => {
   }
 }
 
-const getAuthToken = () => {
+export const getAuthToken = () => {
   try {
     const tokenFromStore = Store?.getState?.()?.auth?.token
     if (typeof tokenFromStore === 'string' && tokenFromStore.length) return tokenFromStore
