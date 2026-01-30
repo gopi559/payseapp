@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PageContainer from '../../../Reusable/PageContainer'
-import AmountInput from '../../../Reusable/AmountInput'
-import Button from '../../../Reusable/Button'
-import { ROUTES } from '../../../config/routes'
+import PageContainer from '../../Reusable/PageContainer'
+import AmountInput from '../../Reusable/AmountInput'
+import Button from '../../Reusable/Button'
+import { ROUTES } from '../../config/routes'
 
 const CashInPage = () => {
   const navigate = useNavigate()

@@ -1,6 +1,6 @@
 import React from 'react'
 import PageContainer from '../../Reusable/PageContainer'
-import ActionGrid from './components/ActionGrid'
+import ActionGrid from './ActionGrid'
 
 const HomePage = () => {
   return (

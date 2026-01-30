@@ -1,5 +1,5 @@
-import Store from '../Redux/store'
-import { getCachedDeviceLocation } from '../utils/deviceLocation'
+import Store from '../Redux/store.jsx'
+import { getCachedDeviceLocation } from '../utils/deviceLocation.jsx'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://backend.api-innovitegra.in'
 

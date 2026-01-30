@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
-import PageContainer from '../../../Reusable/PageContainer'
-import ConfirmCard from '../../../Reusable/ConfirmCard'
-import Button from '../../../Reusable/Button'
-import { ROUTES } from '../../../config/routes'
-import { updateBalance } from '../../../Redux/store.jsx'
+import PageContainer from '../../Reusable/PageContainer'
+import ConfirmCard from '../../Reusable/ConfirmCard'
+import Button from '../../Reusable/Button'
+import { ROUTES } from '../../config/routes'
+import { updateBalance } from '../../Redux/store'
 
 const CashInConfirm = () => {
   const navigate = useNavigate()

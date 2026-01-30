@@ -1,5 +1,5 @@
-import { paymentService } from '../../services/payment.service'
-import Store from '../../Redux/store'
+import { paymentService } from '../../services/payment.service.jsx'
+import Store from '../../Redux/store.jsx'
 import { updateBalance, addTransaction } from '../../Redux/store.jsx'
 
 export const sendService = {

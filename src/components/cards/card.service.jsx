@@ -1,4 +1,4 @@
-import { callApi } from '../../services/api.js'
+import { callApi } from '../../services/api.jsx'
 import { CARD_LIST, CARD_FETCH } from '../../utils/constant.jsx'
 
 const isSuccess = (res) =>

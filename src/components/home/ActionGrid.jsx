@@ -5,7 +5,7 @@ import { FaHistory } from 'react-icons/fa'
 import { BsQrCodeScan, BsCashCoin } from 'react-icons/bs'
 import { IoCashOutline } from 'react-icons/io5'
 import ActionTile from './ActionTile'
-import { ROUTES } from '../../../config/routes'
+import { ROUTES } from '../../config/routes'
 
 const ActionGrid = () => {
   const actions = [

@@ -1,8 +1,8 @@
 import Store from "../Redux/store.jsx";
 import { login, logout, setWalletId } from "../Redux/store.jsx";
-import { callApi } from "../services/api.js";
+import { callApi } from "../services/api.jsx";
 import { CHECK_MOBILE, GENERATE_OTP, VERIFY_OTP } from "../utils/constant.jsx";
-import { cacheCurrentLocation } from "../utils/deviceLocation.js";
+import { cacheCurrentLocation } from "../utils/deviceLocation.jsx";
 
 export const authService = {
   sendOtp: async (mobile) => {
