@@ -98,4 +98,3 @@ const ScanConfirm = () => {
 
 export default ScanConfirm
 
-

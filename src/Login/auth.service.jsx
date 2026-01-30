@@ -101,5 +101,5 @@ const authService = {
   },
 };
 
-export { fetchCustomerBalance };
-export default authService;
+export { fetchCustomerBalance }
+export default authService

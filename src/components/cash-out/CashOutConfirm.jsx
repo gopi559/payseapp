@@ -70,4 +70,3 @@ const CashOutConfirm = () => {
 
 export default CashOutConfirm
 
-

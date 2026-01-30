@@ -70,4 +70,3 @@ const CashInConfirm = () => {
 
 export default CashInConfirm
 
-

@@ -2,6 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import SuccessScreen from '../../Reusable/SuccessScreen'
+
 const CashInSuccess = () => {
   const navigate = useNavigate()
   
@@ -19,5 +20,3 @@ const CashInSuccess = () => {
 }
 
 export default CashInSuccess
-
-

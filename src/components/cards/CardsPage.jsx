@@ -305,7 +305,7 @@ const CardsPage = () => {
   return (
     <PageContainer>
       <div className="px-4 py-6">
-        <h1 className="text-2xl font-bold text-brand-dark mb-6">My Cards</h1>
+        {/* <h1 className="text-2xl font-bold text-brand-dark mb-6">My Cards</h1> */}
 
         {/* Wallet summary card: green background, white text, Available balance + wallet ID */}
         {/* <div className="bg-gradient-to-br from-brand-primary to-brand-action rounded-xl p-6 text-white mb-6 shadow-lg"> */}

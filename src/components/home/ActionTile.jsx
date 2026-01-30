@@ -31,4 +31,3 @@ const ActionTile = ({ icon, label, route, onClick, isComponent = false }) => {
 
 export default ActionTile
 
-
