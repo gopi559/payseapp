@@ -15,6 +15,8 @@ function getDeviceId() {
   return id
 }
 
+
+
 export const deviceId = getDeviceId()
 
 export const deviceInfo = encodeURIComponent(
@@ -33,6 +35,8 @@ export const deviceInfo = encodeURIComponent(
   })
 )
 
+
+
 export const initDeviceContext = () => ({ deviceId, deviceInfo })
 
 const safeJsonParse = (value) => {
@@ -43,6 +47,8 @@ const safeJsonParse = (value) => {
   }
 }
 
+
+
 export const getAuthToken = () => {
   try {
     const tokenFromStore = Store?.getState?.()?.auth?.token
@@ -50,10 +56,13 @@ export const getAuthToken = () => {
   } catch {
   }
 
+
   const persisted = safeJsonParse(localStorage.getItem('reduxState'))
   const token = persisted?.auth?.token
   return typeof token === 'string' && token.length ? token : null
 }
+
+
 
 const buildHeaders = ({ extraHeaders } = {}) => {
   const token = getAuthToken()
@@ -80,6 +89,8 @@ const buildHeaders = ({ extraHeaders } = {}) => {
   return { ...headers, ...(extraHeaders || {}) }
 }
 
+
+
 export async function callApi(url, body, options = {}) {
   const resolvedUrl = toUrl(url)
   const method =  'POST'
@@ -102,6 +113,7 @@ export async function callApi(url, body, options = {}) {
 
   return payload
 }
+
 
 export const api = {
   get: (endpoint, options) => callApi(endpoint, undefined, { ...options, method: 'GET' }),

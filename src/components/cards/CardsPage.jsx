@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import { formatAmount } from '../../utils/formatAmount'
-import { cardService } from '../../services/card.service.jsx'
+import { cardService } from './card.service'
 import { ROUTES } from '../../config/routes'
 
 const NUM_DATA = 20

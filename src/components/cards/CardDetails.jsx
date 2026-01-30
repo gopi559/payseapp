@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
-import { cardService } from '../../services/card.service.jsx'
+import { cardService } from '../cards/card.service'
 import { ROUTES } from '../../config/routes'
 
 const DetailRow = ({ label, value }) => (
