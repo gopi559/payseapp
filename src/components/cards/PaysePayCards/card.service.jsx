@@ -8,15 +8,12 @@ const cardService = {
 
   getList: async ({
     page = 1,
-    num_data = 20,
+    num_data = 50,
     card_status,
     pin_status,
     customer_id,
   } = {}) => {
-    const body = {
-      page,
-      num_data,
-    }
+    const body = { page, num_data }
     if (card_status !== undefined) body.card_status = card_status
     if (pin_status !== undefined) body.pin_status = pin_status
     if (customer_id !== undefined) body.customer_id = customer_id
@@ -26,7 +23,10 @@ const cardService = {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
-        DeviceID: deviceId,
+        deviceInfo: JSON.stringify({
+          device_type: "WEB",
+          device_id: deviceId,
+        }),
       },
       body: JSON.stringify(body),
     })
@@ -50,7 +50,10 @@ const cardService = {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
-        DeviceID: deviceId,
+                deviceInfo: JSON.stringify({
+          device_type: "WEB",
+          device_id: deviceId,
+        }),
       },
       body: JSON.stringify({ card_id: Number(card_id) }),
     })

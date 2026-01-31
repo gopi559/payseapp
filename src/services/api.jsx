@@ -1,13 +1,16 @@
 import Store from '../Redux/store.jsx'
 import { getCachedDeviceLocation } from '../utils/deviceLocation.jsx'
 
-// In dev use '' so /webcust paths hit same origin and Vite proxy avoids CORS
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV ? '' : 'https://backend.api-innovitegra.in')
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://backend.api-innovitegra.in'
 
 const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url)
-const toUrl = (endpoint) => (isAbsoluteUrl(endpoint) ? endpoint : `${API_BASE_URL}${endpoint}`)
+// Relative paths (e.g. /login/check-mobile in dev) stay same-origin so Vite proxy works and CORS is avoided
+const toUrl = (endpoint) =>
+  isAbsoluteUrl(endpoint)
+    ? endpoint
+    : endpoint.startsWith("/")
+      ? endpoint
+      : `${API_BASE_URL}${endpoint}`
 
 function getDeviceId() {
   let id = localStorage.getItem('deviceId')
@@ -52,16 +55,18 @@ const safeJsonParse = (value) => {
 
 
 
+// Use token from Redux (selector-style): store.token.token first, then store.auth.token
 export const getAuthToken = () => {
   try {
-    const tokenFromStore = Store?.getState?.()?.auth?.token
-    if (typeof tokenFromStore === 'string' && tokenFromStore.length) return tokenFromStore
-  } catch {
-  }
-
+    const state = Store?.getState?.()
+    const tokenFromTokenSlice = state?.token?.token
+    if (typeof tokenFromTokenSlice === 'string' && tokenFromTokenSlice.length) return tokenFromTokenSlice
+    const tokenFromAuthSlice = state?.auth?.token
+    if (typeof tokenFromAuthSlice === 'string' && tokenFromAuthSlice.length) return tokenFromAuthSlice
+  } catch {}
 
   const persisted = safeJsonParse(localStorage.getItem('reduxState'))
-  const token = persisted?.auth?.token
+  const token = persisted?.token?.token ?? persisted?.auth?.token
   return typeof token === 'string' && token.length ? token : null
 }
 
@@ -69,11 +74,23 @@ export const getAuthToken = () => {
 
 const buildHeaders = ({ extraHeaders } = {}) => {
   const token = getAuthToken()
+  //const location = getCachedDeviceLocation()
 
   const headers = {
     'Content-Type': 'application/json',
-    DeviceID: deviceId,
+    // 'DeviceInfo': deviceId,
+    // 'x-app-channel': 'WEB',
+    // 'x-app-name': import.meta.env.VITE_APP_NAME || 'MobilWebApp',
+    // 'x-device-info': deviceInfo,
   }
+
+  // if (location) {
+  //   headers['x-device-location-status'] = 'AVAILABLE'
+  //   headers['x-device-lat'] = String(location.lat)
+  //   headers['x-device-lng'] = String(location.lng)
+  // } else {
+  //   headers['x-device-location-status'] = 'UNAVAILABLE'
+  // }
 
   if (token) headers.Authorization = `Bearer ${token}`
 
@@ -90,6 +107,8 @@ export async function callApi(url, body, options = {}) {
     method,
     headers: buildHeaders({ extraHeaders: options.headers }),
     body: body === undefined ? undefined : JSON.stringify(body),
+
+
   })
 
   const payload = await response.json().catch(() => null)

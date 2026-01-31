@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import Input from '../Reusable/Input'
 import Button from '../Reusable/Button'
 import OtpInput from '../Reusable/OtpInput'
-import authService from './auth.service.jsx'
+import useLogin from '../Hooks/useLogin'
 
 const LoginForm = () => {
-  const navigate = useNavigate()
+  const { sendOtp, verifyOtp, errorMessage, showModal, setShowModal } = useLogin()
   const [mobileNumber, setMobileNumber] = useState('')
   const [otp, setOtp] = useState('')
   const [isFlipped, setIsFlipped] = useState(false)
@@ -15,29 +14,34 @@ const LoginForm = () => {
   const [loading, setLoading] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
   const [countdown, setCountdown] = useState(0)
-  
+
+  const displayError = showModal ? errorMessage : error
+  const clearError = () => {
+    setError('')
+    setShowModal(false)
+  }
+
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
       return () => clearTimeout(timer)
     }
   }, [countdown])
-  
+
   const handleSendOtp = async (e) => {
     e.preventDefault()
     setError('')
-    
+    setShowModal(false)
+
     const digitsOnly = mobileNumber.replace(/\D/g, '')
     if (!mobileNumber || digitsOnly.length < 10) {
       setError('Please enter a valid mobile number')
       return
     }
-    
+
     setLoading(true)
-    
     try {
-      const result = await authService.sendOtp(mobileNumber)
-      
+      const result = await sendOtp(mobileNumber)
       if (result.success) {
         setOtpSent(true)
         setCountdown(60)
@@ -51,16 +55,14 @@ const LoginForm = () => {
       setLoading(false)
     }
   }
-  
+
   const handleResendOtp = async () => {
     if (countdown > 0) return
-    
     setError('')
+    setShowModal(false)
     setLoading(true)
-    
     try {
-      const result = await authService.sendOtp(mobileNumber)
-      
+      const result = await sendOtp(mobileNumber)
       if (result.success) {
         setCountdown(60)
         setOtp('')
@@ -73,22 +75,18 @@ const LoginForm = () => {
       setLoading(false)
     }
   }
-  
+
   const handleVerifyOtp = async (enteredOtp) => {
     if (!enteredOtp || enteredOtp.length !== 6) {
       setError('Please enter a valid 6-digit OTP')
       return
     }
-    
     setError('')
+    setShowModal(false)
     setLoading(true)
-    
     try {
-      const result = await authService.verifyOtp(mobileNumber, enteredOtp)
-      
-      if (result.success) {
-        navigate('/customer/home')
-      } else {
+      const result = await verifyOtp(mobileNumber, enteredOtp)
+      if (!result.success) {
         setError(result.error || 'Invalid OTP')
       }
     } catch (err) {
@@ -106,6 +104,7 @@ const LoginForm = () => {
     setIsFlipped(false)
     setOtp('')
     setError('')
+    setShowModal(false)
   }
 
   const CardHeader = () => (
@@ -136,9 +135,14 @@ const LoginForm = () => {
           >
             <CardHeader />
             <form onSubmit={handleSendOtp} className="space-y-6">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {error}
+              {displayError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center justify-between">
+                  <span>{displayError}</span>
+                  {showModal && (
+                    <button type="button" onClick={clearError} className="text-red-600 hover:underline ml-2">
+                      Dismiss
+                    </button>
+                  )}
                 </div>
               )}
               
@@ -191,12 +195,17 @@ const LoginForm = () => {
                 <p className="text-xs text-gray-500">Enter the 6-digit OTP</p>
               </div>
               
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {error}
+              {displayError && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center justify-between">
+                  <span>{displayError}</span>
+                  {showModal && (
+                    <button type="button" onClick={clearError} className="text-red-600 hover:underline ml-2">
+                      Dismiss
+                    </button>
+                  )}
                 </div>
               )}
-              
+
               <OtpInput
                 onComplete={handleOtpChange}
                 onChange={setOtp}

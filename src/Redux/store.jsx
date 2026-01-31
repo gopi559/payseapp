@@ -1,6 +1,7 @@
 import { configureStore, createSlice } from '@reduxjs/toolkit'
 import merchantReducer from './MerchantSlice.jsx'
 import mobileAppReducer from './MobileAppSlice.jsx'
+import authTokenReducer from './AuthToken.jsx'
 import { loadState, saveState } from './Middleware.jsx'
 
 const authSlice = createSlice({
@@ -79,17 +80,29 @@ export const { setUser, setToken, setAuthenticated, login, logout } = authSlice.
 export const { setWalletId, setBalance, updateBalance } = walletSlice.actions
 export const { addTransaction, setTransactions, clearTransactions } = transactionSlice.actions
 
-const preloadedState = loadState()
+// Reference pattern: reducer object + preloadedState filtered to reducer keys only (avoids RTK warnings when old keys exist)
+const reducer = {
+  auth: authSlice.reducer,
+  token: authTokenReducer,
+  wallet: walletSlice.reducer,
+  transaction: transactionSlice.reducer,
+  merchant: merchantReducer,
+  mobileApp: mobileAppReducer,
+}
+
+const loadedState = loadState()
+const preloadedState =
+  loadedState && typeof loadedState === 'object'
+    ? Object.keys(reducer).reduce((acc, key) => {
+        if (loadedState[key] !== undefined) acc[key] = loadedState[key]
+        return acc
+      }, {})
+    : undefined
 
 const Store = configureStore({
-  reducer: {
-    auth: authSlice.reducer,
-    wallet: walletSlice.reducer,
-    transaction: transactionSlice.reducer,
-    merchant: merchantReducer,
-    mobileApp: mobileAppReducer,
-  },
-  preloadedState: preloadedState || undefined,
+  reducer,
+  preloadedState,
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware(),
 })
 
 Store.subscribe(() => {

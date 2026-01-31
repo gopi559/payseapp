@@ -1,18 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useSelector, useDispatch } from 'react-redux'
 import Header from './Header'
 import Sidebar from './Sidebar'
 import { fetchCustomerBalance } from '../Login/auth.service.jsx'
+import { clearUserDataAuth } from '../Redux/AuthToken'
+import { logout } from '../Redux/store'
+import { LOGOUT_API_URL } from '../utils/constant'
 
 const DESKTOP_BREAKPOINT = 1024
+const INACTIVITY_MS = 8 * 60 * 1000 // 8 minutes
 
 const AppShell = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const mainRef = useRef(null)
   const location = useLocation()
-  const token = useSelector((state) => state.auth.token)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const token = useSelector((store) => store.token?.token)
 
   useEffect(() => {
     mainRef.current?.scrollTo(0, 0)
@@ -21,6 +27,42 @@ const AppShell = ({ children }) => {
   useEffect(() => {
     if (token) fetchCustomerBalance()
   }, [token])
+
+  // Inactivity logout (reference Body): token from selector, call logout API, clear auth, navigate to login
+  useEffect(() => {
+    let inactivityTimeout
+    let lastActivityTime = Date.now()
+
+    const resetInactivityTimer = () => {
+      clearTimeout(inactivityTimeout)
+      lastActivityTime = Date.now()
+      inactivityTimeout = setTimeout(() => {
+        fetch(LOGOUT_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        }).catch(() => {}).finally(() => {
+          dispatch(clearUserDataAuth())
+          dispatch(logout())
+          localStorage.removeItem('refreshToken')
+          sessionStorage.removeItem('reduxState')
+          navigate('/login')
+        })
+      }, INACTIVITY_MS)
+    }
+
+    const events = ['click', 'mousemove', 'keydown', 'scroll', 'touchstart']
+    const handleUserActivity = () => resetInactivityTimer()
+    events.forEach((e) => window.addEventListener(e, handleUserActivity))
+    resetInactivityTimer()
+
+    return () => {
+      clearTimeout(inactivityTimeout)
+      events.forEach((e) => window.removeEventListener(e, handleUserActivity))
+    }
+  }, [dispatch, navigate, token])
 
   // When going fullscreen (inspect removed, viewport >= 1024), auto-expand sidebar to full view
   useEffect(() => {
