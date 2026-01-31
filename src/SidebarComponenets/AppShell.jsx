@@ -45,6 +45,18 @@ const AppShell = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-brand-surfaceMuted flex h-screen overflow-hidden flex-row">
+      {/* Mobile backdrop: full screen, outside translating wrapper so it stays put when sidebar slides */}
+      {isSidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={closeSidebar}
+          onKeyDown={(e) => e.key === 'Escape' && closeSidebar()}
+          role="button"
+          tabIndex={0}
+          aria-label="Close sidebar"
+        />
+      )}
+
       {/* Expand bar: when in responsive mode and sidebar closed, click to open sidebar */}
       <button
         type="button"
@@ -57,21 +69,21 @@ const AppShell = ({ children }) => {
         <span className="text-xl font-bold leading-none">›</span>
       </button>
 
-      {/* Desktop sidebar: always first (left) on lg+; auto full when fullscreen */}
-      <div className="hidden lg:block h-full shrink-0 order-first">
-        <Sidebar
-          isOpen={true}
-          onClose={closeSidebar}
-          isCollapsed={isSidebarCollapsed}
-        />
-      </div>
-
-      {/* Mobile sidebar: fixed overlay from left when open; DOM order before main so always "left" */}
-      <div className="lg:hidden shrink-0 w-0 order-first">
+      {/* Single sidebar instance: desktop = in-flow, mobile = fixed overlay. Prevents scroll reset on route change. */}
+      <div
+        className={`
+          order-first shrink-0 h-full
+          lg:relative lg:block lg:translate-x-0
+          fixed left-0 top-0 bottom-0 z-50 w-72 transition-transform duration-300 ease-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+          lg:!translate-x-0
+        `}
+        style={{ willChange: 'transform' }}
+      >
         <Sidebar
           isOpen={isSidebarOpen}
           onClose={closeSidebar}
-          isCollapsed={false}
+          isCollapsed={isSidebarCollapsed}
         />
       </div>
 

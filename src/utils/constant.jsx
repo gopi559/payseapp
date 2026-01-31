@@ -23,4 +23,14 @@ export const CARD_REQUEST_TYPE_LIST = MAIN_API_URL + "/card/card_request_type_li
 export const CARD_REQUEST = MAIN_API_URL + "/card/card_req";
 
 
+export const BENIFICIARY_LIST = MAIN_API_URL + "/card/beneficiary/list";
+export const BENIFICIARY_ADD = MAIN_API_URL + "/card/beneficiary/add";
+export const BENIFICIARY_EDIT = MAIN_API_URL + "/card/beneficiary/edit";
+export const BENIFICIARY_DELETE = MAIN_API_URL + "/card/beneficiary/remove";
+
+
+
+
+
+
 

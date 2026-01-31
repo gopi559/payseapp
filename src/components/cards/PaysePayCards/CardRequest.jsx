@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { HiCreditCard } from "react-icons/hi2";
-import PageContainer from "../../Reusable/PageContainer";
-import Button from "../../Reusable/Button";
-import { getAuthToken, deviceId } from "../../services/api";
-import { CARD_REQUEST_TYPE_LIST, CARD_REQUEST } from "../../utils/constant";
+import PageContainer from "../../../Reusable/PageContainer";
+import Button from "../../../Reusable/Button";
+import { getAuthToken, deviceId } from "../../../services/api";
+import { CARD_REQUEST_TYPE_LIST, CARD_REQUEST } from "../../../utils/constant";
 import { cardService } from "./card.service";
 
 // Request type ids that require a reference card (Reissue, Addon)

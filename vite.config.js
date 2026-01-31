@@ -15,6 +15,11 @@ export default defineConfig({
         target: 'https://backend.api-innovitegra.in',
         changeOrigin: true,
         secure: true,
+        configure: (proxy) => {
+          proxy.on('error', (err, req, res) => {
+            console.log('[proxy error]', err.message)
+          })
+        },
       },
     },
   },

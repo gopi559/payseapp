@@ -17,9 +17,14 @@ import CashOutConfirm from '../components/cash-out/CashOutConfirm'
 import CashOutSuccess from '../components/cash-out/CashOutSuccess'
 import HistoryPage from '../components/history/HistoryPage'
 import TransactionDetails from '../components/history/TransactionDetails'
-import CardsPage from '../components/cards/CardsPage'
-import CardDetails from '../components/cards/CardDetails'
-import CardRequest from '../components/cards/CardRequest'
+import CardsPage from '../components/cards/PaysePayCards/CardsPage'
+import CardDetails from '../components/cards/PaysePayCards/CardDetails'
+import CardRequest from '../components/cards/PaysePayCards/CardRequest'
+import CardBeneficiaryList from '../components/cards/OtherBankCards/CardBeneficiaryList'
+import CardBeneficiaryAdd from '../components/cards/OtherBankCards/CardBeneficiaryAdd'
+import CardBeneficiaryEdit from '../components/cards/OtherBankCards/CardBeneficiaryEdit'
+import CardBeneficiaryView from '../components/cards/OtherBankCards/CardBeneficiaryView'
+import CardBeneficiaryDelete from '../components/cards/OtherBankCards/CardBeneficiaryDelete'
 import ProfilePage from '../components/profile/ProfilePage'
 import ProfileDetails from '../components/profile/ProfileDetails'
 
@@ -172,6 +177,46 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <CardDetails />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'other-cards',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <CardBeneficiaryList />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'other-cards/add',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <CardBeneficiaryAdd />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'other-cards/edit/:id',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <CardBeneficiaryEdit />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'other-cards/view/:id',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <CardBeneficiaryView />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'other-cards/delete/:id',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <CardBeneficiaryDelete />
       </Suspense>
     ),
   },

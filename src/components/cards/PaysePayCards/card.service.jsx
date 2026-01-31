@@ -1,5 +1,5 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
-import { CARD_LIST, CARD_FETCH } from '../../utils/constant.jsx'
+import { getAuthToken, deviceId } from '../../../services/api.jsx'
+import { CARD_LIST, CARD_FETCH } from '../../../utils/constant.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import PageContainer from '../../Reusable/PageContainer'
-import Button from '../../Reusable/Button'
-import { cardService } from '../cards/card.service'
+import PageContainer from '../../../Reusable/PageContainer'
+import Button from '../../../Reusable/Button'
+import { cardService } from './card.service'
 
 const DetailRow = ({ label, value }) => (
   <div className="flex justify-between items-start gap-4 py-2 border-b border-gray-100 last:border-0">

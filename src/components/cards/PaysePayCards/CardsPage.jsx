@@ -4,12 +4,12 @@ import { useSelector } from 'react-redux'
 import { HiCreditCard, HiUserCircle, HiInformationCircle } from 'react-icons/hi2'
 import { PiCreditCardLight } from 'react-icons/pi'
 import { MdBrowserUpdated } from 'react-icons/md'
-import PageContainer from '../../Reusable/PageContainer'
-import Button from '../../Reusable/Button'
-import { formatAmount } from '../../utils/formatAmount'
+import PageContainer from '../../../Reusable/PageContainer'
+import Button from '../../../Reusable/Button'
+import { formatAmount } from '../../../utils/formatAmount'
 import { cardService } from './card.service'
-import { getAuthToken, deviceId } from '../../services/api'
-import { CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '../../utils/constant'
+import { getAuthToken, deviceId } from '../../../services/api'
+import { CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '../../../utils/constant'
 
 const NUM_DATA = 20
 

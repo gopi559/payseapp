@@ -38,6 +38,15 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  const [cardsOpen, setCardsOpen] = useState(false)
+
+  useEffect(() => {
+    const path = location.pathname
+    if (path.startsWith('/customer/cards') || path.startsWith('/customer/other-cards')) {
+      setCardsOpen(true)
+    }
+  }, [location.pathname])
+
   const menuItems = [
     { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
     { icon: <FaHistory />, label: 'History', route: '/customer/history', isComponent: true },
@@ -46,11 +55,11 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     { icon: <BsQrCodeScan />, label: 'Scan QR', route: '/customer/scan', isComponent: true },
     { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
     { icon: <IoCashOutline />, label: 'Cash Out', route: '/customer/cash-out', isComponent: true },
-    { icon: <FaCreditCard />, label: 'Cards', route: '/customer/cards', isComponent: true },
     { icon: <CgProfile />, label: 'Profile', route: '/customer/profile', isComponent: true },
   ]
 
-  const SidebarContent = () => (
+  // Inline JSX (not a nested component) so <nav> is never remounted — scroll position is preserved on route change
+  const sidebarContentEl = (
     <div className="flex flex-col h-full bg-white">
       <div
         className={`px-6 py-8 border-b border-gray-100 bg-gradient-to-b from-brand-surfaceMuted to-white ${
@@ -118,6 +127,68 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
             </button>
           )
         })}
+
+        {/* Cards parent with Paysepe Card & Other Card */}
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => {
+              if (isCollapsed) {
+                navigate('/customer/cards')
+                if (isMobile) onClose()
+              } else {
+                setCardsOpen((prev) => !prev)
+              }
+            }}
+            className={`w-full flex items-center gap-3 px-4 h-12 min-h-[48px] rounded-xl text-left transition-all duration-150 ${
+              location.pathname.startsWith('/customer/cards') || location.pathname.startsWith('/customer/other-cards')
+                ? 'bg-brand-surfaceLight text-brand-primary font-semibold shadow-sm relative before:absolute before:inset-y-2 before:-left-1 before:w-1.5 before:rounded-r-md before:bg-brand-primary'
+                : 'text-brand-dark hover:bg-brand-surfaceMuted hover:shadow-sm'
+            } ${isCollapsed ? 'justify-center px-2' : ''}`}
+          >
+            <span className="flex-none text-xl flex items-center justify-center">
+              <FaCreditCard />
+            </span>
+            {!isCollapsed && (
+              <>
+                <span className="flex-1 truncate text-sm font-medium">Cards</span>
+                <span className={`text-gray-500 transition-transform ${cardsOpen ? 'rotate-180' : ''}`}>▼</span>
+              </>
+            )}
+          </button>
+          {cardsOpen && !isCollapsed && (
+            <div className="pl-4 space-y-1 border-l-2 border-gray-200 ml-4">
+              <button
+                type="button"
+                onClick={() => {
+                  navigate('/customer/cards')
+                  if (isMobile) onClose()
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-sm ${
+                  location.pathname === '/customer/cards' || location.pathname.startsWith('/customer/cards/') || location.pathname === '/customer/card-request'
+                    ? 'bg-brand-surfaceLight text-brand-primary font-medium'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Paysepe Card
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  navigate('/customer/other-cards')
+                  if (isMobile) onClose()
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-sm ${
+                  location.pathname.startsWith('/customer/other-cards')
+                    ? 'bg-brand-surfaceLight text-brand-primary font-medium'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Other Card
+              </button>
+            </div>
+          )}
+        </div>
       </nav>
 
       <div
@@ -143,49 +214,30 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 
   if (isMobile) {
     return (
-      <>
-        {isOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={onClose}
-            onKeyDown={(e) => e.key === 'Escape' && onClose()}
-            role="button"
-            tabIndex={0}
-            aria-label="Close sidebar to view content"
-          />
-        )}
-
-        {/* Always left-anchored overlay; close via X button or click outside to see page content */}
-        <div
-          className={`fixed top-0 bottom-0 left-0 right-auto h-full w-72 pt-1 px-1 pb-1 z-50 transition-transform duration-300 ease-out ${
-            isOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-          style={{ willChange: 'transform' }}
-        >
-          <div className="flex flex-col h-full w-full bg-white backdrop-blur-md shadow-[0_4px_25px_rgba(0,0,0,0.08)] rounded-2xl overflow-hidden border border-gray-200">
-            <div className="flex items-center justify-end shrink-0 pr-2 pt-2 pb-1">
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
-                aria-label="Close sidebar to view content"
-              >
-                <MdClose size={22} />
-              </button>
-            </div>
-            <div className="flex-1 min-h-0 overflow-hidden flex flex-col -mt-1">
-              <SidebarContent />
-            </div>
+      <div className="h-full w-full pt-1 px-1 pb-1">
+        <div className="flex flex-col h-full w-full bg-white backdrop-blur-md shadow-[0_4px_25px_rgba(0,0,0,0.08)] rounded-2xl overflow-hidden border border-gray-200">
+          <div className="flex items-center justify-end shrink-0 pr-2 pt-2 pb-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors"
+              aria-label="Close sidebar to view content"
+            >
+              <MdClose size={22} />
+            </button>
+          </div>
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col -mt-1">
+            {sidebarContentEl}
           </div>
         </div>
-      </>
+      </div>
     )
   }
 
   return (
     <div className={`h-screen p-1 ${isCollapsed ? 'w-20' : 'w-72'} transition-all duration-300`}>
       <div className="flex flex-col h-full w-full bg-white backdrop-blur-md shadow-[0_4px_25px_rgba(0,0,0,0.08)] rounded-3xl overflow-hidden border border-gray-200">
-        <SidebarContent />
+        {sidebarContentEl}
       </div>
     </div>
   )
