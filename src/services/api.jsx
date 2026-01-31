@@ -1,7 +1,10 @@
 import Store from '../Redux/store.jsx'
 import { getCachedDeviceLocation } from '../utils/deviceLocation.jsx'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://backend.api-innovitegra.in'
+// In dev use '' so /webcust paths hit same origin and Vite proxy avoids CORS
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? '' : 'https://backend.api-innovitegra.in')
 
 const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url)
 const toUrl = (endpoint) => (isAbsoluteUrl(endpoint) ? endpoint : `${API_BASE_URL}${endpoint}`)
@@ -66,23 +69,11 @@ export const getAuthToken = () => {
 
 const buildHeaders = ({ extraHeaders } = {}) => {
   const token = getAuthToken()
-  //const location = getCachedDeviceLocation()
 
   const headers = {
     'Content-Type': 'application/json',
-    // 'DeviceInfo': deviceId,
-    // 'x-app-channel': 'WEB',
-    // 'x-app-name': import.meta.env.VITE_APP_NAME || 'MobilWebApp',
-    // 'x-device-info': deviceInfo,
+    DeviceID: deviceId,
   }
-
-  // if (location) {
-  //   headers['x-device-location-status'] = 'AVAILABLE'
-  //   headers['x-device-lat'] = String(location.lat)
-  //   headers['x-device-lng'] = String(location.lng)
-  // } else {
-  //   headers['x-device-location-status'] = 'UNAVAILABLE'
-  // }
 
   if (token) headers.Authorization = `Bearer ${token}`
 

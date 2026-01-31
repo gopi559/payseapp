@@ -9,4 +9,13 @@ export default defineConfig({
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-redux', '@reduxjs/toolkit'],
   },
+  server: {
+    proxy: {
+      '/webcust': {
+        target: 'https://backend.api-innovitegra.in',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 })

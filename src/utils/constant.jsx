@@ -1,4 +1,7 @@
-const MAIN_API_URL = import.meta.env.VITE_API_URL || 'https://backend.api-innovitegra.in/webcust'
+// In dev use /webcust so Vite proxy avoids CORS; prod or explicit env use full URL
+const MAIN_API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV ? '/webcust' : 'https://backend.api-innovitegra.in/webcust')
 
 
 export const CHECK_MOBILE  = MAIN_API_URL + "/login/check-mobile";

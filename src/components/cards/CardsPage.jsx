@@ -8,7 +8,7 @@ import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import { formatAmount } from '../../utils/formatAmount'
 import { cardService } from './card.service'
-import { callApi } from '../../services/api'
+import { getAuthToken, deviceId } from '../../services/api'
 import { CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '../../utils/constant'
 
 const NUM_DATA = 20
@@ -199,7 +199,16 @@ const CardsPage = () => {
     const fetchActions = async () => {
       setLoadingActions(true)
       try {
-        const res = await callApi(CUSTOMER_GET_ACTIONS_CARD, {})
+        const response = await fetch(CUSTOMER_GET_ACTIONS_CARD, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getAuthToken()}`,
+            DeviceID: deviceId,
+          },
+          body: JSON.stringify({}),
+        })
+        const res = await response.json().catch(() => null)
         const ok = res?.success === true || res?.code === 1
         const list = Array.isArray(res?.data) ? res.data : []
         if (!cancelled && ok && list.length) {
@@ -249,10 +258,22 @@ const CardsPage = () => {
     setIsUpdatingStatus(true)
     setError('')
     try {
-      const res = await callApi(UPDATE_CARD_STATUS, {
-        card_id: cardId,
-        card_status: selectedCardAction,
+      const response = await fetch(UPDATE_CARD_STATUS, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+          DeviceID: deviceId,
+        },
+        body: JSON.stringify({
+          card_id: cardId,
+          card_status: selectedCardAction,
+        }),
       })
+      const res = await response.json().catch(() => null)
+      if (!response.ok) {
+        throw new Error(res?.message || 'Update failed')
+      }
       if (res?.success !== true && res?.code !== 1) {
         throw new Error(res?.message || 'Update failed')
       }
