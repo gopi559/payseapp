@@ -11,6 +11,7 @@ import { getAuthToken, deviceId } from "../../../services/api";
 import { BENIFICIARY_LIST } from "../../../utils/constant";
 
 const DEFAULT_PAGE_SIZE = 10;
+const FETCH_PAGE_SIZE = 500; // Fetch all in one call; paginate in UI to avoid 404 on page 2
 
 const CardBeneficiaryList = () => {
   const navigate = useNavigate();
@@ -21,11 +22,10 @@ const CardBeneficiaryList = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-  const [totalCount, setTotalCount] = useState(0);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
 
-  const fetchData = async (page = 1, noOfData = DEFAULT_PAGE_SIZE) => {
+  const fetchData = async () => {
     setLoading(true);
     try {
       const response = await fetch(BENIFICIARY_LIST, {
@@ -33,14 +33,14 @@ const CardBeneficiaryList = () => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getAuthToken()}`,
-              deviceInfo: JSON.stringify({
+         deviceInfo: JSON.stringify({
           device_type: "WEB",
           device_id: deviceId,
         }),
         },
         body: JSON.stringify({
-          page,
-          no_of_data: noOfData,
+          page: 1,
+          no_of_data: FETCH_PAGE_SIZE,
           user_id: userId != null ? Number(userId) : undefined,
           is_temp: 0,
         }),
@@ -54,17 +54,6 @@ const CardBeneficiaryList = () => {
       }
       const list = Array.isArray(result?.data) ? result.data : [];
       setData(list);
-      const apiTotal =
-        result?.pagination?.totalRecords ??
-        result?.totalRecords ??
-        result?.total;
-      const total =
-        typeof apiTotal === "number"
-          ? apiTotal
-          : list.length >= noOfData
-            ? page * noOfData + 1
-            : (page - 1) * noOfData + list.length;
-      setTotalCount(total);
     } catch (err) {
       console.error(err);
       toast.error(err?.message || "Failed to load card beneficiaries");
@@ -75,8 +64,8 @@ const CardBeneficiaryList = () => {
   };
 
   useEffect(() => {
-    fetchData(currentPage, pageSize);
-  }, [currentPage, pageSize]);
+    fetchData();
+  }, []);
 
   const handlePageChange = (page, newPageSize) => {
     setCurrentPage(page);
@@ -156,7 +145,7 @@ const CardBeneficiaryList = () => {
             headers={headers}
             loading={loading}
             searchPlaceholder="Search by card, name, nickname..."
-            totalItems={totalCount}
+            totalItems={data.length}
             currentPage={currentPage}
             pageSize={pageSize}
             onPageChange={handlePageChange}

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react'
-
+import { useLocation } from 'react-router-dom'
 import Input from '../Reusable/Input'
 import Button from '../Reusable/Button'
 import OtpInput from '../Reusable/OtpInput'
 import useLogin from '../Hooks/useLogin'
 
 const LoginForm = () => {
+  const location = useLocation()
   const { sendOtp, verifyOtp, errorMessage, showModal, setShowModal } = useLogin()
-  const [mobileNumber, setMobileNumber] = useState('')
+  const mobileFromState = location.state?.mobile ?? ''
+  const [mobileNumber, setMobileNumber] = useState(mobileFromState)
   const [otp, setOtp] = useState('')
   const [isFlipped, setIsFlipped] = useState(false)
   const [error, setError] = useState('')

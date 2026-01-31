@@ -16,7 +16,6 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       proxy: {
-        // Requests to localhost:5173/login/* are forwarded to backend – avoids CORS
         '/login': {
           target: apiBase,
           changeOrigin: true,
@@ -25,9 +24,6 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('error', (err, req, res) => {
               console.error('[proxy /login error]', err.message)
-            })
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              console.log('[proxy]', req.method, req.url, '->', apiBase + req.url)
             })
           },
         },
@@ -39,11 +35,6 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('error', (err, req, res) => {
               console.error('[proxy error]', err.message)
-            })
-            proxy.on('proxyRes', (proxyRes, req, res) => {
-              if (proxyRes.statusCode >= 400) {
-                console.warn('[proxy]', req.method, req.url, '->', proxyRes.statusCode)
-              }
             })
           },
         },

@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import LoginPage from '../Login/LoginPage.jsx'
 import ProtectedRoute from './ProtectRoute'
 import { customerRoutes } from './index'
-// Error component
+
 const Error = () => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="text-center">

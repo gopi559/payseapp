@@ -6,7 +6,7 @@ export const VERIFY_OTP = `${MAIN_API_URL}/webcust/login/verify-otp`
 export const LOGOUT_API_URL = `${MAIN_API_URL}/webcust/auth/logout`
 
 export const CARD_LIST = `${MAIN_API_URL}/webcust/card/list`
-export const CARD_FETCH = `${MAIN_API_URL}webcust/card/fetch`
+export const CARD_FETCH = `${MAIN_API_URL}/webcust/card/fetch`
 
 export const CUSTOMER_GET_ACTIONS_CARD =`${MAIN_API_URL}/webcust/card/status/list`;
 

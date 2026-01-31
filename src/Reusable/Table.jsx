@@ -30,7 +30,6 @@ const DataTable = ({
   const [quickJumpPage, setQuickJumpPage] = useState('')
 
   const effectivePageSize = propPageSize !== undefined && propPageSize !== null ? propPageSize : pageSize
-  const totalPages = Math.max(1, Math.ceil(totalItems / effectivePageSize))
 
   const filteredData = useMemo(() => {
     if (!Array.isArray(data)) return []
@@ -43,6 +42,13 @@ const DataTable = ({
       })
     )
   }, [data, searchQuery, headers])
+
+  const totalForPagination = totalItems > 0 ? totalItems : filteredData.length
+  const totalPages = Math.max(1, Math.ceil(totalForPagination / effectivePageSize))
+  const displayData = useMemo(
+    () => filteredData.slice((currentPage - 1) * effectivePageSize, currentPage * effectivePageSize),
+    [filteredData, currentPage, effectivePageSize]
+  )
 
   const handlePageChange = (page, newPageSize) => {
     const nextPage = Math.max(1, Math.min(page, totalPages))
@@ -67,7 +73,7 @@ const DataTable = ({
     setQuickJumpPage('')
   }
 
-  const displayTotal = totalItems > 0 ? totalItems : (filteredData?.length ?? 0)
+  const displayTotal = totalForPagination > 0 ? totalForPagination : (filteredData?.length ?? 0)
   const totalLabel = totalRowsLabel.replace('{count}', String(displayTotal))
 
   return (
@@ -105,7 +111,7 @@ const DataTable = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData.map((row, idx) => (
+                  {displayData.map((row, idx) => (
                     <tr key={row.id ?? idx} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
                       {headers.map((h) => (
                         <td key={h.key} className="p-3 text-gray-800">
