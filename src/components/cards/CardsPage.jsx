@@ -347,14 +347,22 @@ const CardsPage = () => {
                     Card information
                   </h3>
                 </div>
-                <div className="relative flex items-center max-w-[200px] sm:max-w-xs">
-                  <input
-                    type="search"
-                    placeholder="Search card"
-                    value={cardSearchQuery}
-                    onChange={handleCardSearchChange}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
-                  />
+                <div className="flex items-center gap-2">
+                  <div className="relative flex items-center max-w-[200px] sm:max-w-xs">
+                    <input
+                      type="search"
+                      placeholder="Search card"
+                      value={cardSearchQuery}
+                      onChange={handleCardSearchChange}
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                    />
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => navigate("/customer/card-request")}
+                  >
+                    Card Request
+                  </Button>
                 </div>
               </div>
               <div className="flex-1 min-h-0 overflow-hidden rounded-lg bg-white shadow-sm flex flex-col">

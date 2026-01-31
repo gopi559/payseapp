@@ -19,6 +19,7 @@ import HistoryPage from '../components/history/HistoryPage'
 import TransactionDetails from '../components/history/TransactionDetails'
 import CardsPage from '../components/cards/CardsPage'
 import CardDetails from '../components/cards/CardDetails'
+import CardRequest from '../components/cards/CardRequest'
 import ProfilePage from '../components/profile/ProfilePage'
 import ProfileDetails from '../components/profile/ProfileDetails'
 
@@ -155,6 +156,14 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <CardsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'card-request',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <CardRequest />
       </Suspense>
     ),
   },
