@@ -32,12 +32,16 @@ export const API_CHATBOT_CHAT = `${CHATBOT_BASE_URL}/chatbot/chat`
 export const API_CHATBOT_RETRIEVE_PREVIOUS = `https://aml.innovitegra.in/chatbot/retrieve-previous-chat`
 
 
-//https://backend.api-innovitegra.in/webcust/transaction_web/customer/validate_sendmoney_ben
 
 export const VALIDATE_SENDMONEY_BEN = `${MAIN_API_URL}/transaction_web/customer/validate_sendmoney_ben`;
 export const SEND_MONEY = `${MAIN_API_URL}/transaction_web/customer/send_money`;
-///transaction_web/customer/send_money
 export const GENERATE_TRANSACTION_OTP = `${MAIN_API_URL}/transaction_web/customer/generate_otp`;
 export const VERIFY_TRANSACTION_OTP = `${MAIN_API_URL}/transaction_web/customer/verify_otp`;
+
+
+export const REQUEST_MONEY =`${MAIN_API_URL}/transaction_web/customer/txn_reqmoney`;
+
+export const PAY_REQUEST_MONEY =`${MAIN_API_URL}/transaction_web/customer/txn_pay_reqmoney`;
+export const DECLINE_REQUEST_MONEY =`${MAIN_API_URL}/transaction_web/customer/txn_decline_reqmoney`;
 
 

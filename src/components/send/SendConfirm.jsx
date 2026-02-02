@@ -28,28 +28,21 @@ const SendConfirm = () => {
     setSendData(JSON.parse(data))
   }, [navigate])
 
-  /** Send button: creates pending transaction, then sends OTP to sender mobile. */
-  const handleSend = async () => {
-    if (!sendData?.beneficiary) return
+  /** Send OTP button: only sends OTP to sender mobile. No transfer yet. */
+  const handleSendOtp = async () => {
+    if (!senderMobile) {
+      setError('Your mobile number is not available. Cannot send OTP.')
+      return
+    }
     setLoading(true)
     setError('')
     setOtpError('')
     try {
-      await sendService.sendMoneyTransaction(
-        sendData.beneficiary.user_id,
-        parseFloat(sendData.amount),
-        sendData.remarks || ''
-      )
-      if (!senderMobile) {
-        setError('Your mobile number is not available. Cannot send OTP.')
-        setLoading(false)
-        return
-      }
       await sendService.generateTransactionOtp('MOBILE', senderMobile)
       setOtpSent(true)
       setOtp('')
     } catch (err) {
-      const msg = err?.message || 'Something went wrong. Please try again.'
+      const msg = err?.message || 'Failed to send OTP. Please try again.'
       setError(msg)
       toast.error(msg)
     } finally {
@@ -57,19 +50,25 @@ const SendConfirm = () => {
     }
   }
 
-  /** Confirm button: verify OTP. If correct, backend completes transaction and transfers money. */
+  /** Confirm button: first verify OTP, then call send_money transfer API. */
   const handleConfirmOtp = async () => {
     if (!otp || otp.length !== 6 || !senderMobile) {
       setOtpError('Please enter the 6-digit OTP')
       return
     }
+    if (!sendData?.beneficiary) return
     setLoading(true)
     setOtpError('')
     setError('')
     try {
-      const result = await sendService.verifyTransactionOtp('MOBILE', senderMobile, otp)
+      await sendService.verifyTransactionOtp('MOBILE', senderMobile, otp)
+      await sendService.sendMoneyTransaction(
+        sendData.beneficiary.user_id,
+        parseFloat(sendData.amount),
+        sendData.remarks || ''
+      )
       sessionStorage.removeItem('sendData')
-      toast.success(result?.message || 'Payment successful')
+      toast.success('Payment successful')
       setTimeout(() => {
         navigate('/customer/send/success')
       }, 800)
@@ -111,11 +110,11 @@ const SendConfirm = () => {
               total={amount}
             />
             <p className="text-sm text-gray-500 mt-2 mb-4">
-              Send will create a pending transaction. You will receive an OTP to confirm and complete the transfer.
+              Click Send OTP to receive a code on your mobile. After verifying OTP, the transfer will be completed.
             </p>
             <div className="mt-6 space-y-3">
-              <Button onClick={handleSend} fullWidth disabled={loading}>
-                {loading ? 'Creating...' : 'Send'}
+              <Button onClick={handleSendOtp} fullWidth disabled={loading}>
+                {loading ? 'Sending OTP...' : 'Send OTP'}
               </Button>
               <Button
                 onClick={() => navigate('/customer/send')}
@@ -131,7 +130,7 @@ const SendConfirm = () => {
           <>
             <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 mb-4">
               <p className="text-sm text-gray-600">
-                OTP sent to <span className="font-medium">{senderMobile}</span>. Enter it below to complete the transfer.
+                OTP sent to <span className="font-medium">{senderMobile}</span>. Enter it below, then confirm to complete the transfer.
               </p>
             </div>
             <OtpInput
