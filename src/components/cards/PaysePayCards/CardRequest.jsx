@@ -115,7 +115,10 @@ const CardRequest = () => {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${getAuthToken()}`,
-          DeviceID: deviceId,
+            deviceInfo: JSON.stringify({
+          device_type: "WEB",
+          device_id: deviceId,
+        }),
         },
         body: JSON.stringify(body),
       });
