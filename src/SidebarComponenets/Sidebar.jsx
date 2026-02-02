@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux'
 import { IoHome, IoCashOutline } from 'react-icons/io5'
 import { MdOutlineArrowOutward } from 'react-icons/md'
 import { GoArrowDownLeft } from 'react-icons/go'
-import { FaHistory, FaCreditCard } from 'react-icons/fa'
-import { BsQrCodeScan, BsCashCoin } from 'react-icons/bs'
+import { FaHistory, FaCreditCard, FaListAlt } from 'react-icons/fa'
+import { BsCashCoin } from 'react-icons/bs'
 import { CgProfile } from 'react-icons/cg'
 import { CiLogout } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
@@ -50,10 +50,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   const menuItems = [
     { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
     { icon: <FaHistory />, label: 'History', route: '/customer/history', isComponent: true },
+    { icon: <FaListAlt />, label: 'Transactions', route: '/customer/transactions', isComponent: true },
     { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
     { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
     { icon: <FaCreditCard />, label: 'Wallet to Card', route: '/customer/wallet-to-card', isComponent: true },
-    { icon: <BsQrCodeScan />, label: 'Scan QR', route: '/customer/scan', isComponent: true },
     { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
     { icon: <IoCashOutline />, label: 'Cash Out', route: '/customer/cash-out', isComponent: true },
     { icon: <CgProfile />, label: 'Profile', route: '/customer/profile', isComponent: true },

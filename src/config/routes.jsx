@@ -6,8 +6,6 @@ export const ROUTES = {
   SEND_SUCCESS: '/customer/send/success',
   RECEIVE: '/customer/receive',
   WALLET_TO_CARD: '/customer/wallet-to-card',
-  SCAN: '/customer/scan',
-  SCAN_CONFIRM: '/customer/scan/confirm',
   CASH_IN: '/customer/cash-in',
   CASH_IN_CONFIRM: '/customer/cash-in/confirm',
   CASH_IN_SUCCESS: '/customer/cash-in/success',

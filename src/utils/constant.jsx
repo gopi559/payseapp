@@ -45,7 +45,9 @@ export const PAY_REQUEST_MONEY =`${MAIN_API_URL}/transaction_web/customer/txn_pa
 export const DECLINE_REQUEST_MONEY =`${MAIN_API_URL}/transaction_web/customer/txn_decline_reqmoney`;
 
 
-export const CARD_NUMBER_VERIFY = `${MAIN_API_URL}/webcust/external_card/wallet_to_card_cnp`;
-export const WALLET_TO_CARD = `${MAIN_API_URL}/webcust/external_card/wallet_to_card_cnp`;
+export const CARD_NUMBER_VERIFY = `${MAIN_API_URL}/external_card/cardname_inquiry`;
+export const WALLET_TO_CARD = `${MAIN_API_URL}/external_card/wallet_to_card_cnp`;
 
 
+export const TRANSACTION_LIST = `${MAIN_API_URL}/transaction_web/customer/txn_list`;
+export const FETCH_BY_RRN= `${MAIN_API_URL}/transaction_web/customer/fetch_rrn`;

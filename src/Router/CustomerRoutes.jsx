@@ -8,8 +8,6 @@ import SendConfirm from '../components/send/SendConfirm.jsx'
 import SendSuccess from '../components/send/SendSuccess.jsx'
 import ReceivePage from '../components/receive/ReceivePage'
 import WalletToCardPage from '../components/wallet-to-card/WalletToCardPage'
-import ScanPage from '../components/scan/ScanPage'
-import ScanConfirm from '../components/scan/ScanConfirm'
 import CashInPage from '../components/cash-in/CashInPage'
 import CashInConfirm from '../components/cash-in/CashInConfirm'
 import CashInSuccess from '../components/cash-in/CashInSuccess'
@@ -26,6 +24,7 @@ import CardBeneficiaryAdd from '../components/cards/OtherBankCards/CardBeneficia
 import CardBeneficiaryEdit from '../components/cards/OtherBankCards/CardBeneficiaryEdit'
 import CardBeneficiaryView from '../components/cards/OtherBankCards/CardBeneficiaryView'
 import CardBeneficiaryDelete from '../components/cards/OtherBankCards/CardBeneficiaryDelete'
+import TransactionList from '../components/transactions/TransactionList'
 import ProfilePage from '../components/profile/ProfilePage'
 import ProfileDetails from '../components/profile/ProfileDetails'
 
@@ -82,22 +81,6 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <WalletToCardPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'scan',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <ScanPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'scan/confirm',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <ScanConfirm />
       </Suspense>
     ),
   },
@@ -162,6 +145,14 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <TransactionDetails />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'transactions',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <TransactionList />
       </Suspense>
     ),
   },
