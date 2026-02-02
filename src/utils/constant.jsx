@@ -16,7 +16,6 @@ export const CUSTOMER_BALANCE = `${MAIN_API_URL}/webcust/account/cust_bal`;
 
 
 export const CARD_REQUEST_TYPE_LIST = `${MAIN_API_URL}/webcust/card/card_request_type_list`;
-
 export const CARD_REQUEST = `${MAIN_API_URL}/webcust/card/card_req`;
 
 

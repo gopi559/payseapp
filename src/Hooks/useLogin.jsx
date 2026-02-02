@@ -27,7 +27,6 @@ const useLogin = () => {
     return true;
   };
 
-  /** Step 1: Check if mobile exists – POST {base_url}/login/check-mobile body: { mobile } */
   const checkMobile = async (mobile) => {
     if (!validateMobile(mobile)) return { success: false, error: "Invalid mobile" };
     try {
@@ -42,7 +41,6 @@ const useLogin = () => {
     }
   };
 
-  /** Step 2: Send OTP – check-mobile then generate-otp. POST {base_url}/login/generate-otp body: { mobile } */
   const sendOtp = async (mobile) => {
     if (!validateMobile(mobile)) return { success: false, error: "Invalid mobile" };
     try {
@@ -61,7 +59,6 @@ const useLogin = () => {
     }
   };
 
-  /** Step 3: Verify OTP and login – dispatch AuthToken + auth slice, then navigate */
   const verifyOtp = async (mobile, otp) => {
     if (!mobile || !otp || String(otp).length !== 6) {
       setErrors({ otp: "Please enter a valid 6-digit OTP" });
