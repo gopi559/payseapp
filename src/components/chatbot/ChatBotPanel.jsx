@@ -1,61 +1,166 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { HiXMark, HiChevronDown, HiChevronUp } from 'react-icons/hi2'
+import { HiXMark } from 'react-icons/hi2'
 import Button from '../../Reusable/Button'
 import { sendChat, retrievePreviousChat } from './chatbot.service'
 
 const GREETING = { role: 'assistant', text: 'Hello! How can I help you today?' }
 
+/** Format chat timestamp as dd/mm/yyyy, hh:mm am/pm */
+const formatChatTime = (dateStr) => {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  if (Number.isNaN(d.getTime())) return ''
+  const day = String(d.getDate()).padStart(2, '0')
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const year = d.getFullYear()
+  const time = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })
+  return `${day}/${month}/${year}, ${time}`
+}
+
 const normalizeHistoryMessage = (m) => ({
   role: m.role === 'user' ? 'user' : 'assistant',
   text: m.message || m.text || m.content || '',
+  timestamp: m.created_on || m.timestamp || m.created_at || null,
 })
+
+/** Parse API response: supports chat_sessions (new) or flat data array (legacy). Returns messages sorted by timestamp ascending. */
+const parsePreviousChatResponse = (res) => {
+  const sessions = res?.chat_sessions
+  if (Array.isArray(sessions) && sessions.length > 0) {
+    const withTimestamp = []
+    sessions.forEach((session) => {
+      const list = session?.messages || []
+      list.forEach((msg) => {
+        const text = msg?.message || msg?.text || msg?.content || ''
+        if (!text) return
+        const role = msg?.sender === 'user' ? 'user' : 'assistant'
+        const ts = msg?.created_at || msg?.created_on || msg?.timestamp || null
+        withTimestamp.push({ role, text, timestamp: ts, _sortKey: ts ? new Date(ts).getTime() : 0 })
+      })
+    })
+    withTimestamp.sort((a, b) => a._sortKey - b._sortKey)
+    return withTimestamp.map(({ role, text, timestamp }) => ({ role, text, timestamp }))
+  }
+  const raw = Array.isArray(res?.data) ? res.data : []
+  return raw.map(normalizeHistoryMessage).filter((m) => m.text)
+}
+
+const SCROLL_TOP_THRESHOLD = 80
+const LOAD_MORE_COOLDOWN_MS = 800
+const PREVIOUS_PAGE_SIZE = 15
 
 const ChatBotPanel = ({ isOpen, onClose }) => {
   const user = useSelector((state) => state.auth?.user)
   const custId = user?.reg_info?.user_id ?? user?.reg_info?.id ?? user?.user_id ?? user?.id ?? ''
-  const [previousMessages, setPreviousMessages] = useState([])
-  const [showPreviousExpanded, setShowPreviousExpanded] = useState(false)
+  const [allFetchedPrevious, setAllFetchedPrevious] = useState([])
+  const [displayedPreviousCount, setDisplayedPreviousCount] = useState(0)
   const [sessionMessages, setSessionMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [loadingHistory, setLoadingHistory] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const [isNewChat, setIsNewChat] = useState(true)
   const messagesEndRef = useRef(null)
   const panelRef = useRef(null)
+  const scrollContainerRef = useRef(null)
+  const loadMoreCooldownRef = useRef(false)
+  const hasFetchedRef = useRef(false)
+  const scrollRestoreRef = useRef(null)
+
+  const previousMessages = allFetchedPrevious.slice(0, displayedPreviousCount)
+  const hasMorePrevious = displayedPreviousCount < allFetchedPrevious.length
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
+  /** Fetch full previous chat from API (once). Then we reveal in chunks. */
+  const fetchPreviousMessages = useCallback(() => {
+    if (!custId || custId === '0' || custId === '') return
+    setLoadingMore(true)
+    setError('')
+    retrievePreviousChat(custId)
+      .then((res) => {
+        const history = parsePreviousChatResponse(res)
+        setAllFetchedPrevious(history)
+        setDisplayedPreviousCount(Math.min(PREVIOUS_PAGE_SIZE, history.length))
+        if (history.length > 0) {
+          setIsNewChat(false)
+        }
+      })
+      .catch(() => {
+        setAllFetchedPrevious([])
+        setDisplayedPreviousCount(0)
+      })
+      .finally(() => setLoadingMore(false))
+  }, [custId])
+
+  /** On open: show greeting and trigger API for previous messages. If any exist, show in order; if none, show "No previous messages". */
   useEffect(() => {
     if (isOpen && custId) {
-      setLoadingHistory(true)
+      setSessionMessages([{ ...GREETING, timestamp: new Date().toISOString() }])
+      setAllFetchedPrevious([])
+      setDisplayedPreviousCount(0)
       setError('')
-      setShowPreviousExpanded(false)
-      retrievePreviousChat(custId)
-        .then((res) => {
-          const raw = Array.isArray(res?.data) ? res.data : []
-          const history = raw.map(normalizeHistoryMessage).filter((m) => m.text)
-          setPreviousMessages(history)
-          if (history.length > 0) {
-            setIsNewChat(false)
-          }
-          setSessionMessages([GREETING])
-        })
-        .catch(() => {
-          setPreviousMessages([])
-          setSessionMessages([GREETING])
-          setIsNewChat(true)
-        })
-        .finally(() => setLoadingHistory(false))
+      hasFetchedRef.current = true
+      fetchPreviousMessages()
     }
-  }, [isOpen, custId])
+  }, [isOpen, custId, fetchPreviousMessages])
 
+  /** Scroll to top: first time fetch API; next times reveal next chunk (no API). */
+  const loadMorePrevious = useCallback(() => {
+    if (!hasFetchedRef.current) {
+      hasFetchedRef.current = true
+      loadMoreCooldownRef.current = true
+      fetchPreviousMessages()
+      setTimeout(() => {
+        loadMoreCooldownRef.current = false
+      }, LOAD_MORE_COOLDOWN_MS)
+      return
+    }
+    if (!hasMorePrevious || loadingMore) return
+    const el = scrollContainerRef.current
+    if (el) {
+      scrollRestoreRef.current = { scrollHeight: el.scrollHeight, scrollTop: el.scrollTop }
+    }
+    setDisplayedPreviousCount((prev) => Math.min(prev + PREVIOUS_PAGE_SIZE, allFetchedPrevious.length))
+    loadMoreCooldownRef.current = true
+    setTimeout(() => {
+      loadMoreCooldownRef.current = false
+    }, LOAD_MORE_COOLDOWN_MS)
+  }, [hasMorePrevious, loadingMore, allFetchedPrevious.length, fetchPreviousMessages])
+
+  /** Restore scroll position after prepending more messages at top. */
   useEffect(() => {
-    scrollToBottom()
-  }, [previousMessages, sessionMessages, showPreviousExpanded])
+    const saved = scrollRestoreRef.current
+    if (!saved || !scrollContainerRef.current) return
+    const el = scrollContainerRef.current
+    const raf = requestAnimationFrame(() => {
+      const newHeight = el.scrollHeight
+      el.scrollTop = saved.scrollTop + (newHeight - saved.scrollHeight)
+    })
+    scrollRestoreRef.current = null
+    return () => cancelAnimationFrame(raf)
+  }, [displayedPreviousCount])
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current
+    if (!el || !custId || loadMoreCooldownRef.current) return
+    if (el.scrollTop <= SCROLL_TOP_THRESHOLD) {
+      loadMorePrevious()
+    }
+  }
+
+  /** Keep view at bottom when messages load so user stays on greeting; they can scroll up to see history. */
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
+      })
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [previousMessages, sessionMessages])
 
   const handleSend = async (e) => {
     e.preventDefault()
@@ -63,7 +168,8 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     if (!text || loading || !custId) return
     setInput('')
     setError('')
-    setSessionMessages((prev) => [...prev, { role: 'user', text }])
+    const now = new Date().toISOString()
+    setSessionMessages((prev) => [...prev, { role: 'user', text, timestamp: now }])
     setLoading(true)
     try {
       const res = await sendChat({
@@ -73,10 +179,10 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
       })
       setIsNewChat(false)
       const reply = res?.data?.message ?? res?.message ?? res?.response ?? 'No response.'
-      setSessionMessages((prev) => [...prev, { role: 'assistant', text: reply }])
+      setSessionMessages((prev) => [...prev, { role: 'assistant', text: reply, timestamp: new Date().toISOString() }])
     } catch (err) {
       setError(err?.message || 'Something went wrong.')
-      setSessionMessages((prev) => [...prev, { role: 'assistant', text: 'Sorry, I could not process that. Please try again.' }])
+      setSessionMessages((prev) => [...prev, { role: 'assistant', text: 'Sorry, I could not process that. Please try again.', timestamp: new Date().toISOString() }])
     } finally {
       setLoading(false)
     }
@@ -86,7 +192,7 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
   const renderMessage = (m, i) => (
     <div
       key={i}
-      className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+      className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}
     >
       <div
         className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
@@ -97,6 +203,11 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
       >
         {m.text}
       </div>
+      {formatChatTime(m.timestamp) && (
+        <span className="mt-0.5 text-[10px] text-gray-400">
+          {formatChatTime(m.timestamp)}
+        </span>
+      )}
     </div>
   )
 
@@ -119,37 +230,26 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
           <HiXMark className="w-5 h-5" />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto min-h-[200px] p-4 space-y-3">
-        {loadingHistory ? (
-          <p className="text-sm text-gray-500">Loading...</p>
-        ) : (
-          <>
-            {hasPrevious && (
-              <button
-                type="button"
-                onClick={() => setShowPreviousExpanded((v) => !v)}
-                className="w-full flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors"
-              >
-                <span>Previous conversations ({previousMessages.length})</span>
-                {showPreviousExpanded ? (
-                  <HiChevronUp className="w-4 h-4 shrink-0" />
-                ) : (
-                  <HiChevronDown className="w-4 h-4 shrink-0" />
-                )}
-              </button>
-            )}
-            {hasPrevious && showPreviousExpanded && (
-              <div className="space-y-3 pb-2 border-b border-gray-100">
-                {previousMessages.map((m, i) => renderMessage(m, `prev-${i}`))}
-              </div>
-            )}
-            {sessionMessages.map((m, i) => renderMessage(m, `session-${i}`))}
-            {error && (
-              <p className="text-xs text-red-600">{error}</p>
-            )}
-            <div ref={messagesEndRef} />
-          </>
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto min-h-[200px] p-4 space-y-3"
+      >
+        {loadingMore && allFetchedPrevious.length === 0 && (
+          <p className="text-sm text-gray-500 text-center py-2">Loading previous messages...</p>
         )}
+        {hasMorePrevious && !loadingMore && (
+          <p className="text-sm text-gray-500 text-center py-1.5">Scroll up for older messages</p>
+        )}
+        {!loadingMore && !hasPrevious && (
+          <p className="text-sm text-gray-500 text-center py-2">No previous messages</p>
+        )}
+        {previousMessages.map((m, i) => renderMessage(m, `prev-${i}`))}
+        {sessionMessages.map((m, i) => renderMessage(m, `session-${i}`))}
+        {error && (
+          <p className="text-xs text-red-600">{error}</p>
+        )}
+        <div ref={messagesEndRef} />
       </div>
       <form onSubmit={handleSend} className="p-3 border-t border-gray-100 shrink-0">
         <div className="flex gap-2">
