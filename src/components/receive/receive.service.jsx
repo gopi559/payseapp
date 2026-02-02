@@ -47,6 +47,8 @@ const receiveService = {
       amount: Number(amount),
       remarks: String(remarks || '').trim() || undefined,
     }
+  
+  
     const response = await fetch(PAY_REQUEST_MONEY, {
       method: 'POST',
       headers: {
@@ -59,6 +61,7 @@ const receiveService = {
       },
       body: JSON.stringify(body),
     })
+    
     const res = await response.json().catch(() => null)
     if (!response.ok) {
       throw new Error(res?.message || 'Pay request failed')

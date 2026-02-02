@@ -10,7 +10,11 @@ import { sendService } from './send.service'
 
 const SendStart = () => {
   const navigate = useNavigate()
+  const user = useSelector((state) => state.auth?.user)
   const balance = useSelector((state) => state.wallet?.balance ?? 0)
+  const currentUserId = user?.reg_info?.id ?? user?.reg_info?.user_id ?? user?.user_id ?? user?.id
+  const currentUserMobile = (user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? '').toString().trim()
+
   const [mobile, setMobile] = useState('')
   const [beneficiary, setBeneficiary] = useState(null)
   const [amount, setAmount] = useState('')
@@ -28,6 +32,22 @@ const SendStart = () => {
     setValidating(true)
     try {
       const { data } = await sendService.validateBeneficiary(trimmed)
+      const benUserId = data.user_id
+      const benMobile = (data.reg_mobile ?? trimmed).toString().trim()
+      if (benUserId != null && benUserId === currentUserId) {
+        setBeneficiary(null)
+        const msg = 'You cannot send money to yourself. Please enter a different mobile number.'
+        setError(msg)
+        toast.error(msg)
+        return
+      }
+      if (benMobile && currentUserMobile && benMobile === currentUserMobile) {
+        setBeneficiary(null)
+        const msg = 'You cannot send money to yourself. Please enter a different mobile number.'
+        setError(msg)
+        toast.error(msg)
+        return
+      }
       setBeneficiary({
         user_id: data.user_id,
         reg_mobile: data.reg_mobile ?? trimmed,
@@ -52,6 +72,11 @@ const SendStart = () => {
   const handleContinue = () => {
     if (!beneficiary) {
       setError('Please validate beneficiary first')
+      return
+    }
+    if (beneficiary.user_id != null && beneficiary.user_id === currentUserId) {
+      setError('You cannot send money to yourself. Please enter a different mobile number.')
+      toast.error('You cannot send money to yourself.')
       return
     }
     if (!amount || parseFloat(amount) <= 0) {

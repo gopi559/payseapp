@@ -21,6 +21,9 @@ const ReceivePage = () => {
   const [requestLoading, setRequestLoading] = useState(false)
   const [requestError, setRequestError] = useState('')
 
+  const currentUserId = user?.reg_info?.id ?? user?.reg_info?.user_id ?? user?.user_id ?? user?.id
+  const currentUserMobile = (user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? '').toString().trim()
+
   const handleValidateBeneficiary = async () => {
     const trimmed = mobile.trim()
     if (!trimmed) {
@@ -31,6 +34,22 @@ const ReceivePage = () => {
     setValidating(true)
     try {
       const { data } = await sendService.validateBeneficiary(trimmed)
+      const benUserId = data.user_id
+      const benMobile = (data.reg_mobile ?? trimmed).toString().trim()
+      if (benUserId != null && benUserId === currentUserId) {
+        setBeneficiary(null)
+        const msg = 'You cannot request money from yourself. Please enter a different mobile number.'
+        setRequestError(msg)
+        toast.error(msg)
+        return
+      }
+      if (benMobile && currentUserMobile && benMobile === currentUserMobile) {
+        setBeneficiary(null)
+        const msg = 'You cannot request money from yourself. Please enter a different mobile number.'
+        setRequestError(msg)
+        toast.error(msg)
+        return
+      }
       setBeneficiary({
         user_id: data.user_id,
         reg_mobile: data.reg_mobile ?? trimmed,
@@ -57,6 +76,11 @@ const ReceivePage = () => {
     e?.preventDefault?.()
     if (!beneficiary) {
       setRequestError('Please validate beneficiary first')
+      return
+    }
+    if (beneficiary.user_id != null && beneficiary.user_id === currentUserId) {
+      setRequestError('You cannot request money from yourself. Please enter a different mobile number.')
+      toast.error('You cannot request money from yourself.')
       return
     }
     if (!amount || parseFloat(amount) <= 0) {

@@ -52,6 +52,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     { icon: <FaHistory />, label: 'History', route: '/customer/history', isComponent: true },
     { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
     { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
+        { icon: <GoArrowDownLeft />, label: 'Wallet To Card', route: '/customer/receive', isComponent: true },
+
     { icon: <BsQrCodeScan />, label: 'Scan QR', route: '/customer/scan', isComponent: true },
     { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
     { icon: <IoCashOutline />, label: 'Cash Out', route: '/customer/cash-out', isComponent: true },
