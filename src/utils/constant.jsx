@@ -29,3 +29,9 @@ export const BENIFICIARY_DELETE = `${MAIN_API_URL}/webcust/card/beneficiary/remo
 
 
 
+
+// Chatbot: https://aml.innovitegra.in/chatbot/chat (body: cust_id, message, new_chat)
+//          https://aml.innovitegra.in/chatbot/Retreive-Previous-chat (body: cust_id)
+export const CHATBOT_BASE_URL = 'https://aml.innovitegra.in'
+export const API_CHATBOT_CHAT = `${CHATBOT_BASE_URL}/chatbot/chat`
+export const API_CHATBOT_RETRIEVE_PREVIOUS = `${CHATBOT_BASE_URL}/chatbot/Retreive-Previous-chat`

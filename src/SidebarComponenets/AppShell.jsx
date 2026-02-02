@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import Header from './Header'
 import Sidebar from './Sidebar'
+import { ChatBotButton } from '../components/chatbot'
 import { fetchCustomerBalance } from '../Login/auth.service.jsx'
 import { clearUserDataAuth } from '../Redux/AuthToken'
 import { logout } from '../Redux/store'
@@ -138,6 +139,7 @@ const AppShell = ({ children }) => {
           {children}
         </main>
       </div>
+      <ChatBotButton />
     </div>
   )
 }
