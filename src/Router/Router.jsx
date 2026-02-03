@@ -15,14 +15,10 @@ const Error = () => (
 const appRouter = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/login" replace />,
-    errorElement: <Error />,
-  },
-  {
-    path: '/login',
     element: <LoginPage />,
     errorElement: <Error />,
   },
+
   {
     path: '/customer',
     element: <ProtectedRoute />,
@@ -35,10 +31,7 @@ const appRouter = createBrowserRouter([
       ...customerRoutes,
     ],
   },
-  {
-    path: '*',
-    element: <Navigate to="/login" replace />,
-  },
+
 ])
 
 export default appRouter

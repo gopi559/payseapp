@@ -20,7 +20,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 
   const handleLogout = () => {
     authService.logout()
-    navigate('/login')
+    navigate('/')
     onClose()
   }
 

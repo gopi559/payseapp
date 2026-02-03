@@ -51,3 +51,7 @@ export const WALLET_TO_CARD = `${MAIN_API_URL}/external_card/wallet_to_card_cnp`
 
 export const TRANSACTION_LIST = `${MAIN_API_URL}/transaction_web/customer/txn_list`;
 export const FETCH_BY_RRN= `${MAIN_API_URL}/transaction_web/customer/fetch_rrn`;
+
+
+export const DISPUTE_LIST = `${MAIN_API_URL}/transaction_web/dispute/list`
+export const SUBMIT_DISPUTE = `${MAIN_API_URL}/transaction_web/dispute/submit`

@@ -1,5 +1,5 @@
 import { getAuthToken, deviceId } from '../../services/api.jsx'
-import { TRANSACTION_LIST, FETCH_BY_RRN } from '../../utils/constant.jsx'
+import { TRANSACTION_LIST, FETCH_BY_RRN, DISPUTE_LIST, SUBMIT_DISPUTE } from '../../utils/constant.jsx'
 
 const defaultHeaders = () => ({
   'Content-Type': 'application/json',
@@ -62,3 +62,33 @@ export async function fetchByRrn(rrn) {
   return { data: result?.data ?? null, message: result?.message }
 }
 
+/** Fetch dispute types for Raise Dispute dropdown */
+export async function getDisputeList() {
+  const res = await fetch(DISPUTE_LIST, {
+    method: 'POST',
+    headers: defaultHeaders(),
+    body: JSON.stringify({}),
+  })
+  const result = await res.json().catch(() => null)
+  if (!res.ok) throw new Error(result?.message || 'Failed to load dispute types')
+  if (result?.code !== 1) throw new Error(result?.message || 'Failed to load dispute types')
+  return { data: Array.isArray(result?.data) ? result.data : [], message: result?.message }
+}
+
+/** Submit a dispute. Payload: transaction_id, dispute_type_id, details */
+export async function submitDispute(payload) {
+  const { transaction_id, dispute_type_id, details } = payload
+  const res = await fetch(SUBMIT_DISPUTE, {
+    method: 'POST',
+    headers: defaultHeaders(),
+    body: JSON.stringify({
+      transaction_id: Number(transaction_id),
+      dispute_type_id: Number(dispute_type_id),
+      details: String(details ?? '').trim(),
+    }),
+  })
+  const result = await res.json().catch(() => null)
+  if (!res.ok) throw new Error(result?.message || 'Failed to submit dispute')
+  if (result?.code !== 1) throw new Error(result?.message || 'Failed to submit dispute')
+  return { data: result?.data, message: result?.message }
+}
