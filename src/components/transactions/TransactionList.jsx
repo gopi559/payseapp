@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 import { HiDocumentText, HiEye, HiEllipsisVertical, HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/TransactionTable.jsx'
-import { getTransactionList, getDisputeList, submitDispute } from './transaction.service.jsx'
+import { getTransactionList, fetchByRrn, getDisputeList, submitDispute } from './transaction.service.jsx'
 
 const DEFAULT_PAGE_SIZE = 10
 const FETCH_PAGE_SIZE = 500
@@ -35,6 +35,7 @@ const TransactionList = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
+  const [rrnSearch, setRrnSearch] = useState('')
   const [actionRowId, setActionRowId] = useState(null)
   const [disputeModalRow, setDisputeModalRow] = useState(null)
   const [disputeTypes, setDisputeTypes] = useState([])
@@ -79,7 +80,30 @@ const TransactionList = () => {
   const handleClearDates = () => {
     setFromDate('')
     setToDate('')
+    setRrnSearch('')
     fetchList({ start_time: undefined, end_time: undefined })
+  }
+
+  const handleSearchByRrn = async () => {
+    const rrn = rrnSearch?.trim()
+    if (!rrn) {
+      toast.error('Please enter RRN number')
+      return
+    }
+    setLoading(true)
+    try {
+      const { data: txn } = await fetchByRrn(rrn)
+      setData(txn ? [txn] : [])
+      setCurrentPage(1)
+      if (txn) toast.success('Transaction found')
+      else toast.info('No transaction found for this RRN')
+    } catch (err) {
+      console.error(err)
+      toast.error(err?.message || 'Failed to fetch by RRN')
+      setData([])
+    } finally {
+      setLoading(false)
+    }
   }
 
   const openDisputeModal = async (row) => {
@@ -298,6 +322,30 @@ const TransactionList = () => {
             >
               Clear
             </button>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="rrn-search" className="text-xs font-medium text-gray-600">
+                RRN
+              </label>
+              <div className="flex gap-2 items-center">
+                <input
+                  id="rrn-search"
+                  type="text"
+                  value={rrnSearch}
+                  onChange={(e) => setRrnSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleSearchByRrn())}
+                  placeholder="Enter RRN number"
+                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary min-w-[180px]"
+                />
+                <button
+                  type="button"
+                  onClick={handleSearchByRrn}
+                  disabled={loading}
+                  className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 disabled:opacity-60 whitespace-nowrap"
+                >
+                  Search by RRN
+                </button>
+              </div>
+            </div>
           </div>
           <div className="flex-1 min-h-0 flex flex-col">
             <DataTable
@@ -385,5 +433,6 @@ const TransactionList = () => {
 }
 
 export default TransactionList
+
 
 

@@ -54,4 +54,12 @@ export const FETCH_BY_RRN= `${MAIN_API_URL}/transaction_web/customer/fetch_rrn`;
 
 
 export const DISPUTE_LIST = `${MAIN_API_URL}/transaction_web/dispute/list`
-export const SUBMIT_DISPUTE = `${MAIN_API_URL}/transaction_web/dispute/submit`
+export const SUBMIT_DISPUTE = `${MAIN_API_URL}/transaction_web/create/dispute`
+
+
+export const RAISED_DISPUTE_LIST = `${MAIN_API_URL}/transaction_web/cust_dispute/list`
+
+export const CASHCODE_LIST = `${MAIN_API_URL}/transaction_web/casecode/list_cashcode`
+
+export const CREATE_CASHCODE = `${MAIN_API_URL}/transaction_web/casecode/create_cashcode`
+///transaction_web/cust_dispute/list

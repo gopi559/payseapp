@@ -26,6 +26,10 @@ import CardBeneficiaryView from '../components/cards/OtherBankCards/CardBenefici
 import CardBeneficiaryDelete from '../components/cards/OtherBankCards/CardBeneficiaryDelete'
 import TransactionList from '../components/transactions/TransactionList'
 import ViewTransactionList from '../components/transactions/viewTransactionList'
+import DisputeList from '../components/disputes/DisputeList'
+import VoucherPage from '../components/voucher/VoucherPage'
+import VoucherCreate from '../components/voucher/voucherCreate'
+import ViewVoucher from '../components/voucher/viewVoucher'
 import ProfilePage from '../components/profile/ProfilePage'
 import ProfileDetails from '../components/profile/ProfileDetails'
 
@@ -162,6 +166,38 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <ViewTransactionList />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'disputes',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <DisputeList />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'voucher',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <VoucherPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'voucher/create',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <VoucherCreate />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'voucher/view',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <ViewVoucher />
       </Suspense>
     ),
   },

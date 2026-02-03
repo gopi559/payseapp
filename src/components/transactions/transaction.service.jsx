@@ -1,5 +1,5 @@
 import { getAuthToken, deviceId } from '../../services/api.jsx'
-import { TRANSACTION_LIST, FETCH_BY_RRN, DISPUTE_LIST, SUBMIT_DISPUTE } from '../../utils/constant.jsx'
+import { TRANSACTION_LIST, FETCH_BY_RRN, DISPUTE_LIST, SUBMIT_DISPUTE, RAISED_DISPUTE_LIST } from '../../utils/constant.jsx'
 
 const defaultHeaders = () => ({
   'Content-Type': 'application/json',
@@ -92,3 +92,20 @@ export async function submitDispute(payload) {
   if (result?.code !== 1) throw new Error(result?.message || 'Failed to submit dispute')
   return { data: result?.data, message: result?.message }
 }
+
+export async function getRaisedDisputeList(params = {}) {
+  const body = {
+    page: params.page ?? 1,
+    no_of_data: params.no_of_data ?? 10,
+  }
+  const res = await fetch(RAISED_DISPUTE_LIST, {
+    method: 'POST',
+    headers: defaultHeaders(),
+    body: JSON.stringify(body),
+  })
+  const result = await res.json().catch(() => null)
+  if (!res.ok) throw new Error(result?.message || 'Failed to load disputes')
+  if (result?.code !== 1) throw new Error(result?.message || 'Failed to load disputes')
+  return { data: Array.isArray(result?.data) ? result.data : [], message: result?.message }
+}
+
