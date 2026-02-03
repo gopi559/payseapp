@@ -10,28 +10,27 @@ const defaultHeaders = () => ({
   }),
 })
 
-/**
- * Fetch transaction list (paginated).
- * @param {Object} params
- * @param {number} [params.page=1]
- * @param {number} [params.no_of_data=20]
- * @param {boolean} [params.get_user_details=true]
- * @param {boolean} [params.success_only] - optional
- * @param {string} [params.start_time] - optional e.g. "2026-02-01T00:00:00"
- * @param {string} [params.end_time] - optional e.g. "2026-02-02T23:59:59"
- * @param {number} [params.beneficiary_id] - optional
- * @returns {Promise<{ data: Array, message?: string }>}
- */
+// /**
+//  * Fetch transaction list (paginated).
+//  * @param {Object} params
+//  * @param {number} [params.page=1]
+//  * @param {number} [params.no_of_data=20]
+//  * @param {boolean} [params.get_user_details=true]
+//  * @param {boolean} [params.success_only] - optional
+//  * @param {string} [params.start_time] - optional e.g. "2026-02-01T00:00:00"
+//  * @param {string} [params.end_time] - optional e.g. "2026-02-02T23:59:59"
+//  * @param {number} [params.beneficiary_id] - optional
+//  * @returns {Promise<{ data: Array, message?: string }>}
+//  */
 export async function getTransactionList(params = {}) {
   const body = {
     page: params.page ?? 1,
     no_of_data: params.no_of_data ?? 20,
     get_user_details: params.get_user_details ?? true,
-    // Optional (comment out in API docs but supported when provided):
     // success_only: params.success_only,
-    // start_time: params.start_time,
-    // end_time: params.end_time,
-    // beneficiary_id: params.beneficiary_id,
+    start_time: params.start_time,
+    end_time: params.end_time,
+    beneficiary_id: params.beneficiary_id,
   }
   if (params.success_only != null) body.success_only = params.success_only
   if (params.start_time) body.start_time = params.start_time
@@ -49,11 +48,11 @@ export async function getTransactionList(params = {}) {
   return { data: Array.isArray(result?.data) ? result.data : [], message: result?.message }
 }
 
-/**
- * Fetch a single transaction by RRN.
- * @param {string} rrn
- * @returns {Promise<{ data: object | null, message?: string }>}
- */
+// /**
+//  * Fetch a single transaction by RRN.
+//  * @param {string} rrn
+//  * @returns {Promise<{ data: object | null, message?: string }>}
+//  */
 export async function fetchByRrn(rrn) {
   if (!rrn || !String(rrn).trim()) throw new Error('RRN is required')
   const res = await fetch(FETCH_BY_RRN, {
@@ -66,3 +65,4 @@ export async function fetchByRrn(rrn) {
   if (result?.code !== 1) throw new Error(result?.message || 'Failed to fetch by RRN')
   return { data: result?.data ?? null, message: result?.message }
 }
+

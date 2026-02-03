@@ -91,7 +91,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       </div>
 
       <nav
-        className={`flex-1 overflow-y-auto bg-gradient-to-b from-white to-brand-surfaceMuted/30 space-y-2 ${
+        className={`flex-1 overflow-y-auto overflow-x-auto sidebar-scroll bg-gradient-to-b from-white to-brand-surfaceMuted/30 space-y-2 ${
           isCollapsed ? 'px-2 py-3' : 'px-3 py-4'
         }`}
       >

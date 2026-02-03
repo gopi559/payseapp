@@ -99,8 +99,8 @@ const DataTable = ({
             className={`rounded-t-lg border border-gray-100 overflow-hidden ${fillHeight ? 'flex-1 min-h-0' : ''} ${!fillHeight ? 'border-b-0' : ''}`}
             style={fillHeight ? undefined : { height: tableMaxHeight, maxHeight: tableMaxHeight, minHeight: 0 }}
           >
-            <div className="overflow-auto h-full w-full min-h-0">
-              <table className="w-full text-sm text-left border-collapse">
+            <div className="overflow-auto overflow-x-auto overflow-y-auto h-full w-full min-h-0 table-scroll">
+              <table className="w-full min-w-max text-sm text-left border-collapse">
                 <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 text-gray-600 font-medium shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
                   <tr>
                     {headers.map((h) => (

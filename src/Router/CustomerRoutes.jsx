@@ -25,6 +25,7 @@ import CardBeneficiaryEdit from '../components/cards/OtherBankCards/CardBenefici
 import CardBeneficiaryView from '../components/cards/OtherBankCards/CardBeneficiaryView'
 import CardBeneficiaryDelete from '../components/cards/OtherBankCards/CardBeneficiaryDelete'
 import TransactionList from '../components/transactions/TransactionList'
+import ViewTransactionList from '../components/transactions/viewTransactionList'
 import ProfilePage from '../components/profile/ProfilePage'
 import ProfileDetails from '../components/profile/ProfileDetails'
 
@@ -153,6 +154,14 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <TransactionList />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'transactions/view/:id',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <ViewTransactionList />
       </Suspense>
     ),
   },

@@ -30,4 +30,44 @@
   .rotate-y-180 {
     transform: rotateY(180deg);
   }
+
+  /* Sidebar: thin vertical and horizontal scrollbars */
+  .sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+  }
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  /* Table data area: thin vertical and horizontal scrollbars inside */
+  .table-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+  }
+  .table-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .table-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .table-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+  }
+  .table-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.35);
+  }
 }
