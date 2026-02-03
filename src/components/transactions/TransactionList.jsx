@@ -9,14 +9,10 @@ import { getTransactionList } from './transaction.service.jsx'
 const DEFAULT_PAGE_SIZE = 10
 const FETCH_PAGE_SIZE = 500
 
+// Show txn_time exactly as in API response (no timezone conversion)
 const formatDateTime = (dateString) => {
   if (!dateString) return '—'
-  try {
-    const d = new Date(dateString)
-    return d.toLocaleString()
-  } catch {
-    return dateString
-  }
+  return String(dateString)
 }
 
 const getDebitFirst = (row, field) => {
@@ -27,22 +23,33 @@ const getDebitFirst = (row, field) => {
   return first?.[key] ?? '—'
 }
 
+// Backend expects "YYYY-MM-DD HH:mm:ss" (space, not 'T')
+const toStartTime = (dateStr) => (dateStr ? `${dateStr} 00:00:00` : undefined)
+const toEndTime = (dateStr) => (dateStr ? `${dateStr} 23:59:59` : undefined)
+
 const TransactionList = () => {
   const navigate = useNavigate()
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
-  const fetchList = async () => {
+  const fetchList = async (dateOverrides) => {
     setLoading(true)
     try {
-      const { data: list } = await getTransactionList({
+      const params = {
         page: 1,
+        success_only: true,
         no_of_data: FETCH_PAGE_SIZE,
         get_user_details: true,
-        // success_only, start_time, end_time, beneficiary_id can be added when needed
-      })
+      }
+      const useFrom = dateOverrides?.start_time !== undefined ? dateOverrides.start_time : (fromDate ? toStartTime(fromDate) : undefined)
+      const useTo = dateOverrides?.end_time !== undefined ? dateOverrides.end_time : (toDate ? toEndTime(toDate) : undefined)
+      if (useFrom) params.start_time = useFrom
+      if (useTo) params.end_time = useTo
+      const { data: list } = await getTransactionList(params)
       setData(Array.isArray(list) ? list : [])
       setCurrentPage(1)
     } catch (err) {
@@ -57,6 +64,16 @@ const TransactionList = () => {
   useEffect(() => {
     fetchList()
   }, [])
+
+  const handleApplyFilters = () => {
+    fetchList()
+  }
+
+  const handleClearDates = () => {
+    setFromDate('')
+    setToDate('')
+    fetchList({ start_time: undefined, end_time: undefined })
+  }
 
   const handlePageChange = (page, newPageSize) => {
     setCurrentPage(page)
@@ -145,6 +162,47 @@ const TransactionList = () => {
         </div>
 
         <div className="w-full bg-white rounded-lg shadow-sm p-4 sm:p-6 overflow-visible">
+          <div className="flex flex-wrap items-end gap-3 mb-4">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="from-date" className="text-xs font-medium text-gray-600">
+                From Date
+              </label>
+              <input
+                id="from-date"
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label htmlFor="to-date" className="text-xs font-medium text-gray-600">
+                To Date
+              </label>
+              <input
+                id="to-date"
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleApplyFilters}
+              disabled={loading}
+              className="px-4 py-2 rounded-lg bg-brand-primary text-white text-sm font-medium hover:opacity-90 disabled:opacity-60"
+            >
+              Apply
+            </button>
+            <button
+              type="button"
+              onClick={handleClearDates}
+              className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 text-sm font-medium hover:bg-gray-50"
+            >
+              Clear
+            </button>
+          </div>
           <DataTable
             data={data}
             headers={headers}

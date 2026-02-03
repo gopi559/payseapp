@@ -25,14 +25,10 @@ const defaultHeaders = () => ({
 export async function getTransactionList(params = {}) {
   const body = {
     page: params.page ?? 1,
+    success_only: params.success_only ?? true,
     no_of_data: params.no_of_data ?? 20,
     get_user_details: params.get_user_details ?? true,
-    // success_only: params.success_only,
-    start_time: params.start_time,
-    end_time: params.end_time,
-    beneficiary_id: params.beneficiary_id,
   }
-  if (params.success_only != null) body.success_only = params.success_only
   if (params.start_time) body.start_time = params.start_time
   if (params.end_time) body.end_time = params.end_time
   if (params.beneficiary_id != null) body.beneficiary_id = params.beneficiary_id

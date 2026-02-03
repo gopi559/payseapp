@@ -23,20 +23,13 @@ const KeyValueDisplay = ({
   const formatSingleValue = (v) => {
     if (typeof v === 'boolean') return v ? 'Yes' : 'No'
     if (v === null || v === undefined || v === '') return emptyValue
+    // Show ISO date strings exactly as in API response (no timezone conversion)
     if (
       typeof v === 'string' &&
       v.includes('T') &&
       !Number.isNaN(Date.parse(v))
     ) {
-      return new Date(v).toLocaleString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-        timeZoneName: 'short',
-      })
+      return v
     }
     if (typeof v === 'object') return null // handled below as block
     return String(v)
@@ -49,21 +42,13 @@ const KeyValueDisplay = ({
     if (value === null || value === undefined || value === '') {
       return emptyValue
     }
-    // ISO date string
+    // Show ISO date strings exactly as in API response (no timezone conversion)
     if (
       typeof value === 'string' &&
       value.includes('T') &&
       !Number.isNaN(Date.parse(value))
     ) {
-      return new Date(value).toLocaleString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-        timeZoneName: 'short',
-      })
+      return value
     }
     // Array of objects: show as readable blocks (e.g. debit_details, credit_details)
     if (
