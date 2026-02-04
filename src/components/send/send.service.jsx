@@ -5,6 +5,7 @@ import {
   GENERATE_TRANSACTION_OTP,
   VERIFY_TRANSACTION_OTP,
 } from '../../utils/constant.jsx'
+import { fetchCustomerBalance } from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
@@ -62,6 +63,7 @@ const sendService = {
     if (!isSuccess(res)) {
       throw new Error(res?.message || 'Send money failed')
     }
+    fetchCustomerBalance().catch(() => {})
     return {
       data: res?.data,
       message: res?.message,

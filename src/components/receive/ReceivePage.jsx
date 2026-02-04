@@ -7,7 +7,7 @@ import Button from '../../Reusable/Button'
 import Input from '../../Reusable/Input'
 import AmountInput from '../../Reusable/AmountInput'
 import { sendService } from '../send/send.service'
-import { receiveService } from './receive.service'
+import  receiveService  from './receive.service'
 
 const ReceivePage = () => {
   const user = useSelector((state) => state.auth?.user)

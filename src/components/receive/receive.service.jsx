@@ -4,6 +4,7 @@ import {
   PAY_REQUEST_MONEY,
   DECLINE_REQUEST_MONEY,
 } from '../../utils/constant.jsx'
+import { fetchCustomerBalance } from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
@@ -12,29 +13,30 @@ const receiveService = {
 
   requestMoney: async (cust_id, amount, remarks = '') => {
     const body = {
-      cust_id: Number(cust_id),
-      amount: Number(amount),
-      remarks: String(remarks || '').trim() || undefined,
+      cust_id,
+      amount,
+      remarks,
     }
+
     const response = await fetch(REQUEST_MONEY, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
         deviceInfo: JSON.stringify({
-          device_type: "WEB",
+          device_type: 'WEB',
           device_id: deviceId,
         }),
       },
       body: JSON.stringify(body),
     })
+
     const res = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(res?.message || 'Request money failed')
-    }
-    if (!isSuccess(res)) {
-      throw new Error(res?.message || 'Request money failed')
-    }
+    if (!response.ok) throw new Error('Request money failed')
+    if (!isSuccess(res)) throw new Error('Request money failed')
+
+    fetchCustomerBalance().catch(() => {})
+
     return {
       data: res?.data,
       message: res?.message,
@@ -43,32 +45,30 @@ const receiveService = {
 
   payRequestMoney: async (money_reqid, amount, remarks = '') => {
     const body = {
-      money_reqid: Number(money_reqid),
-      amount: Number(amount),
-      remarks: String(remarks || '').trim() || undefined,
+      money_reqid,
+      amount,
+      remarks,
     }
-  
-  
+
     const response = await fetch(PAY_REQUEST_MONEY, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
         deviceInfo: JSON.stringify({
-          device_type: "WEB",
+          device_type: 'WEB',
           device_id: deviceId,
         }),
       },
       body: JSON.stringify(body),
     })
-    
+
     const res = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(res?.message || 'Pay request failed')
-    }
-    if (!isSuccess(res)) {
-      throw new Error(res?.message || 'Pay request failed')
-    }
+    if (!response.ok) throw new Error('Pay request failed')
+    if (!isSuccess(res)) throw new Error('Pay request failed')
+
+    fetchCustomerBalance().catch(() => {})
+
     return {
       data: res?.data,
       message: res?.message,
@@ -77,29 +77,30 @@ const receiveService = {
 
   declineRequestMoney: async (cust_id, amount, remarks = '') => {
     const body = {
-      cust_id: Number(cust_id),
-      amount: Number(amount),
-      remarks: String(remarks || '').trim() || undefined,
+      cust_id,
+      amount,
+      remarks,
     }
+
     const response = await fetch(DECLINE_REQUEST_MONEY, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
         deviceInfo: JSON.stringify({
-          device_type: "WEB",
+          device_type: 'WEB',
           device_id: deviceId,
         }),
       },
       body: JSON.stringify(body),
     })
+
     const res = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(res?.message || 'Decline request failed')
-    }
-    if (!isSuccess(res)) {
-      throw new Error(res?.message || 'Decline request failed')
-    }
+    if (!response.ok) throw new Error('Decline request failed')
+    if (!isSuccess(res)) throw new Error('Decline request failed')
+
+    fetchCustomerBalance().catch(() => {})
+
     return {
       data: res?.data,
       message: res?.message,
@@ -107,4 +108,4 @@ const receiveService = {
   },
 }
 
-export { receiveService }
+export default receiveService

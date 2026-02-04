@@ -1,6 +1,6 @@
-export const CUSTOMER_BALANCE = `${MAIN_API_URL}/account/cust_bal`;
 import { getAuthToken, deviceId } from '../../services/api.jsx'
 import { CARD_TO_WALLET_SEND_OTP, CARD_TO_WALLET_CNP } from '../../utils/constant.jsx'
+import { fetchCustomerBalance } from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
@@ -72,6 +72,8 @@ const cashInService = {
     const res = await response.json().catch(() => null)
     if (!response.ok) throw new Error(res?.message || 'Cash in failed')
     if (!isSuccess(res)) throw new Error(res?.message || 'Cash in failed')
+
+    fetchCustomerBalance().catch(() => {})
 
     return {
       data: res?.data ?? res,

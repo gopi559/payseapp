@@ -10,15 +10,15 @@ const chatbotService = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        cust_id: String(cust_id),
-        message: String(message),
-        new_chat: Boolean(new_chat),
+        cust_id,
+        message,
+        new_chat,
       }),
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Chat request failed')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Chat request failed')
+    if (!response.ok) throw new Error('Chat request failed')
+    if (!isSuccess(res)) throw new Error('Chat request failed')
 
     return {
       data: res?.data ?? res,
@@ -27,10 +27,8 @@ const chatbotService = {
   },
 
   retrievePreviousChat: async (cust_id) => {
-    const id = cust_id != null && cust_id !== '' ? Number(cust_id) : null
-    if (id == null || Number.isNaN(id) || id <= 0) {
-      throw new Error('Valid customer ID is required')
-    }
+    const id = Number(cust_id)
+    if (!id || Number.isNaN(id)) throw new Error('Valid customer ID is required')
 
     const response = await fetch(API_CHATBOT_RETRIEVE_PREVIOUS, {
       method: 'POST',
@@ -42,8 +40,8 @@ const chatbotService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Retrieve previous chat failed')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Retrieve previous chat failed')
+    if (!response.ok) throw new Error('Retrieve previous chat failed')
+    if (!isSuccess(res)) throw new Error('Retrieve previous chat failed')
 
     return {
       data: res?.data ?? res,
@@ -53,4 +51,4 @@ const chatbotService = {
 
 }
 
-export { chatbotService }
+export default chatbotService

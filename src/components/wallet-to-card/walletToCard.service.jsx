@@ -1,5 +1,6 @@
 import { getAuthToken, deviceId } from '../../services/api.jsx'
 import { CARD_NUMBER_VERIFY, WALLET_TO_CARD } from '../../utils/constant.jsx'
+import { fetchCustomerBalance } from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
@@ -58,6 +59,7 @@ const walletToCardService = {
     if (!isSuccess(res)) {
       throw new Error(res?.message || 'Wallet to card failed')
     }
+    fetchCustomerBalance().catch(() => {})
     return {
       data: res?.data,
       message: res?.message,
