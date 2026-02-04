@@ -71,4 +71,4 @@ const cardService = {
   },
 }
 
-export { cardService }
+export default cardService

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { HiXMark } from 'react-icons/hi2'
 import Button from '../../Reusable/Button'
-import { sendChat, retrievePreviousChat } from './chatbot.service'
+import { chatbotService } from './chatbot.service'
 
 const GREETING = { role: 'assistant', text: 'Hello! How can I help you today?' }
 
@@ -80,7 +80,7 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     if (!custId || custId === '0' || custId === '') return
     setLoadingMore(true)
     setError('')
-    retrievePreviousChat(custId)
+    chatbotService.retrievePreviousChat(custId)
       .then((res) => {
         const history = parsePreviousChatResponse(res)
         setAllFetchedPrevious(history)
@@ -172,7 +172,7 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     setSessionMessages((prev) => [...prev, { role: 'user', text, timestamp: now }])
     setLoading(true)
     try {
-      const res = await sendChat({
+      const res = await chatbotService.sendChat({
         cust_id: String(custId),
         message: text,
         new_chat: isNewChat,

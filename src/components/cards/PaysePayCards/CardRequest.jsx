@@ -6,7 +6,7 @@ import PageContainer from "../../../Reusable/PageContainer";
 import Button from "../../../Reusable/Button";
 import { getAuthToken, deviceId } from "../../../services/api";
 import { CARD_REQUEST_TYPE_LIST, CARD_REQUEST } from "../../../utils/constant";
-import { cardService } from "./card.service";
+import cardService from "./card.service";
 
 // Request type ids that require a reference card (Reissue, Addon)
 const REFERENCE_CARD_TYPES = [2, 3]; // 2 = Reissue Card, 3 = Addon Card

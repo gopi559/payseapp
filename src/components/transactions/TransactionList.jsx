@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 import { HiDocumentText, HiEye, HiEllipsisVertical, HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/TransactionTable.jsx'
-import { getTransactionList, fetchByRrn, getDisputeList, submitDispute } from './transaction.service.jsx'
+import { transactionService } from './transaction.service.jsx'
 
 const DEFAULT_PAGE_SIZE = 10
 const FETCH_PAGE_SIZE = 500
@@ -57,7 +57,7 @@ const TransactionList = () => {
       const useTo = dateOverrides?.end_time !== undefined ? dateOverrides.end_time : (toDate ? toEndTime(toDate) : undefined)
       if (useFrom) params.start_time = useFrom
       if (useTo) params.end_time = useTo
-      const { data: list } = await getTransactionList(params)
+      const { data: list } = await transactionService.getList(params)
       setData(Array.isArray(list) ? list : [])
       setCurrentPage(1)
     } catch (err) {
@@ -92,7 +92,7 @@ const TransactionList = () => {
     }
     setLoading(true)
     try {
-      const { data: txn } = await fetchByRrn(rrn)
+      const { data: txn } = await transactionService.fetchByRrn(rrn)
       setData(txn ? [txn] : [])
       setCurrentPage(1)
       if (txn) toast.success('Transaction found')
@@ -113,7 +113,7 @@ const TransactionList = () => {
     setDisputeDetails('')
     setDisputeLoading(true)
     try {
-      const { data: types } = await getDisputeList()
+      const { data: types } = await transactionService.getDisputeList()
       setDisputeTypes(Array.isArray(types) ? types : [])
     } catch (err) {
       console.error(err)
@@ -139,7 +139,7 @@ const TransactionList = () => {
     }
     setDisputeSubmitting(true)
     try {
-      await submitDispute({
+      await transactionService.submitDispute({
         transaction_id: disputeModalRow.txn_id ?? disputeModalRow.id,
         dispute_type_id: Number(disputeTypeId),
         details: disputeDetails,
@@ -433,6 +433,7 @@ const TransactionList = () => {
 }
 
 export default TransactionList
+
 
 
 

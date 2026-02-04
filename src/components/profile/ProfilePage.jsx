@@ -20,7 +20,7 @@ const ProfilePage = () => {
 
   const handleLogout = () => {
     authService.logout()
-    navigate('/login')
+    navigate('/')
   }
 
   return (

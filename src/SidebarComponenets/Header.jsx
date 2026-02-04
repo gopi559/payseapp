@@ -49,7 +49,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
 
   const handleLogout = () => {
     authService.logout()
-    navigate('/login')
+    navigate('/')
     setIsDropdownOpen(false)
   }
 

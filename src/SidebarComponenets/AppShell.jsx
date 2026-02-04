@@ -49,7 +49,7 @@ const AppShell = ({ children }) => {
           dispatch(logout())
           localStorage.removeItem('refreshToken')
           sessionStorage.removeItem('reduxState')
-          navigate('/login')
+          navigate('/')
         })
       }, INACTIVITY_MS)
     }

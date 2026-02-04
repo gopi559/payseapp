@@ -1,48 +1,122 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
+import { BsCashCoin } from 'react-icons/bs'
 import PageContainer from '../../Reusable/PageContainer'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
+import Input from '../../Reusable/Input'
+import cashInService from './cashIn.service'
+
 const CashInPage = () => {
   const navigate = useNavigate()
+  const user = useSelector((state) => state.auth?.user)
+  const defaultWallet = user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
+  const walletPlaceholder = defaultWallet ? `e.g. +${defaultWallet}` : 'e.g. +93987123456'
+
+  const [cardNumber, setCardNumber] = useState('')
+  const [walletNumber, setWalletNumber] = useState('')
   const [amount, setAmount] = useState('')
   const [error, setError] = useState('')
-  
-  const handleContinue = () => {
+  const [loading, setLoading] = useState(false)
+
+  const handleSendOtp = async () => {
+    const card = cardNumber.trim().replace(/\s/g, '')
+    const wallet = walletNumber.trim()
+    if (!card) {
+      setError('Please enter card number')
+      return
+    }
+    if (!wallet) {
+      setError('Please enter wallet number')
+      return
+    }
     if (!amount || parseFloat(amount) <= 0) {
       setError('Please enter a valid amount')
       return
     }
-    
-    sessionStorage.setItem('cashInData', JSON.stringify({ amount }))
-    navigate('/customer/cash-in/confirm')
+    setError('')
+    setLoading(true)
+    try {
+      const { data } = await cashInService.sendOtp({
+        card_number: card,
+        wallet_number: wallet,
+        txn_amount: amount,
+      })
+      const rrn = data?.rrn ?? ''
+      sessionStorage.setItem(
+        'cashInData',
+        JSON.stringify({
+          card_number: card,
+          wallet_number: wallet,
+          txn_amount: amount,
+          rrn,
+        })
+      )
+      toast.success('OTP sent successfully')
+      navigate('/customer/cash-in/confirm')
+    } catch (err) {
+      const msg = err?.message || 'Failed to send OTP'
+      setError(msg)
+      toast.error(msg)
+    } finally {
+      setLoading(false)
+    }
   }
-  
+
   return (
     <PageContainer>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <h1 className="text-xl sm:text-2xl font-semibold text-brand-dark mb-4 sm:mb-6">
-          Cash In
-        </h1>
-        
+        <div className="flex items-center gap-3 mb-6">
+          <div className="bg-green-100 p-2 rounded-lg">
+            <BsCashCoin className="w-6 h-6 text-green-600" />
+          </div>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-brand-dark">Cash In</h1>
+            <p className="text-sm text-gray-500">Add money to your wallet from your card</p>
+          </div>
+        </div>
+
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mb-4 text-sm">
             {error}
           </div>
         )}
-        
+
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            Add money to your wallet
+            Enter card and wallet details. An OTP will be sent to complete the transaction.
           </p>
-          <AmountInput
-            value={amount}
-            onChange={setAmount}
-          />
-          
+          <div className="space-y-4">
+            <Input
+              label="Card number"
+              value={cardNumber}
+              onChange={(e) => {
+                setCardNumber(e.target.value.replace(/\D/g, ''))
+                setError('')
+              }}
+              placeholder="e.g. 2345543212345432"
+              maxLength={19}
+            />
+            <Input
+              label="Wallet number"
+              value={walletNumber}
+              onChange={(e) => {
+                setWalletNumber(e.target.value)
+                setError('')
+              }}
+              placeholder={walletPlaceholder}
+            />
+            <AmountInput
+              label="Amount"
+              value={amount}
+              onChange={setAmount}
+            />
+          </div>
           <div className="pt-4">
-            <Button onClick={handleContinue} fullWidth size="md">
-              Continue
+            <Button onClick={handleSendOtp} fullWidth size="md" disabled={loading}>
+              {loading ? 'Sending OTP...' : 'Send OTP'}
             </Button>
           </div>
         </div>
@@ -52,4 +126,3 @@ const CashInPage = () => {
 }
 
 export default CashInPage
-

@@ -26,7 +26,7 @@ const LandingPage = () => {
       setError('Please enter a valid mobile number')
       return
     }
-    navigate('/login', { state: { mobile: mobileNumber.trim() } })
+    navigate('/', { state: { mobile: mobileNumber.trim() } })
   }
 
   return (

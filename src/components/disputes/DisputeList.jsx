@@ -3,7 +3,7 @@ import { toast } from 'react-toastify'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/Table'
-import { getRaisedDisputeList } from '../transactions/transaction.service.jsx'
+import { transactionService } from '../transactions/transaction.service.jsx'
 
 const formatDate = (dateString) => {
   if (!dateString) return '—'
@@ -24,7 +24,7 @@ const DisputeList = () => {
   const fetchList = async () => {
     setLoading(true)
     try {
-      const { data: list } = await getRaisedDisputeList()
+      const { data: list } = await transactionService.getRaisedDisputeList({ page: 1, no_of_data: 10 })
       setData(Array.isArray(list) ? list : [])
       setCurrentPage(1)
     } catch (err) {
@@ -105,4 +105,5 @@ const DisputeList = () => {
 }
 
 export default DisputeList
+
 
