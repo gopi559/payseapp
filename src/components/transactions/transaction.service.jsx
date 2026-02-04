@@ -155,5 +155,5 @@ const transactionService = {
 
 }
 
-export { transactionService }
+export default transactionService
 

@@ -76,4 +76,4 @@ const voucherService = {
   },
 }
 
-export { voucherService }
+export default voucherService

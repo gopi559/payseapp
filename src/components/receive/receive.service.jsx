@@ -4,7 +4,7 @@ import {
   PAY_REQUEST_MONEY,
   DECLINE_REQUEST_MONEY,
 } from '../../utils/constant.jsx'
-import { fetchCustomerBalance } from '../../Login/auth.service.jsx'
+import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
@@ -35,7 +35,7 @@ const receiveService = {
     if (!response.ok) throw new Error('Request money failed')
     if (!isSuccess(res)) throw new Error('Request money failed')
 
-    fetchCustomerBalance().catch(() => {})
+    authService.fetchCustomerBalance().catch(() => {})
 
     return {
       data: res?.data,
@@ -67,7 +67,7 @@ const receiveService = {
     if (!response.ok) throw new Error('Pay request failed')
     if (!isSuccess(res)) throw new Error('Pay request failed')
 
-    fetchCustomerBalance().catch(() => {})
+    authService.fetchCustomerBalance().catch(() => {})
 
     return {
       data: res?.data,
@@ -99,7 +99,7 @@ const receiveService = {
     if (!response.ok) throw new Error('Decline request failed')
     if (!isSuccess(res)) throw new Error('Decline request failed')
 
-    fetchCustomerBalance().catch(() => {})
+    authService.fetchCustomerBalance().catch(() => {})
 
     return {
       data: res?.data,

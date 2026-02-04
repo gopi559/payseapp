@@ -3,7 +3,7 @@ import { toast } from 'react-toastify'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/Table'
-import { transactionService } from '../transactions/transaction.service.jsx'
+import transactionService from '../transactions/transaction.service.jsx'
 
 const formatDate = (dateString) => {
   if (!dateString) return '—'

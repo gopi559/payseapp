@@ -1,6 +1,6 @@
 import { getAuthToken, deviceId } from '../../services/api.jsx'
 import { CARD_TO_WALLET_SEND_OTP, CARD_TO_WALLET_CNP } from '../../utils/constant.jsx'
-import { fetchCustomerBalance } from '../../Login/auth.service.jsx'
+import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
@@ -9,9 +9,9 @@ const cashInService = {
 
   sendOtp: async ({ card_number, wallet_number, txn_amount }) => {
     const body = {
-      card_number: card_number,
-      wallet_number: wallet_number,
-      txn_amount: txn_amount,
+      card_number,
+      wallet_number,
+      txn_amount,
     }
 
     const response = await fetch(CARD_TO_WALLET_SEND_OTP, {
@@ -28,8 +28,8 @@ const cashInService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Send OTP failed')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Send OTP failed')
+    if (!response.ok) throw new Error('Send OTP failed')
+    if (!isSuccess(res)) throw new Error('Send OTP failed')
 
     return {
       data: res?.data ?? res,
@@ -47,13 +47,13 @@ const cashInService = {
     rrn,
   }) => {
     const body = {
-      card_number: String(card_number).trim().replace(/\s/g, ''),
-      wallet_number: String(wallet_number).trim(),
-      txn_amount: Number(txn_amount),
-      cvv: String(cvv).trim(),
-      expiry_date: String(expiry_date).trim(),
-      otp: String(otp).trim(),
-      rrn: String(rrn).trim(),
+      card_number,
+      wallet_number,
+      txn_amount,
+      cvv,
+      expiry_date,
+      otp,
+      rrn,
     }
 
     const response = await fetch(CARD_TO_WALLET_CNP, {
@@ -70,10 +70,10 @@ const cashInService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Cash in failed')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Cash in failed')
+    if (!response.ok) throw new Error('Cash in failed')
+    if (!isSuccess(res)) throw new Error('Cash in failed')
 
-    fetchCustomerBalance().catch(() => {})
+    authService.fetchCustomerBalance().catch(() => {})
 
     return {
       data: res?.data ?? res,

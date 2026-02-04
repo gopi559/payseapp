@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import Header from './Header'
 import Sidebar from './Sidebar'
 import { ChatBotButton } from '../components/chatbot'
-import { fetchCustomerBalance } from '../Login/auth.service.jsx'
+import authService from '../Login/auth.service.jsx'
 import { clearUserDataAuth } from '../Redux/AuthToken'
 import { logout } from '../Redux/store'
 import { LOGOUT_API_URL } from '../utils/constant'
@@ -26,7 +26,7 @@ const AppShell = ({ children }) => {
   }, [location.pathname])
 
   useEffect(() => {
-    if (token) fetchCustomerBalance()
+    if (token) authService.fetchCustomerBalance()
   }, [token])
 
   // Inactivity logout (reference Body): token from selector, call logout API, clear auth, navigate to login

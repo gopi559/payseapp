@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { HiXMark } from 'react-icons/hi2'
 import Button from '../../Reusable/Button'
-import { chatbotService } from './chatbot.service'
+import chatbotService from './chatbot.service'
 
 const GREETING = { role: 'assistant', text: 'Hello! How can I help you today?' }
 

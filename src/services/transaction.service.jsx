@@ -1,6 +1,6 @@
 import { api } from './api'
 
-export const transactionService = {
+const transactionService = {
   getTransactions: async () => {
     // Simulate API call
     return new Promise((resolve) => {
@@ -25,4 +25,4 @@ export const transactionService = {
   },
 }
 
-
+export default transactionService

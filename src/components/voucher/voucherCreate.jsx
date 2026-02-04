@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
-import { voucherService } from './voucher.service.jsx'
+import voucherService from './voucher.service.jsx'
 
 const VoucherCreate = () => {
   const navigate = useNavigate()

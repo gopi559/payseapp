@@ -5,7 +5,7 @@ import { HiTicket, HiEye } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/Table'
 import Button from '../../Reusable/Button'
-import { voucherService } from './voucher.service.jsx'
+import voucherService from './voucher.service.jsx'
 
 const formatDate = (dateString) => {
   if (!dateString) return '—'

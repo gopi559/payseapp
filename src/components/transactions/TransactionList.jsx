@@ -4,7 +4,7 @@ import { toast } from 'react-toastify'
 import { HiDocumentText, HiEye, HiEllipsisVertical, HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/TransactionTable.jsx'
-import { transactionService } from './transaction.service.jsx'
+import transactionService from './transaction.service.jsx'
 
 const DEFAULT_PAGE_SIZE = 10
 const FETCH_PAGE_SIZE = 500

@@ -8,7 +8,7 @@ import Button from '../../Reusable/Button'
 import Input from '../../Reusable/Input'
 import AmountInput from '../../Reusable/AmountInput'
 import OtpInput from '../../Reusable/OtpInput'
-import { walletToCardService } from './walletToCard.service'
+import walletToCardService from './walletToCard.service'
 import { sendService } from '../send/send.service'
 
 const WalletToCardPage = () => {
