@@ -1,7 +1,7 @@
 import { API_CHATBOT_CHAT, API_CHATBOT_RETRIEVE_PREVIOUS } from '../../utils/constant'
 
 const isSuccess = (res) =>
-  res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
+  res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS' || res?.success === true
 
 const chatbotService = {
 
@@ -23,6 +23,8 @@ const chatbotService = {
     return {
       data: res?.data ?? res,
       message: res?.message,
+      response: res?.response,
+      session_id: res?.session_id,
     }
   },
 
@@ -46,6 +48,7 @@ const chatbotService = {
     return {
       data: res?.data ?? res,
       message: res?.message,
+      chat_sessions: res?.chat_sessions,
     }
   },
 

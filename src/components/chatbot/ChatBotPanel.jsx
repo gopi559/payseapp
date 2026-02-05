@@ -24,9 +24,8 @@ const normalizeHistoryMessage = (m) => ({
   timestamp: m.created_on || m.timestamp || m.created_at || null,
 })
 
-/** Parse API response: supports chat_sessions (new) or flat data array (legacy). Returns messages sorted by timestamp ascending. */
 const parsePreviousChatResponse = (res) => {
-  const sessions = res?.chat_sessions
+  const sessions = res?.chat_sessions || res?.data?.chat_sessions
   if (Array.isArray(sessions) && sessions.length > 0) {
     const withTimestamp = []
     sessions.forEach((session) => {
@@ -75,14 +74,14 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  /** Fetch full previous chat from API (once). Then we reveal in chunks. */
   const fetchPreviousMessages = useCallback(() => {
     if (!custId || custId === '0' || custId === '') return
     setLoadingMore(true)
     setError('')
     chatbotService.retrievePreviousChat(custId)
       .then((res) => {
-        const history = parsePreviousChatResponse(res)
+        const responseData = res?.data || res
+        const history = parsePreviousChatResponse(responseData)
         setAllFetchedPrevious(history)
         setDisplayedPreviousCount(Math.min(PREVIOUS_PAGE_SIZE, history.length))
         if (history.length > 0) {
@@ -96,7 +95,6 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
       .finally(() => setLoadingMore(false))
   }, [custId])
 
-  /** On open: show greeting and trigger API for previous messages. If any exist, show in order; if none, show "No previous messages". */
   useEffect(() => {
     if (isOpen && custId) {
       setSessionMessages([{ ...GREETING, timestamp: new Date().toISOString() }])
@@ -108,7 +106,6 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     }
   }, [isOpen, custId, fetchPreviousMessages])
 
-  /** Scroll to top: first time fetch API; next times reveal next chunk (no API). */
   const loadMorePrevious = useCallback(() => {
     if (!hasFetchedRef.current) {
       hasFetchedRef.current = true
@@ -131,7 +128,6 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     }, LOAD_MORE_COOLDOWN_MS)
   }, [hasMorePrevious, loadingMore, allFetchedPrevious.length, fetchPreviousMessages])
 
-  /** Restore scroll position after prepending more messages at top. */
   useEffect(() => {
     const saved = scrollRestoreRef.current
     if (!saved || !scrollContainerRef.current) return
@@ -152,7 +148,6 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     }
   }
 
-  /** Keep view at bottom when messages load so user stays on greeting; they can scroll up to see history. */
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -178,8 +173,11 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
         new_chat: isNewChat,
       })
       setIsNewChat(false)
-      const reply = res?.data?.message ?? res?.message ?? res?.response ?? 'No response.'
+      const reply = res?.response ?? res?.data?.response ?? res?.data?.message ?? res?.message ?? 'No response.'
       setSessionMessages((prev) => [...prev, { role: 'assistant', text: reply, timestamp: new Date().toISOString() }])
+      setTimeout(() => {
+        fetchPreviousMessages()
+      }, 500)
     } catch (err) {
       setError(err?.message || 'Something went wrong.')
       setSessionMessages((prev) => [...prev, { role: 'assistant', text: 'Sorry, I could not process that. Please try again.', timestamp: new Date().toISOString() }])
@@ -189,6 +187,32 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
   }
 
   const hasPrevious = previousMessages.length > 0
+
+  const renderBotText = (text) => {
+    if (!text) return null
+
+    const sections = text.split('\n\n')
+
+    return sections.map((section, idx) => {
+      if (section.trim().startsWith('-')) {
+        const items = section.split('\n').map((l) => l.replace(/^- /, '').trim()).filter((it) => it)
+        return (
+          <ul key={idx} className="list-disc pl-4 space-y-1">
+            {items.map((it, i) => (
+              <li key={i}>{it}</li>
+            ))}
+          </ul>
+        )
+      }
+
+      return (
+        <p key={idx} className="whitespace-pre-line mb-2 last:mb-0">
+          {section}
+        </p>
+      )
+    })
+  }
+
   const renderMessage = (m, i) => (
     <div
       key={i}
@@ -201,7 +225,7 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
             : 'bg-gray-100 text-gray-800'
         }`}
       >
-        {m.text}
+        {m.role === 'assistant' ? renderBotText(m.text) : m.text}
       </div>
       {formatChatTime(m.timestamp) && (
         <span className="mt-0.5 text-[10px] text-gray-400">

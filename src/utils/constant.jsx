@@ -27,9 +27,15 @@ export const BENIFICIARY_DELETE = `${MAIN_API_URL}/card/beneficiary/remove`;
 
 
 
-export const CHATBOT_BASE_URL = 'https://aml.innovitegra.in'
-export const API_CHATBOT_CHAT = `${CHATBOT_BASE_URL}/chatbot/chat`
-export const API_CHATBOT_RETRIEVE_PREVIOUS = `https://aml.innovitegra.in/chatbot/retrieve-previous-chat`
+export const CHATBOT_BASE_URL = "https://aml.innovitegra.in"
+
+export const API_CHATBOT_NEW_CHAT = `${CHATBOT_BASE_URL}/chatbot/chat`
+export const API_CHATBOT_PREVIOUS_CHAT = `${CHATBOT_BASE_URL}/chatbot/retrieve-previous-chat`
+
+export const API_CHATBOT_REQUEST_LIVE_AGENT = `${CHATBOT_BASE_URL}/chatbot/request-live-agent`
+
+export const WS_CHATBOT_CUSTOMER = "ws://aml.innovitegra.in/chatbot/ws/customer"
+export const WS_CHATBOT_AGENT = "ws://aml.innovitegra.in/chatbot/ws/agent"
 
 
 

@@ -11,6 +11,7 @@ export const ROUTES = {
   CASH_IN_SUCCESS: '/customer/cash-in/success',
   CASH_OUT: '/customer/cash-out',
   CASH_OUT_CONFIRM: '/customer/cash-out/confirm',
+  
   CASH_OUT_SUCCESS: '/customer/cash-out/success',
   HISTORY: '/customer/history',
   TRANSACTION_DETAILS: '/customer/history/:id',
