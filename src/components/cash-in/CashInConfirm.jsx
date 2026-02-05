@@ -49,7 +49,6 @@ const CashInConfirm = () => {
     try {
       const { data } = await cashInService.confirmCardToWallet({
         card_number: cashInData.card_number,
-        wallet_number: cashInData.wallet_number,
         txn_amount: cashInData.txn_amount,
         cvv,
         expiry_date: expiry,
@@ -88,7 +87,6 @@ const CashInConfirm = () => {
         <ConfirmCard
           items={[
             { label: 'Card', value: maskedCard },
-            { label: 'Wallet number', value: cashInData.wallet_number },
             { label: 'Amount', value: `₹${parseFloat(cashInData.txn_amount).toFixed(2)}` },
           ]}
           total={parseFloat(cashInData.txn_amount)}

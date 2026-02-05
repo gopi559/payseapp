@@ -7,11 +7,10 @@ const isSuccess = (res) =>
 
 const cashInService = {
 
-  sendOtp: async ({ card_number, wallet_number, txn_amount }) => {
+  sendOtp: async ({ card_number, txn_amount }) => {
     const body = {
       card_number,
-      wallet_number,
-      txn_amount,
+      txn_amount: parseFloat(txn_amount),
     }
 
     const response = await fetch(CARD_TO_WALLET_SEND_OTP, {
@@ -39,7 +38,6 @@ const cashInService = {
 
   confirmCardToWallet: async ({
     card_number,
-    wallet_number,
     txn_amount,
     cvv,
     expiry_date,
@@ -48,8 +46,7 @@ const cashInService = {
   }) => {
     const body = {
       card_number,
-      wallet_number,
-      txn_amount,
+      txn_amount: parseFloat(txn_amount),
       cvv,
       expiry_date,
       otp,

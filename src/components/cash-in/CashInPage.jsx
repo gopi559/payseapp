@@ -11,25 +11,15 @@ import cashInService from './cashIn.service'
 
 const CashInPage = () => {
   const navigate = useNavigate()
-  const user = useSelector((state) => state.auth?.user)
-  const defaultWallet = user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
-  const walletPlaceholder = defaultWallet ? `e.g. +${defaultWallet}` : 'e.g. +93987123456'
-
   const [cardNumber, setCardNumber] = useState('')
-  const [walletNumber, setWalletNumber] = useState('')
   const [amount, setAmount] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   const handleSendOtp = async () => {
     const card = cardNumber.trim().replace(/\s/g, '')
-    const wallet = walletNumber.trim()
     if (!card) {
       setError('Please enter card number')
-      return
-    }
-    if (!wallet) {
-      setError('Please enter wallet number')
       return
     }
     if (!amount || parseFloat(amount) <= 0) {
@@ -41,7 +31,6 @@ const CashInPage = () => {
     try {
       const { data } = await cashInService.sendOtp({
         card_number: card,
-        wallet_number: wallet,
         txn_amount: amount,
       })
       const rrn = data?.rrn ?? ''
@@ -49,7 +38,6 @@ const CashInPage = () => {
         'cashInData',
         JSON.stringify({
           card_number: card,
-          wallet_number: wallet,
           txn_amount: amount,
           rrn,
         })
@@ -86,7 +74,7 @@ const CashInPage = () => {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-            Enter card and wallet details. An OTP will be sent to complete the transaction.
+            Enter card details. An OTP will be sent to complete the transaction.
           </p>
           <div className="space-y-4">
             <Input
@@ -98,15 +86,6 @@ const CashInPage = () => {
               }}
               placeholder="e.g. 2345543212345432"
               maxLength={19}
-            />
-            <Input
-              label="Wallet number"
-              value={walletNumber}
-              onChange={(e) => {
-                setWalletNumber(e.target.value)
-                setError('')
-              }}
-              placeholder={walletPlaceholder}
             />
             <AmountInput
               label="Amount"
