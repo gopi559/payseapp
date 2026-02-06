@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import SuccessScreen from '../../Reusable/SuccessScreen'
+import Button from '../../Reusable/Button'
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 const SendSuccess = () => {
   const navigate = useNavigate()
@@ -25,13 +27,13 @@ const SendSuccess = () => {
     navigate('/customer/home')
   }
 
-  const amount = details?.amount != null ? `₹${Number(details.amount).toFixed(2)}` : ''
-  const beneficiaryName = details?.beneficiary_name ?? ''
-  const beneficiaryMobile = details?.beneficiary_mobile ?? ''
-  const txnId = details?.txn_id != null ? String(details.txn_id) : ''
-  const rrn = details?.rrn ?? ''
-  const txnTime = details?.txn_time ?? details?.created_at ?? ''
-  const remarks = details?.remarks ?? ''
+  const handleViewDetails = () => {
+    navigate('/customer/send/details')
+  }
+
+  const txnId = details?.txn_id != null ? String(details.txn_id) : '—'
+  const amount = details?.amount != null ? `₹${Number(details.amount).toFixed(2)}` : '₹0.00'
+  const beneficiaryName = details?.beneficiary_name ?? details?.beneficiary?.displayName ?? '—'
 
   return (
     <PageContainer>
@@ -42,17 +44,39 @@ const SendSuccess = () => {
         onDone={handleDone}
         buttonText="Done"
       />
-      {(amount || beneficiaryName || beneficiaryMobile || txnId || rrn || txnTime || remarks) && (
-        <div className="mt-4 mx-auto max-w-xs rounded-lg bg-gray-50 border border-gray-200 p-4 text-sm space-y-2">
-          {amount && <p className="flex justify-between"><span className="text-gray-600">Amount</span><span className="font-medium">{amount}</span></p>}
-          {beneficiaryName && <p className="flex justify-between"><span className="text-gray-600">Beneficiary</span><span className="font-medium">{beneficiaryName}</span></p>}
-          {beneficiaryMobile && <p className="flex justify-between"><span className="text-gray-600">Mobile</span><span className="font-mono">{beneficiaryMobile}</span></p>}
-          {remarks && <p className="flex justify-between"><span className="text-gray-600">Remarks</span><span>{remarks}</span></p>}
-          {rrn && <p className="flex justify-between"><span className="text-gray-600">RRN</span><span className="font-mono">{rrn}</span></p>}
-          {txnId && <p className="flex justify-between"><span className="text-gray-600">Transaction ID</span><span>{txnId}</span></p>}
-          {txnTime && <p className="flex justify-between"><span className="text-gray-600">Time</span><span>{txnTime}</span></p>}
+      
+      {/* Transaction Details */}
+      <div className="mt-6 mx-auto max-w-xs">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Transaction ID</span>
+            <span className="text-sm font-medium text-brand-dark">{txnId}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Amount</span>
+            <span className="text-sm font-medium text-brand-dark">{amount}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-600">Beneficiary Name</span>
+            <span className="text-sm font-medium text-brand-dark">{beneficiaryName}</span>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* View Transaction Details Button */}
+      <div className="mt-4 mx-auto max-w-xs">
+        <Button
+          onClick={handleViewDetails}
+          variant="outline"
+          fullWidth
+          className="border-brand-secondary text-brand-secondary hover:bg-brand-secondary hover:text-white"
+        >
+          <div className="flex items-center justify-center gap-2">
+            <IoInformationCircleOutline className="w-5 h-5" />
+            <span>View Transaction Details</span>
+          </div>
+        </Button>
+      </div>
     </PageContainer>
   )
 }

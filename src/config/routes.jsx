@@ -4,6 +4,7 @@ export const ROUTES = {
   SEND_START: '/customer/send',
   SEND_CONFIRM: '/customer/send/confirm',
   SEND_SUCCESS: '/customer/send/success',
+  SEND_DETAILS: '/customer/send/details',
   RECEIVE: '/customer/receive',
   WALLET_TO_CARD: '/customer/wallet-to-card',
   WALLET_TO_CARD_CONFIRM: '/customer/wallet-to-card/confirm',

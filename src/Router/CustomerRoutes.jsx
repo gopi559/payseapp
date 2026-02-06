@@ -6,6 +6,7 @@ import HomePage from '../components/home/HomePage.jsx'
 import SendStart from '../components/send/SendStart.jsx'
 import SendConfirm from '../components/send/SendConfirm.jsx'
 import SendSuccess from '../components/send/SendSuccess.jsx'
+import SendTransactionDetails from '../components/send/SendTransactionDetails.jsx'
 import ReceivePage from '../components/receive/ReceivePage'
 import WalletToCardStart from '../components/wallet-to-card/WalletToCardStart'
 import WalletToCardConfirm from '../components/wallet-to-card/WalletToCardConfirm'
@@ -72,6 +73,14 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <SendSuccess />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'send/details',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <SendTransactionDetails />
       </Suspense>
     ),
   },
