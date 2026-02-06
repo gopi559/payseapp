@@ -24,7 +24,7 @@ const SendSuccess = () => {
 
   const handleDone = () => {
     sessionStorage.removeItem('sendSuccess')
-    navigate('/customer/home')
+    navigate('/customer/send')
   }
 
   const handleViewDetails = () => {

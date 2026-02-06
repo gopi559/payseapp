@@ -5,11 +5,12 @@ import { IoHome, IoCashOutline } from 'react-icons/io5'
 import { MdOutlineArrowOutward } from 'react-icons/md'
 import { GoArrowDownLeft } from 'react-icons/go'
 import { FaCreditCard, FaListAlt } from 'react-icons/fa'
-import { HiExclamationTriangle, HiTicket } from 'react-icons/hi2'
+import { HiExclamationTriangle } from 'react-icons/hi2'
 import { BsCashCoin } from 'react-icons/bs'
 import { CgProfile } from 'react-icons/cg'
 import { CiLogout } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
+import voucherIcon from '../assets/PayseyPOSCashCode.svg'
 import authService from '../Login/auth.service.jsx'
 
 const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
@@ -52,7 +53,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
     { icon: <FaListAlt />, label: 'Transactions', route: '/customer/transactions', isComponent: true },
     { icon: <HiExclamationTriangle />, label: 'Disputes', route: '/customer/disputes', isComponent: true },
-    { icon: <HiTicket />, label: 'Voucher', route: '/customer/voucher', isComponent: true },
+    { icon: <img src={voucherIcon} alt="Voucher" className="w-6 h-6 object-contain" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
     { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
     { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
     { icon: <FaCreditCard />, label: 'Wallet to Card', route: '/customer/wallet-to-card', isComponent: true },
@@ -119,8 +120,10 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                   : 'text-brand-dark hover:bg-brand-surfaceMuted hover:shadow-sm'
               } ${isCollapsed ? 'justify-center px-2' : ''}`}
             >
-              <span className={`flex-none text-2xl ${isCollapsed ? 'text-2xl' : ''} ${item.isComponent ? 'flex items-center justify-center' : ''}`}>
-                {item.isComponent ? (
+              <span className={`flex-none text-2xl ${isCollapsed ? 'text-2xl' : ''} ${item.isComponent || item.isImage ? 'flex items-center justify-center' : ''}`}>
+                {item.isImage ? (
+                  <span className="flex items-center justify-center">{item.icon}</span>
+                ) : item.isComponent ? (
                   <span className="text-xl">{item.icon}</span>
                 ) : (
                   item.icon

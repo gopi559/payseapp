@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { HiArrowDownLeft } from 'react-icons/hi2'
@@ -7,8 +7,9 @@ import Button from '../../Reusable/Button'
 import Input from '../../Reusable/Input'
 import MobileInput from '../../Reusable/MobileInput'
 import AmountInput from '../../Reusable/AmountInput'
+import DataTable from '../../Reusable/Table'
 import { sendService } from '../send/send.service'
-import  receiveService  from './receive.service'
+import receiveService from './receive.service'
 
 const ReceivePage = () => {
   const user = useSelector((state) => state.auth?.user)
@@ -21,6 +22,12 @@ const ReceivePage = () => {
   const [remarks, setRemarks] = useState('')
   const [requestLoading, setRequestLoading] = useState(false)
   const [requestError, setRequestError] = useState('')
+  
+  // Request list states
+  const [requestList, setRequestList] = useState([])
+  const [listLoading, setListLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
 
   const currentUserId = user?.reg_info?.id ?? user?.reg_info?.user_id ?? user?.user_id ?? user?.id
   const currentUserMobile = (user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? '').toString().trim()
@@ -96,15 +103,185 @@ const ReceivePage = () => {
       await receiveService.requestMoney(beneficiary.user_id, parseFloat(amount), remarks || '')
       toast.success('Request sent successfully')
       setBeneficiary(null)
-      setMobile('')
+      setMobile('+93')
       setAmount('')
       setRemarks('')
+      fetchRequestList() // Refresh the list
     } catch (err) {
       const msg = err?.message || 'Request money failed'
       setRequestError(msg)
       toast.error(msg)
     } finally {
       setRequestLoading(false)
+    }
+  }
+
+  const fetchRequestList = async () => {
+    setListLoading(true)
+    try {
+      const { data } = await receiveService.getReqMoneyList({ get_cust_data: true })
+      setRequestList(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error(err)
+      toast.error(err?.message || 'Failed to load request list')
+      setRequestList([])
+    } finally {
+      setListLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchRequestList()
+  }, [])
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return '—'
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+    } catch {
+      return dateString
+    }
+  }
+
+  // Get status badge
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 1:
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-700">Paid</span>
+      case 2:
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-700">Pending</span>
+      case 3:
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-700">Declined</span>
+      default:
+        return <span className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700">Unknown</span>
+    }
+  }
+
+  // Determine if request is incoming or outgoing
+  const isIncomingRequest = (request) => {
+    return request.recv_cust_id === currentUserId
+  }
+
+  const isOutgoingRequest = (request) => {
+    return request.req_cust_id === currentUserId
+  }
+
+  // Table headers - matching API response fields
+  const headers = [
+    {
+      key: 'id',
+      label: 'ID',
+      content: (row) => row.id ?? '—',
+    },
+    {
+      key: 'type',
+      label: 'Type',
+      content: (row) => (
+        <span className={`px-2 py-1 rounded text-xs font-medium ${
+          isIncomingRequest(row)
+            ? 'bg-blue-100 text-blue-700'
+            : 'bg-purple-100 text-purple-700'
+        }`}>
+          {isIncomingRequest(row) ? 'Incoming' : 'Outgoing'}
+        </span>
+      ),
+    },
+    {
+      key: 'req_cust_id',
+      label: 'Req Cust ID',
+      content: (row) => row.req_cust_id ?? '—',
+    },
+    {
+      key: 'recv_cust_id',
+      label: 'Recv Cust ID',
+      content: (row) => row.recv_cust_id ?? '—',
+    },
+    {
+      key: 'req_cust_mobile',
+      label: 'Req Cust Mobile',
+      content: (row) => <span className="font-mono text-xs">{row.req_cust_mobile || '—'}</span>,
+    },
+    {
+      key: 'recv_cust_mobile',
+      label: 'Recv Cust Mobile',
+      content: (row) => <span className="font-mono text-xs">{row.recv_cust_mobile || '—'}</span>,
+    },
+    {
+      key: 'amount',
+      label: 'Amount',
+      content: (row) => `₹${Number(row.amount || 0).toFixed(2)}`,
+    },
+    {
+      key: 'currency_id',
+      label: 'Currency ID',
+      content: (row) => row.currency_id ?? '—',
+    },
+    {
+      key: 'remarks',
+      label: 'Remarks',
+      content: (row) => row.remarks || '—',
+    },
+    {
+      key: 'txn_rrn',
+      label: 'RRN',
+      content: (row) => <span className="font-mono text-xs">{row.txn_rrn || '—'}</span>,
+    },
+    {
+      key: 'expiry_on',
+      label: 'Expires On',
+      content: (row) => formatDate(row.expiry_on),
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      content: (row) => getStatusBadge(row.status),
+    },
+    {
+      key: 'added_on',
+      label: 'Added On',
+      content: (row) => formatDate(row.added_on),
+    },
+    {
+      key: 'last_modified_on',
+      label: 'Last Modified On',
+      content: (row) => formatDate(row.last_modified_on),
+    },
+    {
+      key: 'last_modified_by',
+      label: 'Last Modified By',
+      content: (row) => row.last_modified_by || '—',
+    },
+    {
+      key: 'req_cust_name',
+      label: 'Req Cust Name',
+      content: (row) => {
+        const name = [row.req_cust_fname, row.req_cust_lname].filter(Boolean).join(' ') || '—'
+        return name
+      },
+    },
+    {
+      key: 'recv_cust_name',
+      label: 'Recv Cust Name',
+      content: (row) => {
+        const name = [row.recv_cust_fname, row.recv_cust_lname].filter(Boolean).join(' ') || '—'
+        return name
+      },
+    },
+  ]
+
+  const handlePageChange = (page, newPageSize) => {
+    setCurrentPage(page)
+    if (newPageSize != null && newPageSize !== pageSize) {
+      setPageSize(newPageSize)
     }
   }
 
@@ -115,19 +292,19 @@ const ReceivePage = () => {
           Receive Money
         </h1>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 shrink-0">
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-32 h-32 sm:w-36 sm:h-36 bg-brand-surfaceMuted rounded-xl flex items-center justify-center mb-3">
-              <HiArrowDownLeft className="w-12 h-12 text-brand-primary" />
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 shrink-0">
+          <div className="flex flex-col items-center mb-4">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-brand-surfaceMuted rounded-lg flex items-center justify-center mb-2">
+              <HiArrowDownLeft className="w-6 h-6 sm:w-8 sm:h-8 text-brand-primary" />
             </div>
-            <p className="text-xs sm:text-sm text-gray-600 mb-1">Your Wallet ID</p>
-            <p className="text-base sm:text-lg font-bold text-brand-dark font-mono break-all text-center">
+            <p className="text-xs text-gray-600 mb-1">Your Wallet ID</p>
+            <p className="text-sm sm:text-base font-bold text-brand-dark font-mono break-all text-center">
               {walletId ?? '—'}
             </p>
           </div>
-          <div className="border-t border-gray-100 pt-4">
-            <h3 className="text-sm sm:text-base font-semibold text-brand-dark mb-3">Share Details</h3>
-            <div className="space-y-2.5 text-sm">
+          <div className="border-t border-gray-100 pt-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-brand-dark mb-2">Share Details</h3>
+            <div className="space-y-2 text-xs sm:text-sm">
               <div className="flex justify-between gap-4">
                 <span className="text-gray-600">Name</span>
                 <span className="font-medium text-brand-dark truncate max-w-[60%] text-right">
@@ -226,6 +403,26 @@ const ReceivePage = () => {
               </>
             )}
           </div>
+        </div>
+
+        {/* Request Money List Table */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 shrink-0">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Request Money History</h2>
+          <DataTable
+            data={requestList}
+            headers={headers}
+            loading={listLoading}
+            searchPlaceholder="Search requests..."
+            totalItems={requestList.length}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            pageSizeOptions={[10, 20, 50, 100]}
+            totalRowsLabel="Total Requests: {count}"
+            emptyMessage="No money requests yet."
+            fillHeight={false}
+            tableMaxHeight="400px"
+          />
         </div>
       </div>
     </PageContainer>

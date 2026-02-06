@@ -75,3 +75,5 @@ export const CARD_TO_WALLET_SEND_OTP = `${MAIN_API_URL}/external_card/card_to_wa
 
 
 export const CARD_TO_WALLET_CNP = `${MAIN_API_URL}/external_card/card_to_wallet_cnp`;
+
+export const REQ_MONEY_LIST = `${MAIN_API_URL}/transaction_web/customer/reqmoney_list`;

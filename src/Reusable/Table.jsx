@@ -34,14 +34,21 @@ const DataTable = ({
   const filteredData = useMemo(() => {
     if (!Array.isArray(data)) return []
     if (!searchQuery.trim()) return data
-    const q = searchQuery.toLowerCase()
-    return data.filter((row) =>
-      headers.some((h) => {
-        const val = row[h.key]
-        return String(val ?? '').toLowerCase().includes(q)
+    const q = searchQuery.toLowerCase().trim()
+    return data.filter((row) => {
+      // Search through all row properties, not just header keys
+      const searchableValues = Object.values(row).map((val) => {
+        if (val == null) return ''
+        if (typeof val === 'object') {
+          // Handle nested objects (like req_cust_fname, recv_cust_fname, etc.)
+          return JSON.stringify(val)
+        }
+        return String(val)
       })
-    )
-  }, [data, searchQuery, headers])
+      const searchableText = searchableValues.join(' ').toLowerCase()
+      return searchableText.includes(q)
+    })
+  }, [data, searchQuery])
 
   const totalForPagination = totalItems > 0 ? totalItems : filteredData.length
   const totalPages = Math.max(1, Math.ceil(totalForPagination / effectivePageSize))
