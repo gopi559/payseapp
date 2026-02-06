@@ -9,6 +9,7 @@ export const ROUTES = {
   WALLET_TO_CARD: '/customer/wallet-to-card',
   WALLET_TO_CARD_CONFIRM: '/customer/wallet-to-card/confirm',
   WALLET_TO_CARD_SUCCESS: '/customer/wallet-to-card/success',
+  WALLET_TO_CARD_DETAILS: '/customer/wallet-to-card/details',
   CASH_IN: '/customer/cash-in',
   CASH_IN_CONFIRM: '/customer/cash-in/confirm',
   CASH_IN_SUCCESS: '/customer/cash-in/success',

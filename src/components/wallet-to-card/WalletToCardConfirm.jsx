@@ -68,13 +68,19 @@ const WalletToCardConfirm = () => {
     setError('')
     try {
       await sendService.verifyTransactionOtp('MOBILE', senderMobile, otp)
-      const { data } = await walletToCardService.walletToCard(
+      const { data: transactionData } = await walletToCardService.walletToCard(
         walletToCardData.card_number,
         parseFloat(walletToCardData.txn_amount),
         walletToCardData.remarks || ''
       )
       sessionStorage.removeItem('walletToCardData')
-      sessionStorage.setItem('walletToCardSuccess', JSON.stringify(data ?? {}))
+      sessionStorage.setItem('walletToCardSuccess', JSON.stringify({
+        ...transactionData,
+        card_number: walletToCardData.card_number,
+        card_name: walletToCardData.card_name,
+        txn_amount: walletToCardData.txn_amount,
+        remarks: walletToCardData.remarks || '',
+      }))
       toast.success('Money sent to card successfully')
       setTimeout(() => {
         navigate('/customer/wallet-to-card/success')

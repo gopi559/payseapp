@@ -11,6 +11,7 @@ import ReceivePage from '../components/receive/ReceivePage'
 import WalletToCardStart from '../components/wallet-to-card/WalletToCardStart'
 import WalletToCardConfirm from '../components/wallet-to-card/WalletToCardConfirm'
 import WalletToCardSuccess from '../components/wallet-to-card/WalletToCardSuccess'
+import WalletToCardTransactionDetails from '../components/wallet-to-card/WalletToCardTransactionDetails'
 import CashInPage from '../components/cash-in/CashInPage'
 import CashInConfirm from '../components/cash-in/CashInConfirm'
 import CashInSuccess from '../components/cash-in/CashInSuccess'
@@ -113,6 +114,14 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <WalletToCardSuccess />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'wallet-to-card/details',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <WalletToCardTransactionDetails />
       </Suspense>
     ),
   },
