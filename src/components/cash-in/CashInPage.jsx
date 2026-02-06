@@ -117,6 +117,7 @@ const CashInPage = () => {
         cvv,
         expiry_date: expiry,
         txn_amount: amount,
+        card_name: cardName, // Store card name
       })
     )
     navigate('/customer/cash-in/confirm')

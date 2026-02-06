@@ -15,6 +15,7 @@ import WalletToCardTransactionDetails from '../components/wallet-to-card/WalletT
 import CashInPage from '../components/cash-in/CashInPage'
 import CashInConfirm from '../components/cash-in/CashInConfirm'
 import CashInSuccess from '../components/cash-in/CashInSuccess'
+import CashInTransactionDetails from '../components/cash-in/CashInTransactionDetails'
 import CashOutPage from '../components/cash-out/CashOutPage'
 import CashOutConfirm from '../components/cash-out/CashOutConfirm'
 import CashOutSuccess from '../components/cash-out/CashOutSuccess'
@@ -146,6 +147,14 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <CashInSuccess />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'cash-in/details',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <CashInTransactionDetails />
       </Suspense>
     ),
   },

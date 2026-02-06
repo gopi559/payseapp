@@ -73,7 +73,7 @@ const CashInConfirm = () => {
     setOtpError('')
     setError('')
     try {
-      const { data } = await cashInService.confirmCardToWallet({
+      const { data: transactionData } = await cashInService.confirmCardToWallet({
         card_number: cashInData.card_number,
         txn_amount: cashInData.txn_amount,
         cvv: cashInData.cvv,
@@ -83,7 +83,14 @@ const CashInConfirm = () => {
         stan: cashInData.stan,
       })
       sessionStorage.removeItem('cashInData')
-      sessionStorage.setItem('cashInSuccess', JSON.stringify(data ?? {}))
+      sessionStorage.setItem('cashInSuccess', JSON.stringify({
+        ...transactionData,
+        card_number: cashInData.card_number,
+        card_name: cashInData.card_name,
+        txn_amount: cashInData.txn_amount,
+        cvv: cashInData.cvv,
+        expiry_date: cashInData.expiry_date,
+      }))
       toast.success('Cash in successful')
       setTimeout(() => {
         navigate('/customer/cash-in/success')
@@ -121,6 +128,7 @@ const CashInConfirm = () => {
             <ConfirmCard
               items={[
                 { label: 'Card', value: maskedCard },
+                { label: 'Card Name', value: cashInData.card_name || 'N/A' },
                 { label: 'Amount', value: `₹${parseFloat(cashInData.txn_amount).toFixed(2)}` },
               ]}
               total={parseFloat(cashInData.txn_amount)}
