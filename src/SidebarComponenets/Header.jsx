@@ -54,7 +54,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-brand-primary to-brand-action text-white px-4 py-3">
+    <div className="bg-brand-secondary text-white px-4 py-3">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
           <button

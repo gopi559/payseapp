@@ -62,12 +62,19 @@ const SendConfirm = () => {
     setError('')
     try {
       await sendService.verifyTransactionOtp('MOBILE', senderMobile, otp)
-      await sendService.sendMoneyTransaction(
+      const { data } = await sendService.sendMoneyTransaction(
         sendData.beneficiary.user_id,
         parseFloat(sendData.amount),
         sendData.remarks || ''
       )
       sessionStorage.removeItem('sendData')
+      sessionStorage.setItem('sendSuccess', JSON.stringify({
+        ...data,
+        beneficiary_name: sendData.beneficiary.displayName,
+        beneficiary_mobile: sendData.beneficiary.reg_mobile,
+        amount: sendData.amount,
+        remarks: sendData.remarks || '',
+      }))
       toast.success('Payment successful')
       setTimeout(() => {
         navigate('/customer/send/success')

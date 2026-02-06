@@ -7,7 +7,9 @@ import SendStart from '../components/send/SendStart.jsx'
 import SendConfirm from '../components/send/SendConfirm.jsx'
 import SendSuccess from '../components/send/SendSuccess.jsx'
 import ReceivePage from '../components/receive/ReceivePage'
-import WalletToCardPage from '../components/wallet-to-card/WalletToCardPage'
+import WalletToCardStart from '../components/wallet-to-card/WalletToCardStart'
+import WalletToCardConfirm from '../components/wallet-to-card/WalletToCardConfirm'
+import WalletToCardSuccess from '../components/wallet-to-card/WalletToCardSuccess'
 import CashInPage from '../components/cash-in/CashInPage'
 import CashInConfirm from '../components/cash-in/CashInConfirm'
 import CashInSuccess from '../components/cash-in/CashInSuccess'
@@ -85,7 +87,23 @@ export const customerRoutes = [
     path: 'wallet-to-card',
     element: (
       <Suspense fallback={<LinearProgress />}>
-        <WalletToCardPage />
+        <WalletToCardStart />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'wallet-to-card/confirm',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <WalletToCardConfirm />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'wallet-to-card/success',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <WalletToCardSuccess />
       </Suspense>
     ),
   },
