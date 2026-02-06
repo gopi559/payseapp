@@ -6,7 +6,6 @@ const BottomNav = () => {
 
   const navItems = [
     { icon: '🏠', label: 'Home', route: '/customer/home' },
-    { icon: '📜', label: 'History', route: '/customer/history' },
     { icon: '💳', label: 'Pay', route: '/customer/send', isPay: true },
     { icon: '💳', label: 'Cards', route: '/customer/cards' },
     { icon: '👤', label: 'Profile', route: '/customer/profile' },

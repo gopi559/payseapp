@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { IoHome, IoCashOutline } from 'react-icons/io5'
 import { MdOutlineArrowOutward } from 'react-icons/md'
 import { GoArrowDownLeft } from 'react-icons/go'
-import { FaHistory, FaCreditCard, FaListAlt } from 'react-icons/fa'
+import { FaCreditCard, FaListAlt } from 'react-icons/fa'
 import { HiExclamationTriangle, HiTicket } from 'react-icons/hi2'
 import { BsCashCoin } from 'react-icons/bs'
 import { CgProfile } from 'react-icons/cg'
@@ -50,7 +50,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 
   const menuItems = [
     { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
-    { icon: <FaHistory />, label: 'History', route: '/customer/history', isComponent: true },
     { icon: <FaListAlt />, label: 'Transactions', route: '/customer/transactions', isComponent: true },
     { icon: <HiExclamationTriangle />, label: 'Disputes', route: '/customer/disputes', isComponent: true },
     { icon: <HiTicket />, label: 'Voucher', route: '/customer/voucher', isComponent: true },

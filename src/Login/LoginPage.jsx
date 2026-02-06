@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import Lottie from 'lottie-react'
 import LoginForm from './LoginForm.jsx'
-import logoImage from '../assets/Paysey Payment Logo white.png'
+import logoImage from '../assets/PayseyPaymentLogowhite.png'
 import illustrationData from '../assets/login-illstration-payse.json'
 
 const LoginPage = () => {

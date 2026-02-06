@@ -1,7 +1,7 @@
 import React from 'react'
 import { MdOutlineArrowOutward } from 'react-icons/md'
 import { GoArrowDownLeft } from 'react-icons/go'
-import { FaHistory, FaCreditCard } from 'react-icons/fa'
+import { FaCreditCard } from 'react-icons/fa'
 import { BsCashCoin } from 'react-icons/bs'
 import { IoCashOutline } from 'react-icons/io5'
 import ActionTile from './ActionTile'
@@ -14,8 +14,7 @@ const ActionGrid = () => {
     { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
     { icon: <IoCashOutline />, label: 'Cash Out', route: '/customer/cash-out', isComponent: true },
     { icon: '📱', label: 'Airtime', route: '/customer/send' },
-    { icon: '🎫', label: 'Voucher', route: '/customer/send' },
-    { icon: <FaHistory />, label: 'History', route: '/customer/history', isComponent: true },
+    { icon: '🎫', label: 'Voucher', route: '/customer/voucher' },
   ]
   
   return (

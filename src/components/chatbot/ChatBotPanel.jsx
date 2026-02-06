@@ -60,6 +60,9 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const [isNewChat, setIsNewChat] = useState(true)
+  const [currentSessionId, setCurrentSessionId] = useState(null)
+  const [isRequestingLiveAgent, setIsRequestingLiveAgent] = useState(false)
+  const [waitingForDisputeDescription, setWaitingForDisputeDescription] = useState(false)
   const messagesEndRef = useRef(null)
   const panelRef = useRef(null)
   const scrollContainerRef = useRef(null)
@@ -101,6 +104,8 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
       setAllFetchedPrevious([])
       setDisplayedPreviousCount(0)
       setError('')
+      setWaitingForDisputeDescription(false)
+      setCurrentSessionId(null)
       hasFetchedRef.current = true
       fetchPreviousMessages()
     }
@@ -157,6 +162,22 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     return () => cancelAnimationFrame(raf)
   }, [previousMessages, sessionMessages])
 
+  // Check if message indicates user wants live support
+  const isLiveSupportRequest = (message) => {
+    const lowerMessage = message.toLowerCase().trim()
+    const liveSupportKeywords = [
+      'i need live support',
+      'need live support',
+      'live support',
+      'talk to agent',
+      'speak to agent',
+      'human agent',
+      'live agent',
+      'connect to agent',
+    ]
+    return liveSupportKeywords.some((keyword) => lowerMessage.includes(keyword))
+  }
+
   const handleSend = async (e) => {
     e.preventDefault()
     const text = input.trim()
@@ -166,15 +187,71 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
     const now = new Date().toISOString()
     setSessionMessages((prev) => [...prev, { role: 'user', text, timestamp: now }])
     setLoading(true)
+    
     try {
+      // If we're waiting for dispute description, use this message to request live agent
+      if (waitingForDisputeDescription && currentSessionId) {
+        setIsRequestingLiveAgent(true)
+        try {
+          const liveAgentRes = await chatbotService.requestLiveAgent({
+            session_id: currentSessionId,
+            cust_id: String(custId),
+            dispute_description: text,
+          })
+          
+          const waitTime = liveAgentRes?.estimated_wait || '5-10 minutes'
+          const queueId = liveAgentRes?.queue_id
+          const successMsg = `✅ Live agent request submitted! Queue ID: ${queueId || 'N/A'}\nEstimated wait time: ${waitTime}\n\nYou will be connected to an agent shortly.`
+          
+          setSessionMessages((prev) => [...prev, { 
+            role: 'assistant', 
+            text: successMsg, 
+            timestamp: new Date().toISOString() 
+          }])
+          
+          setWaitingForDisputeDescription(false)
+          setCurrentSessionId(null)
+        } catch (liveAgentErr) {
+          setError(liveAgentErr?.message || 'Failed to request live agent')
+          setSessionMessages((prev) => [...prev, { 
+            role: 'assistant', 
+            text: 'Sorry, we could not connect you to a live agent at this time. Please try again later.', 
+            timestamp: new Date().toISOString() 
+          }])
+          setWaitingForDisputeDescription(false)
+        } finally {
+          setIsRequestingLiveAgent(false)
+          setLoading(false)
+        }
+        return
+      }
+      
+      // Normal chat flow
       const res = await chatbotService.sendChat({
         cust_id: String(custId),
         message: text,
         new_chat: isNewChat,
       })
       setIsNewChat(false)
+      
+      // Store session_id for live agent request
+      if (res?.session_id) {
+        setCurrentSessionId(res.session_id)
+      }
+      
       const reply = res?.response ?? res?.data?.response ?? res?.data?.message ?? res?.message ?? 'No response.'
       setSessionMessages((prev) => [...prev, { role: 'assistant', text: reply, timestamp: new Date().toISOString() }])
+      
+      // If user asked for live support, ask for dispute description
+      if (isLiveSupportRequest(text) && res?.session_id) {
+        setWaitingForDisputeDescription(true)
+        setSessionMessages((prev) => [...prev, { 
+          role: 'assistant', 
+          text: 'Please describe your issue in one line.', 
+          timestamp: new Date().toISOString() 
+        }])
+      }
+      
       setTimeout(() => {
         fetchPreviousMessages()
       }, 500)
@@ -281,12 +358,12 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
+            placeholder={waitingForDisputeDescription ? "Describe your issue..." : "Type a message..."}
             className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
-            disabled={loading || !custId}
+            disabled={loading || isRequestingLiveAgent || !custId}
           />
-          <Button type="submit" size="sm" disabled={loading || !input.trim() || !custId}>
-            {loading ? '...' : 'Send'}
+          <Button type="submit" size="sm" disabled={loading || isRequestingLiveAgent || !input.trim() || !custId}>
+            {loading || isRequestingLiveAgent ? '...' : 'Send'}
           </Button>
         </div>
       </form>

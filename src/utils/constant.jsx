@@ -21,7 +21,7 @@ export const CARD_REQUEST = `${MAIN_API_URL}/card/card_req`;
 
 export const BENIFICIARY_LIST = `${MAIN_API_URL}/card/beneficiary/list`;
 export const BENIFICIARY_ADD = `${MAIN_API_URL}/card/beneficiary/add`;
-export const BENIFICIARY_EDIT = `${MAIN_API_URL}/card/beneficiary/edit`;
+export const BENIFICIARY_EDIT = `  ${MAIN_API_URL}/card/beneficiary/edit`;
 export const BENIFICIARY_DELETE = `${MAIN_API_URL}/card/beneficiary/remove`;
 
 
@@ -29,7 +29,9 @@ export const BENIFICIARY_DELETE = `${MAIN_API_URL}/card/beneficiary/remove`;
 
 export const CHATBOT_BASE_URL = "https://aml.innovitegra.in"
 
+export const API_CHATBOT_CHAT = `${CHATBOT_BASE_URL}/chatbot/chat`
 export const API_CHATBOT_NEW_CHAT = `${CHATBOT_BASE_URL}/chatbot/chat`
+export const API_CHATBOT_RETRIEVE_PREVIOUS = `${CHATBOT_BASE_URL}/chatbot/retrieve-previous-chat`
 export const API_CHATBOT_PREVIOUS_CHAT = `${CHATBOT_BASE_URL}/chatbot/retrieve-previous-chat`
 
 export const API_CHATBOT_REQUEST_LIVE_AGENT = `${CHATBOT_BASE_URL}/chatbot/request-live-agent`
