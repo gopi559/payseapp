@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
+import MobileInput from '../../Reusable/MobileInput'
 import voucherService from './voucher.service.jsx'
 
 const VoucherCreate = () => {
@@ -10,7 +11,7 @@ const VoucherCreate = () => {
   const [form, setForm] = useState({
     amount: '',
     receiver_name: '',
-    receiver_mobile: '',
+    receiver_mobile: '+93',
     receiver_id_type: 1,
     receiver_id_number: '',
   })
@@ -19,14 +20,19 @@ const VoucherCreate = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.amount?.trim() || !form.receiver_name?.trim() || !form.receiver_mobile?.trim() || !form.receiver_id_number?.trim()) {
+    // Ensure +93 prefix is included
+    const finalMobile = form.receiver_mobile?.startsWith('+93') 
+      ? form.receiver_mobile 
+      : `+93${(form.receiver_mobile || '').replace(/^\+?\d+/, '').replace(/\D/g, '')}`
+    
+    if (!form.amount?.trim() || !form.receiver_name?.trim() || !finalMobile?.trim() || finalMobile === '+93' || !form.receiver_id_number?.trim()) {
       toast.error('Please fill all required fields')
       return
     }
     setSubmitting(true)
     setCreatedResult(null)
     try {
-      const result = await voucherService.createCashcode(form)
+      const result = await voucherService.createCashcode({ ...form, receiver_mobile: finalMobile })
       setCreatedResult(result?.data ?? null)
       toast.success(result?.message || 'Cash code created successfully')
     } catch (err) {
@@ -38,7 +44,7 @@ const VoucherCreate = () => {
   }
 
   const resetForm = () => {
-    setForm({ amount: '', receiver_name: '', receiver_mobile: '', receiver_id_type: 1, receiver_id_number: '' })
+    setForm({ amount: '', receiver_name: '', receiver_mobile: '+93', receiver_id_type: 1, receiver_id_number: '' })
     setCreatedResult(null)
   }
 
@@ -95,13 +101,11 @@ const VoucherCreate = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Receiver Mobile *</label>
-                  <input
-                    type="text"
+                  <MobileInput
+                    label="Receiver Mobile *"
                     value={form.receiver_mobile}
                     onChange={(e) => setForm((f) => ({ ...f, receiver_mobile: e.target.value }))}
-                    placeholder="e.g. 93123456789"
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                    placeholder="e.g. 998877665"
                     required
                   />
                 </div>

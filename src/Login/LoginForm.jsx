@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import Input from '../Reusable/Input'
+import MobileInput from '../Reusable/MobileInput'
 import Button from '../Reusable/Button'
 import OtpInput from '../Reusable/OtpInput'
 import useLogin from '../Hooks/useLogin'
@@ -9,7 +10,7 @@ const LoginForm = () => {
   const location = useLocation()
   const { sendOtp, verifyOtp, errorMessage, showModal, setShowModal } = useLogin()
   const mobileFromState = location.state?.mobile ?? ''
-  const [mobileNumber, setMobileNumber] = useState(mobileFromState)
+  const [mobileNumber, setMobileNumber] = useState(mobileFromState || '+93')
   const [otp, setOtp] = useState('')
   const [isFlipped, setIsFlipped] = useState(false)
   const [error, setError] = useState('')
@@ -148,20 +149,13 @@ const LoginForm = () => {
                 </div>
               )}
               
-              <Input
+              <MobileInput
                 label="Mobile Number"
-                type="tel"
                 value={mobileNumber}
                 onChange={(e) => {
-                  let value = e.target.value.trim()
-                  value = value.replace(/[^\d+]/g, '')
-                  if (value.includes('+')) {
-                    value = `+${value.replace(/\+/g, '')}`
-                  }
-                  const maxLen = value.startsWith('+') ? 16 : 15
-                  setMobileNumber(value.slice(0, maxLen))
+                  setMobileNumber(e.target.value)
                 }}
-                placeholder="e.g. +9711234567890"
+                placeholder="e.g. 998877665"
                 required
                 autoFocus
               />

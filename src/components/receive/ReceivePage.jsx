@@ -5,6 +5,7 @@ import { HiArrowDownLeft } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import Input from '../../Reusable/Input'
+import MobileInput from '../../Reusable/MobileInput'
 import AmountInput from '../../Reusable/AmountInput'
 import { sendService } from '../send/send.service'
 import  receiveService  from './receive.service'
@@ -13,7 +14,7 @@ const ReceivePage = () => {
   const user = useSelector((state) => state.auth?.user)
   const walletId = useSelector((state) => state.wallet?.walletId)
 
-  const [mobile, setMobile] = useState('')
+  const [mobile, setMobile] = useState('+93')
   const [beneficiary, setBeneficiary] = useState(null)
   const [validating, setValidating] = useState(false)
   const [amount, setAmount] = useState('')
@@ -26,16 +27,18 @@ const ReceivePage = () => {
 
   const handleValidateBeneficiary = async () => {
     const trimmed = mobile.trim()
-    if (!trimmed) {
+    if (!trimmed || trimmed === '+93') {
       setRequestError('Please enter beneficiary mobile number')
       return
     }
+    // Ensure +93 prefix is included
+    const finalMobile = trimmed.startsWith('+93') ? trimmed : `+93${trimmed.replace(/^\+?\d+/, '').replace(/\D/g, '')}`
     setRequestError('')
     setValidating(true)
     try {
-      const { data } = await sendService.validateBeneficiary(trimmed)
+      const { data } = await sendService.validateBeneficiary(finalMobile)
       const benUserId = data.user_id
-      const benMobile = (data.reg_mobile ?? trimmed).toString().trim()
+      const benMobile = (data.reg_mobile ?? finalMobile).toString().trim()
       if (benUserId != null && benUserId === currentUserId) {
         setBeneficiary(null)
         const msg = 'You cannot request money from yourself. Please enter a different mobile number.'
@@ -52,7 +55,7 @@ const ReceivePage = () => {
       }
       setBeneficiary({
         user_id: data.user_id,
-        reg_mobile: data.reg_mobile ?? trimmed,
+        reg_mobile: data.reg_mobile ?? finalMobile,
         reg_email: data.reg_email ?? '',
         first_name: data.first_name ?? '',
         middle_name: data.middle_name ?? null,
@@ -149,7 +152,7 @@ const ReceivePage = () => {
             </div>
           )}
           <div className="space-y-4">
-            <Input
+            <MobileInput
               label="Beneficiary mobile number"
               value={mobile}
               onChange={(e) => {
@@ -157,7 +160,7 @@ const ReceivePage = () => {
                 setBeneficiary(null)
                 setRequestError('')
               }}
-              placeholder="e.g. +93998877665"
+              placeholder="e.g. 998877665"
               disabled={!!beneficiary}
             />
 

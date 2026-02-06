@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
 import Input from '../Reusable/Input'
+import MobileInput from '../Reusable/MobileInput'
 import Button from '../Reusable/Button'
 import logoImage from '../assets/Paysey Payment Logo white.png'
 import Lottie from 'lottie-react'
@@ -11,7 +12,7 @@ import illustrationData from '../assets/login-illstration-payse.json'
 const LandingPage = () => {
   const navigate = useNavigate()
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
-  const [mobileNumber, setMobileNumber] = useState('')
+  const [mobileNumber, setMobileNumber] = useState('+93')
   const [error, setError] = useState('')
 
   if (isAuthenticated) {
@@ -26,7 +27,9 @@ const LandingPage = () => {
       setError('Please enter a valid mobile number')
       return
     }
-    navigate('/', { state: { mobile: mobileNumber.trim() } })
+    // Ensure +93 prefix is included
+    const finalMobile = mobileNumber.startsWith('+93') ? mobileNumber : `+93${mobileNumber.replace(/^\+?\d+/, '').replace(/\D/g, '')}`
+    navigate('/', { state: { mobile: finalMobile.trim() } })
   }
 
   return (
@@ -67,18 +70,13 @@ const LandingPage = () => {
                 {error}
               </div>
             )}
-            <Input
+            <MobileInput
               label="Mobile Number"
-              type="tel"
               value={mobileNumber}
               onChange={(e) => {
-                let value = e.target.value.trim()
-                value = value.replace(/[^\d+]/g, '')
-                if (value.includes('+')) value = `+${value.replace(/\+/g, '')}`
-                const maxLen = value.startsWith('+') ? 16 : 15
-                setMobileNumber(value.slice(0, maxLen))
+                setMobileNumber(e.target.value)
               }}
-              placeholder="e.g. +9711234567890"
+              placeholder="e.g. 998877665"
               required
               autoFocus
             />

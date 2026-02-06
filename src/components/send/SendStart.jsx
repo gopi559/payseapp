@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
 import Input from '../../Reusable/Input'
+import MobileInput from '../../Reusable/MobileInput'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
 import { sendService } from './send.service'
@@ -15,7 +16,7 @@ const SendStart = () => {
   const currentUserId = user?.reg_info?.id ?? user?.reg_info?.user_id ?? user?.user_id ?? user?.id
   const currentUserMobile = (user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? '').toString().trim()
 
-  const [mobile, setMobile] = useState('')
+  const [mobile, setMobile] = useState('+93')
   const [beneficiary, setBeneficiary] = useState(null)
   const [amount, setAmount] = useState('')
   const [remarks, setRemarks] = useState('')
@@ -24,16 +25,18 @@ const SendStart = () => {
 
   const handleValidate = async () => {
     const trimmed = mobile.trim()
-    if (!trimmed) {
+    if (!trimmed || trimmed === '+93') {
       setError('Please enter beneficiary mobile number')
       return
     }
+    // Ensure +93 prefix is included
+    const finalMobile = trimmed.startsWith('+93') ? trimmed : `+93${trimmed.replace(/^\+?\d+/, '').replace(/\D/g, '')}`
     setError('')
     setValidating(true)
     try {
-      const { data } = await sendService.validateBeneficiary(trimmed)
+      const { data } = await sendService.validateBeneficiary(finalMobile)
       const benUserId = data.user_id
-      const benMobile = (data.reg_mobile ?? trimmed).toString().trim()
+      const benMobile = (data.reg_mobile ?? finalMobile).toString().trim()
       if (benUserId != null && benUserId === currentUserId) {
         setBeneficiary(null)
         const msg = 'You cannot send money to yourself. Please enter a different mobile number.'
@@ -50,7 +53,7 @@ const SendStart = () => {
       }
       setBeneficiary({
         user_id: data.user_id,
-        reg_mobile: data.reg_mobile ?? trimmed,
+        reg_mobile: data.reg_mobile ?? finalMobile,
         first_name: data.first_name ?? '',
         middle_name: data.middle_name ?? null,
         last_name: data.last_name ?? '',
@@ -108,7 +111,7 @@ const SendStart = () => {
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <div className="space-y-4 sm:space-y-5">
-            <Input
+            <MobileInput
               label="Beneficiary mobile number"
               value={mobile}
               onChange={(e) => {
@@ -116,7 +119,7 @@ const SendStart = () => {
                 setBeneficiary(null)
                 setError('')
               }}
-              placeholder="e.g. +93998877665"
+              placeholder="e.g. 998877665"
               disabled={!!beneficiary}
             />
 
