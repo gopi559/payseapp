@@ -6,16 +6,7 @@ import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/Table'
 import Button from '../../Reusable/Button'
 import voucherService from './voucher.service.jsx'
-
-const formatDate = (dateString) => {
-  if (!dateString) return '—'
-  try {
-    const d = new Date(dateString)
-    return d.toLocaleString()
-  } catch {
-    return dateString
-  }
-}
+import { formatTableDateTime } from '../../utils/formatDate'
 
 const VoucherPage = () => {
   const navigate = useNavigate()
@@ -50,13 +41,53 @@ const VoucherPage = () => {
   }
 
   const totalItems = data.length
-  const sample = data[0]
-  const keys = sample ? Object.keys(sample).filter((k) => k !== 'actions') : ['cashcode', 'amount', 'receiver_name', 'receiver_mobile', 'status', 'temp_pin', 'created_at']
+  
+  // Only show these specific columns
+  const allowedKeys = [
+    'Cashcode',
+    'Channel',
+    'Amount',
+    'ReceiverName',
+    'ReceiverMobile',
+    'ReceiverIDNumber',
+    'ReceiverFatherName',
+    'ProvinceName',
+    'DistrictName',
+    'VillageName',
+    'CreatedAt',
+  ]
+
   const headers = [
-    ...keys.map((key) => {
-      if (key === 'created_at' || key.includes('_at'))
-        return { key, label: key.replace(/_/g, ' '), content: (row) => formatDate(row[key]) }
-      return { key, label: key.replace(/_/g, ' ') }
+    ...allowedKeys.map((key) => {
+      const label = key === 'CreatedAt' 
+        ? 'Created At' 
+        : key.replace(/([A-Z])/g, ' $1').trim()
+      
+      if (key === 'CreatedAt' || key.includes('At')) {
+        return { 
+          key, 
+          label, 
+          content: (row) => formatTableDateTime(row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()]) 
+        }
+      }
+      if (key === 'Amount') {
+        return { 
+          key, 
+          label, 
+          content: (row) => {
+            const amount = row[key] || row[key.toLowerCase()] || row['amount']
+            return amount != null ? `₹${Number(amount).toFixed(2)}` : '—'
+          }
+        }
+      }
+      return { 
+        key, 
+        label, 
+        content: (row) => {
+          // Try different key formats (original, lowercase, snake_case)
+          return row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()] || '—'
+        }
+      }
     }),
     {
       key: 'actions',

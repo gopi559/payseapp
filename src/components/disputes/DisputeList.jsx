@@ -4,16 +4,7 @@ import { HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/Table'
 import transactionService from '../transactions/transaction.service.jsx'
-
-const formatDate = (dateString) => {
-  if (!dateString) return '—'
-  try {
-    const d = new Date(dateString)
-    return d.toLocaleString()
-  } catch {
-    return dateString
-  }
-}
+import { formatTableDateTime } from '../../utils/formatDate'
 
 const DisputeList = () => {
   const [data, setData] = useState([])
@@ -60,7 +51,7 @@ const DisputeList = () => {
     {
       key: 'created_at',
       label: 'Created At',
-      content: (row) => formatDate(row.created_at),
+      content: (row) => formatTableDateTime(row.created_at),
     },
   ]
 

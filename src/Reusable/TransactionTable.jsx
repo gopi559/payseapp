@@ -1,13 +1,8 @@
 import React, { useMemo, useState } from 'react'
+import { formatTableDateTime } from '../utils/formatDate'
 
 const formatCellDate = (dateString) => {
-  if (!dateString) return '—'
-  try {
-    const d = new Date(dateString)
-    return d.toLocaleDateString()
-  } catch {
-    return dateString
-  }
+  return formatTableDateTime(dateString)
 }
 
 const DataTable = ({

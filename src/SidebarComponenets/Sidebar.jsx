@@ -11,6 +11,7 @@ import { CgProfile } from 'react-icons/cg'
 import { CiLogout } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
 import voucherIcon from '../assets/PayseyPOSCashCode.svg'
+import logoImage from '../assets/PayseyPaylogoGreen.png'
 import authService from '../Login/auth.service.jsx'
 
 const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
@@ -76,19 +77,43 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           onClick={() => isMobile && onClose()}
         >
           {!isCollapsed && (
-            <div className="flex flex-col items-center">
-              <span className="text-3xl font-bold text-brand-primary leading-tight">
-                Paysey
-              </span>
-              <span className="text-lg text-brand-dark font-medium tracking-wide">
-                Wallet
-              </span>
-            </div>
+            <>
+              {/* Logo (Active) */}
+              <div className="flex items-center justify-center">
+                <img 
+                  src={logoImage} 
+                  alt="Paysey Wallet" 
+                  className="h-12 w-auto object-contain"
+                />
+              </div>
+              {/* Title (Commented - Uncomment to use instead of logo)
+              <div className="flex flex-col items-center">
+                <span className="text-3xl font-bold text-brand-primary leading-tight">
+                  Paysey
+                </span>
+                <span className="text-lg text-brand-dark font-medium tracking-wide">
+                  Wallet
+                </span>
+              </div>
+              */}
+            </>
           )}
           {isCollapsed && (
-            <div className="w-12 h-12 bg-brand-primary rounded-full flex items-center justify-center">
-              <span className="text-2xl text-white font-bold">₹</span>
-            </div>
+            <>
+              {/* Logo (Active) */}
+              <div className="w-12 h-12 bg-brand-primary rounded-full flex items-center justify-center overflow-hidden">
+                <img 
+                  src={logoImage} 
+                  alt="Paysey" 
+                  className="h-full w-full object-contain p-1"
+                />
+              </div>
+              {/* Title (Commented - Uncomment to use instead of logo)
+              <div className="w-12 h-12 bg-brand-primary rounded-full flex items-center justify-center">
+                <span className="text-2xl text-white font-bold">₹</span>
+              </div>
+              */}
+            </>
           )}
         </Link>
       </div>

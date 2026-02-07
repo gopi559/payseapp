@@ -163,7 +163,7 @@ const SendStart = () => {
                       setError('')
                     }}
                   >
-                    Change
+                    Back
                   </Button>
                 </div>
               </>

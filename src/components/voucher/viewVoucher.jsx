@@ -3,18 +3,20 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import KeyValueDisplay from '../../Reusable/KeyValueDisplay'
+import { formatTableDateTime } from '../../utils/formatDate'
 
 const LABELS = {
-  id: 'ID',
-  cashcode: 'Cash Code',
-  amount: 'Amount',
-  receiver_name: 'Receiver Name',
-  receiver_mobile: 'Receiver Mobile',
-  receiver_id_type: 'Receiver ID Type',
-  receiver_id_number: 'Receiver ID Number',
-  status: 'Status',
-  temp_pin: 'Temp PIN',
-  created_at: 'Created At',
+  Cashcode: 'Cash Code',
+  Channel: 'Channel',
+  Amount: 'Amount',
+  ReceiverName: 'Receiver Name',
+  ReceiverMobile: 'Receiver Mobile',
+  ReceiverIDNumber: 'Receiver ID Number',
+  ReceiverFatherName: 'Receiver Father Name',
+  ProvinceName: 'Province Name',
+  DistrictName: 'District Name',
+  VillageName: 'Village Name',
+  CreatedAt: 'Created At',
 }
 
 const ViewVoucher = () => {
@@ -35,6 +37,29 @@ const ViewVoucher = () => {
     )
   }
 
+  // Format amount
+  const formatAmount = (amount) => {
+    if (amount == null) return '—'
+    return `₹${Number(amount).toFixed(2)}`
+  }
+
+  // Only include the specified keys
+  const allowedKeys = Object.keys(LABELS)
+  const filteredData = {}
+  allowedKeys.forEach((key) => {
+    // Try different key formats (PascalCase, lowercase, snake_case)
+    const value = row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()]
+    if (value !== undefined) {
+      filteredData[key] = value
+    }
+  })
+
+  // Formatters for specific fields
+  const formatters = {
+    CreatedAt: (value) => formatTableDateTime(value),
+    Amount: (value) => formatAmount(value),
+  }
+
   return (
     <PageContainer>
       <div className="bg-gray-50 min-h-full px-4 py-6 overflow-x-hidden flex flex-col">
@@ -48,7 +73,11 @@ const ViewVoucher = () => {
             </div>
           </div>
           <div className="border border-gray-200 w-full rounded-lg shadow-sm bg-white p-6 overflow-hidden">
-            <KeyValueDisplay data={row} labels={LABELS} />
+            <KeyValueDisplay 
+              data={filteredData} 
+              labels={LABELS}
+              formatters={formatters}
+            />
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import PageContainer from "../../../Reusable/PageContainer";
 import Button from "../../../Reusable/Button";
 import { getAuthToken, deviceId } from "../../../services/api";
 import { BENIFICIARY_DELETE } from "../../../utils/constant";
+import { formatTableDateTime } from "../../../utils/formatDate";
 
 const KeyValueRow = ({ label, value }) => (
   <div className="grid grid-cols-[minmax(140px,auto)_1fr] gap-4 items-center py-3 border-b border-gray-200 last:border-0 min-w-0">
@@ -21,7 +22,7 @@ const CardBeneficiaryDelete = () => {
   const row = location.state?.row ?? null;
   const [loading, setLoading] = useState(false);
 
-  const formatDate = (d) => (d ? new Date(d).toLocaleString() : "—");
+  const formatDate = (d) => formatTableDateTime(d);
   const displayData = row
     ? [
         { label: "Masked card", value: row.masked_card },

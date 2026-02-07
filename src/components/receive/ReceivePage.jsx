@@ -10,6 +10,7 @@ import AmountInput from '../../Reusable/AmountInput'
 import DataTable from '../../Reusable/Table'
 import { sendService } from '../send/send.service'
 import receiveService from './receive.service'
+import { formatTableDateTime } from '../../utils/formatDate'
 
 const ReceivePage = () => {
   const user = useSelector((state) => state.auth?.user)
@@ -134,23 +135,7 @@ const ReceivePage = () => {
     fetchRequestList()
   }, [])
 
-  // Format date
-  const formatDate = (dateString) => {
-    if (!dateString) return '—'
-    try {
-      const date = new Date(dateString)
-      return date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      })
-    } catch {
-      return dateString
-    }
-  }
+  // Import formatTableDateTime at the top of the file
 
   // Get status badge
   const getStatusBadge = (status) => {
@@ -238,7 +223,7 @@ const ReceivePage = () => {
     {
       key: 'expiry_on',
       label: 'Expires On',
-      content: (row) => formatDate(row.expiry_on),
+      content: (row) => formatTableDateTime(row.expiry_on),
     },
     {
       key: 'status',
@@ -248,12 +233,12 @@ const ReceivePage = () => {
     {
       key: 'added_on',
       label: 'Added On',
-      content: (row) => formatDate(row.added_on),
+      content: (row) => formatTableDateTime(row.added_on),
     },
     {
       key: 'last_modified_on',
       label: 'Last Modified On',
-      content: (row) => formatDate(row.last_modified_on),
+      content: (row) => formatTableDateTime(row.last_modified_on),
     },
     {
       key: 'last_modified_by',
@@ -397,7 +382,7 @@ const ReceivePage = () => {
                       setRequestError('')
                     }}
                   >
-                    Change
+                    Back
                   </Button>
                 </div>
               </>

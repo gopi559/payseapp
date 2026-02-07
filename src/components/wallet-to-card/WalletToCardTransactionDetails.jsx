@@ -392,3 +392,4 @@ const WalletToCardTransactionDetails = () => {
 export default WalletToCardTransactionDetails
 
 
+

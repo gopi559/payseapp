@@ -5,15 +5,10 @@ import { HiDocumentText, HiEye, HiEllipsisVertical, HiExclamationTriangle } from
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/TransactionTable.jsx'
 import transactionService from './transaction.service.jsx'
+import { formatTableDateTime } from '../../utils/formatDate'
 
 const DEFAULT_PAGE_SIZE = 10
 const FETCH_PAGE_SIZE = 500
-
-// Show txn_time exactly as in API response (no timezone conversion)
-const formatDateTime = (dateString) => {
-  if (!dateString) return '—'
-  return String(dateString)
-}
 
 const getDebitFirst = (row, field) => {
   const details = row?.debit_details
@@ -164,7 +159,7 @@ const TransactionList = () => {
   const totalItems = data.length
 
   const headers = [
-    { key: 'id', label: 'ID' },
+    // { key: 'id', label: 'ID' },
     { key: 'txn_id', label: 'Txn ID' },
     { key: 'rrn', label: 'RRN' },
     { key: 'txn_type', label: 'Txn Type' },
@@ -173,7 +168,7 @@ const TransactionList = () => {
     {
       key: 'txn_time',
       label: 'Time',
-      content: (row) => formatDateTime(row.txn_time),
+      content: (row) => formatTableDateTime(row.txn_time),
     },
     { key: 'txn_amount', label: 'Amount' },
     { key: 'fee_amount', label: 'Fee' },

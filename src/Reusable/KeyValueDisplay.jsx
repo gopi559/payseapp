@@ -1,4 +1,5 @@
 import React from 'react'
+import { formatTableDateTime } from '../utils/formatDate'
 
 /**
  * Reusable key-value display for API/object data.
@@ -23,13 +24,13 @@ const KeyValueDisplay = ({
   const formatSingleValue = (v) => {
     if (typeof v === 'boolean') return v ? 'Yes' : 'No'
     if (v === null || v === undefined || v === '') return emptyValue
-    // Show ISO date strings exactly as in API response (no timezone conversion)
+    // Format date strings consistently
     if (
       typeof v === 'string' &&
-      v.includes('T') &&
+      (v.includes('T') || v.match(/^\d{4}-\d{2}-\d{2}/)) &&
       !Number.isNaN(Date.parse(v))
     ) {
-      return v
+      return formatTableDateTime(v)
     }
     if (typeof v === 'object') return null // handled below as block
     return String(v)
@@ -42,13 +43,13 @@ const KeyValueDisplay = ({
     if (value === null || value === undefined || value === '') {
       return emptyValue
     }
-    // Show ISO date strings exactly as in API response (no timezone conversion)
+    // Format date strings consistently
     if (
       typeof value === 'string' &&
-      value.includes('T') &&
+      (value.includes('T') || value.match(/^\d{4}-\d{2}-\d{2}/)) &&
       !Number.isNaN(Date.parse(value))
     ) {
-      return value
+      return formatTableDateTime(value)
     }
     // Array of objects: show as readable blocks (e.g. debit_details, credit_details)
     if (
