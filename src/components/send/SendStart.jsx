@@ -7,6 +7,7 @@ import Input from '../../Reusable/Input'
 import MobileInput from '../../Reusable/MobileInput'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
+import OtpPopup from '../../Reusable/OtpPopup'
 import { sendService } from './send.service'
 
 const SendStart = () => {
@@ -22,6 +23,8 @@ const SendStart = () => {
   const [remarks, setRemarks] = useState('')
   const [error, setError] = useState('')
   const [validating, setValidating] = useState(false)
+  const [showOtpPopup, setShowOtpPopup] = useState(false)
+  const senderMobile = user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
 
   const handleValidate = async () => {
     const trimmed = mobile.trim()
@@ -90,12 +93,53 @@ const SendStart = () => {
       setError('Insufficient balance')
       return
     }
-    sessionStorage.setItem('sendData', JSON.stringify({
-      beneficiary: { ...beneficiary, displayName: beneficiaryName },
+    // Open OTP popup instead of navigating
+    setShowOtpPopup(true)
+  }
+
+  // Handle sending OTP
+  const handleSendOtp = async () => {
+    if (!senderMobile) {
+      throw new Error('Your mobile number is not available. Cannot send OTP.')
+    }
+    await sendService.generateTransactionOtp('MOBILE', senderMobile)
+  }
+
+  // Handle OTP verification and complete transaction
+  const handleVerifyOtp = async (otp) => {
+    if (!beneficiary) {
+      throw new Error('Beneficiary information is missing')
+    }
+    if (!senderMobile) {
+      throw new Error('Your mobile number is not available.')
+    }
+    // Verify OTP
+    await sendService.verifyTransactionOtp('MOBILE', senderMobile, otp)
+    // Complete transaction
+    const { data } = await sendService.sendMoneyTransaction(
+      beneficiary.user_id,
+      parseFloat(amount),
+      remarks || ''
+    )
+    // Store success data
+    sessionStorage.setItem('sendSuccess', JSON.stringify({
+      ...data,
+      beneficiary_name: beneficiaryName,
+      beneficiary_mobile: beneficiary.reg_mobile,
       amount,
-      remarks,
+      remarks: remarks || '',
     }))
-    navigate('/customer/send/confirm')
+  }
+
+  // Handle OTP popup close
+  const handleOtpPopupClose = (isSuccess = false) => {
+    setShowOtpPopup(false)
+    // Navigate to success page only after successful verification
+    if (isSuccess) {
+      setTimeout(() => {
+        navigate('/customer/send/success')
+      }, 100)
+    }
   }
 
   return (
@@ -171,6 +215,17 @@ const SendStart = () => {
           </div>
         </div>
       </div>
+
+      {/* OTP Popup */}
+      <OtpPopup
+        isOpen={showOtpPopup}
+        onClose={(isSuccess) => handleOtpPopupClose(isSuccess)}
+        onVerify={handleVerifyOtp}
+        onSendOtp={handleSendOtp}
+        mobileNumber={senderMobile}
+        title="Enter OTP to Confirm"
+        successMessage="Payment successful!"
+      />
     </PageContainer>
   )
 }
