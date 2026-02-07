@@ -10,7 +10,8 @@ const CashInSuccess = () => {
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
-    // Clear any stored data
+
+
     sessionStorage.removeItem('cashInData')
     const raw = sessionStorage.getItem('cashInSuccess')
     if (raw) {

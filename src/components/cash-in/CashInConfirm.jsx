@@ -25,7 +25,6 @@ const CashInConfirm = () => {
     setCashInData(JSON.parse(data))
   }, [navigate])
 
-  /** Send OTP button: sends OTP for the transaction */
   const handleSendOtp = async () => {
     if (!cashInData) {
       setError('Session expired. Please start again from Cash In.')
