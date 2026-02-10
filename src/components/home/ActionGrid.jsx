@@ -2,7 +2,6 @@ import React from 'react'
 import { MdOutlineArrowOutward } from 'react-icons/md'
 import { GoArrowDownLeft } from 'react-icons/go'
 import { BsCashCoin } from 'react-icons/bs'
-import { IoCashOutline } from 'react-icons/io5'
 import { FaQrcode } from 'react-icons/fa'
 import { HiCube } from 'react-icons/hi'
 import airtimeIcon from '../../assets/PayseyMobileiconMobile.svg'
@@ -12,10 +11,9 @@ import ActionTile from './ActionTile'
 
 const ActionGrid = () => {
   // Order matches mobile application exactly:
-  // 1. Cash In, 2. Cash Out, 3. Voucher, 4. Send, 5. Receive, 6. Pay Bill, 7. Scan, 8. Airtime, 9. Donate
+  // 1. Cash In, 2. Voucher, 3. Send, 4. Receive, 5. Pay Bill, 6. Scan, 7. Airtime, 8. Donate
   const actions = [
     { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
-    { icon: <IoCashOutline />, label: 'Cash Out', route: '/customer/cash-out', isComponent: true },
     { icon: <img src={voucherIcon} alt="Voucher" className="w-24 h-24 sm:w-28 sm:h-28 object-contain" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
     { icon: <MdOutlineArrowOutward />, label: 'Send', route: '/customer/send', isComponent: true },
     { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },

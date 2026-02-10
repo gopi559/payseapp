@@ -20,9 +20,6 @@ import CashInPage from '../components/cash-in/CashInPage'
 import CashInConfirm from '../components/cash-in/CashInConfirm'
 import CashInSuccess from '../components/cash-in/CashInSuccess'
 import CashInTransactionDetails from '../components/cash-in/CashInTransactionDetails'
-import CashOutPage from '../components/cash-out/CashOutPage'
-import CashOutConfirm from '../components/cash-out/CashOutConfirm'
-import CashOutSuccess from '../components/cash-out/CashOutSuccess'
 import HistoryPage from '../components/history/HistoryPage'
 import TransactionDetails from '../components/history/TransactionDetails'
 import CardsPage from '../components/cards/PaysePayCards/CardsPage'
@@ -191,30 +188,6 @@ export const customerRoutes = [
     element: (
       <Suspense fallback={<LinearProgress />}>
         <CashInTransactionDetails />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'cash-out',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CashOutPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'cash-out/confirm',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CashOutConfirm />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'cash-out/success',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CashOutSuccess />
       </Suspense>
     ),
   },

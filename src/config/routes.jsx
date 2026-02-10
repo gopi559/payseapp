@@ -18,10 +18,6 @@ export const ROUTES = {
   CASH_IN_CONFIRM: '/customer/cash-in/confirm',
   CASH_IN_SUCCESS: '/customer/cash-in/success',
   CASH_IN_DETAILS: '/customer/cash-in/details',
-  CASH_OUT: '/customer/cash-out',
-  CASH_OUT_CONFIRM: '/customer/cash-out/confirm',
-  
-  CASH_OUT_SUCCESS: '/customer/cash-out/success',
   HISTORY: '/customer/history',
   TRANSACTION_DETAILS: '/customer/history/:id',
   CARDS: '/customer/cards',

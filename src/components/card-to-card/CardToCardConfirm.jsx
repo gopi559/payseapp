@@ -1,19 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
 import ConfirmCard from '../../Reusable/ConfirmCard'
 import Button from '../../Reusable/Button'
 import OtpInput from '../../Reusable/OtpInput'
 import cardToCardService from './cardToCard.service'
-import { sendService } from '../send/send.service'
 
 const CardToCardConfirm = () => {
   const navigate = useNavigate()
-  const user = useSelector((state) => state.auth?.user)
-  const senderMobile = user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
-  
   const [cardToCardData, setCardToCardData] = useState(null)
   const [otp, setOtp] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,17 +25,28 @@ const CardToCardConfirm = () => {
     setCardToCardData(JSON.parse(data))
   }, [navigate])
 
-  /** Send OTP button: sends OTP to sender mobile */
   const handleSendOtp = async () => {
-    if (!senderMobile) {
-      setError('Your mobile number is not available. Cannot send OTP.')
+    if (!cardToCardData) {
+      setError('Session expired. Please start again from Card to Card.')
       return
     }
     setLoading(true)
     setError('')
     setOtpError('')
     try {
-      await sendService.generateTransactionOtp('MOBILE', senderMobile)
+      const { data } = await cardToCardService.sendOtp({
+        from_card: cardToCardData.from_card,
+        to_card: cardToCardData.to_card,
+        cvv: cardToCardData.cvv,
+        expiry_date: cardToCardData.expiry_date,
+        txn_amount: cardToCardData.txn_amount,
+      })
+      const rrn = data?.rrn ?? ''
+      const stan = data?.stan ?? ''
+      // Update cardToCardData with RRN and STAN
+      const updatedData = { ...cardToCardData, rrn, stan }
+      sessionStorage.setItem('cardToCardData', JSON.stringify(updatedData))
+      setCardToCardData(updatedData)
       setOtpSent(true)
       setOtp('')
       toast.success('OTP sent successfully')
@@ -55,27 +61,28 @@ const CardToCardConfirm = () => {
 
   /** Confirm button: verify OTP and complete transaction */
   const handleConfirmOtp = async () => {
-    if (!otp || otp.length !== 6 || !senderMobile) {
-      setOtpError('Please enter the 6-digit OTP')
+    if (!otp || otp.length < 4) {
+      setOtpError('Please enter the OTP received')
       return
     }
-    if (!cardToCardData) {
-      setError('Session expired. Please start again.')
+    if (!cardToCardData?.rrn || !cardToCardData?.stan) {
+      setError('Session expired. Please start again from Card to Card.')
       return
     }
     setLoading(true)
     setOtpError('')
     setError('')
     try {
-      await sendService.verifyTransactionOtp('MOBILE', senderMobile, otp)
-      const { data: transactionData } = await cardToCardService.cardToCard(
-        cardToCardData.from_card,
-        cardToCardData.to_card,
-        parseFloat(cardToCardData.txn_amount),
-        cardToCardData.cvv,
-        cardToCardData.expiry_date,
-        otp
-      )
+      const { data: transactionData } = await cardToCardService.confirmCardToCard({
+        from_card: cardToCardData.from_card,
+        to_card: cardToCardData.to_card,
+        txn_amount: cardToCardData.txn_amount,
+        cvv: cardToCardData.cvv,
+        expiry_date: cardToCardData.expiry_date,
+        otp,
+        rrn: cardToCardData.rrn,
+        stan: cardToCardData.stan,
+      })
       sessionStorage.removeItem('cardToCardData')
       sessionStorage.setItem('cardToCardSuccess', JSON.stringify({
         ...transactionData,
@@ -136,7 +143,7 @@ const CardToCardConfirm = () => {
               total={amount}
             />
             <p className="text-sm text-gray-500 mt-2 mb-4">
-              Click Send OTP to receive a code on your mobile. After verifying OTP, the transfer will be completed.
+              Click Send OTP to receive a code. After verifying OTP, the transaction will be completed.
             </p>
             <div className="mt-6 space-y-3">
               <Button onClick={handleSendOtp} fullWidth disabled={loading}>
@@ -156,17 +163,17 @@ const CardToCardConfirm = () => {
           <>
             <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 mb-4">
               <p className="text-sm text-gray-600">
-                OTP sent to <span className="font-medium">{senderMobile}</span>. Enter it below, then confirm to complete the transfer.
+                OTP sent successfully. Enter it below, then confirm to complete the transaction.
               </p>
             </div>
             <OtpInput
-              length={6}
+              length={4}
               onChange={setOtp}
               error={otpError}
               disabled={loading}
             />
             <div className="mt-4 space-y-2">
-              <Button onClick={handleConfirmOtp} fullWidth disabled={loading || otp.length !== 6}>
+              <Button onClick={handleConfirmOtp} fullWidth disabled={loading || otp.length !== 4}>
                 {loading ? 'Verifying...' : 'Confirm'}
               </Button>
               <Button
