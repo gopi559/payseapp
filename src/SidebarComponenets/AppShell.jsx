@@ -117,9 +117,10 @@ const AppShell = ({ children }) => {
         className={`
           order-first shrink-0 h-full
           lg:relative lg:block lg:translate-x-0
-          fixed left-0 top-0 bottom-0 z-50 w-72 transition-transform duration-300 ease-out
+          fixed left-0 top-0 bottom-0 z-50 w-72 transition-all duration-300 ease-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:!translate-x-0
+          ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-72'}
         `}
         style={{ willChange: 'transform' }}
       >
