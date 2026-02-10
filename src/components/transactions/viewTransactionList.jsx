@@ -142,6 +142,7 @@ const ViewTransactionList = () => {
             </div>
           </div>
           <div className="border border-gray-200 w-full rounded-lg shadow-sm bg-white p-6 overflow-hidden">
+
             <KeyValueDisplay
               data={row}
               labels={LABELS}

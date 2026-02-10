@@ -111,6 +111,9 @@ const KeyValueDisplay = ({
     return String(value)
   }
 
+  // Filter entries: only exclude keys that are explicitly in excludedKeys array
+  // NOTE: This means ALL other fields in the data object will be displayed, including "stan"
+  // if it exists in the transaction data. To hide "stan", pass excludedKeys={['stan']}
   const entries = Object.entries(data).filter(
     ([key]) => !excludedKeys.includes(key)
   )
@@ -118,6 +121,8 @@ const KeyValueDisplay = ({
   return (
     <div className={`w-full min-w-0 ${className}`}>
       {entries.map(([key, value]) => {
+        // Use custom label from labels prop, or fallback to the key name itself
+        // NOTE: If "stan" exists in data but not in labels, it will display as "stan" (or "Stan" after capitalization)
         const label = labels[key] ?? key
         const displayValue =
           typeof formatters[key] === 'function'

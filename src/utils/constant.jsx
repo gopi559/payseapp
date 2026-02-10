@@ -36,8 +36,16 @@ export const API_CHATBOT_PREVIOUS_CHAT = `${CHATBOT_BASE_URL}/chatbot/retrieve-p
 
 export const API_CHATBOT_REQUEST_LIVE_AGENT = `${CHATBOT_BASE_URL}/chatbot/request-live-agent`
 
-export const WS_CHATBOT_CUSTOMER = "ws://aml.innovitegra.in/chatbot/ws/customer"
-export const WS_CHATBOT_AGENT = "ws://aml.innovitegra.in/chatbot/ws/agent"
+// WebSocket URLs - use wss:// for secure (HTTPS) or ws:// for non-secure (HTTP)
+// Function to get the correct WebSocket URL based on current protocol
+export const getWebSocketUrl = (endpoint) => {
+  const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const baseUrl = 'aml.innovitegra.in'
+  return `${protocol}//${baseUrl}${endpoint}`
+}
+
+export const WS_CHATBOT_CUSTOMER = getWebSocketUrl('/chatbot/ws/customer')
+export const WS_CHATBOT_AGENT = getWebSocketUrl('/chatbot/ws/agent')
 
 
 
@@ -77,3 +85,6 @@ export const CARD_TO_WALLET_SEND_OTP = `${MAIN_API_URL}/external_card/card_to_wa
 export const CARD_TO_WALLET_CNP = `${MAIN_API_URL}/external_card/card_to_wallet_cnp`;
 
 export const REQ_MONEY_LIST = `${MAIN_API_URL}/transaction_web/customer/reqmoney_list`;
+
+
+export const CARD_TO_CARD_TRANSFER = `${MAIN_API_URL}/external_card/card_to_card`;

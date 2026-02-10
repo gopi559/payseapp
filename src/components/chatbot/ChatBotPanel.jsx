@@ -63,12 +63,15 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
   const [currentSessionId, setCurrentSessionId] = useState(null)
   const [isRequestingLiveAgent, setIsRequestingLiveAgent] = useState(false)
   const [waitingForDisputeDescription, setWaitingForDisputeDescription] = useState(false)
+  const [isWebSocketConnected, setIsWebSocketConnected] = useState(false)
+  const [isLiveAgentActive, setIsLiveAgentActive] = useState(false)
   const messagesEndRef = useRef(null)
   const panelRef = useRef(null)
   const scrollContainerRef = useRef(null)
   const loadMoreCooldownRef = useRef(false)
   const hasFetchedRef = useRef(false)
   const scrollRestoreRef = useRef(null)
+  const wsMessageHandlerRef = useRef(null)
 
   const previousMessages = allFetchedPrevious.slice(0, displayedPreviousCount)
   const hasMorePrevious = displayedPreviousCount < allFetchedPrevious.length
@@ -98,6 +101,55 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
       .finally(() => setLoadingMore(false))
   }, [custId])
 
+  // WebSocket message handler
+  useEffect(() => {
+    wsMessageHandlerRef.current = (message) => {
+      setSessionMessages((prev) => [...prev, {
+        role: message.role || 'assistant',
+        text: message.text || message.message || '',
+        timestamp: message.timestamp || new Date().toISOString(),
+      }])
+      scrollToBottom()
+    }
+    
+    return () => {
+      wsMessageHandlerRef.current = null
+    }
+  }, [])
+
+  // WebSocket connection management
+  useEffect(() => {
+    if (!isOpen || !custId || custId === '0' || custId === '') {
+      // Disconnect WebSocket when panel is closed or no customer ID
+      chatbotService.websocket.disconnect()
+      setIsWebSocketConnected(false)
+      setIsLiveAgentActive(false)
+      return
+    }
+
+    // Only connect WebSocket if we have a session_id (live agent active)
+    if (currentSessionId && isLiveAgentActive) {
+      const handleConnectionChange = (connected) => {
+        setIsWebSocketConnected(connected)
+      }
+
+      chatbotService.websocket.connect(
+        Number(custId),
+        wsMessageHandlerRef.current,
+        handleConnectionChange
+      )
+    }
+
+    return () => {
+      // Cleanup on unmount or when dependencies change
+      if (!isOpen || !currentSessionId) {
+        chatbotService.websocket.disconnect()
+        setIsWebSocketConnected(false)
+        setIsLiveAgentActive(false)
+      }
+    }
+  }, [isOpen, custId, currentSessionId, isLiveAgentActive])
+
   useEffect(() => {
     if (isOpen && custId) {
       setSessionMessages([{ ...GREETING, timestamp: new Date().toISOString() }])
@@ -106,6 +158,8 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
       setError('')
       setWaitingForDisputeDescription(false)
       setCurrentSessionId(null)
+      setIsLiveAgentActive(false)
+      setIsWebSocketConnected(false)
       hasFetchedRef.current = true
       fetchPreviousMessages()
     }
@@ -209,8 +263,18 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
             timestamp: new Date().toISOString() 
           }])
           
+          // Activate live agent mode and connect WebSocket
+          setIsLiveAgentActive(true)
           setWaitingForDisputeDescription(false)
-          setCurrentSessionId(null)
+          
+          // Connect WebSocket for live agent communication
+          if (currentSessionId && custId) {
+            chatbotService.websocket.connect(
+              Number(custId),
+              wsMessageHandlerRef.current,
+              (connected) => setIsWebSocketConnected(connected)
+            )
+          }
         } catch (liveAgentErr) {
           setError(liveAgentErr?.message || 'Failed to request live agent')
           setSessionMessages((prev) => [...prev, { 
@@ -226,7 +290,20 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
         return
       }
       
-      // Normal chat flow
+      // If live agent is active and WebSocket is connected, send via WebSocket
+      if (isLiveAgentActive && currentSessionId && isWebSocketConnected) {
+        try {
+          chatbotService.websocket.sendMessage(currentSessionId, text)
+          setLoading(false)
+          // Message will be added to UI when agent responds via WebSocket
+          return
+        } catch (wsErr) {
+          console.error('WebSocket send error:', wsErr)
+          // Fall through to REST API fallback
+        }
+      }
+      
+      // Normal chat flow (REST API)
       const res = await chatbotService.sendChat({
         cust_id: String(custId),
         message: text,
@@ -321,10 +398,22 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
       style={{ maxHeight: '70vh' }}
     >
       <div className="flex items-center justify-between px-4 py-3 bg-brand-primary text-white shrink-0">
-        <span className="font-semibold">Chat</span>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">Chat</span>
+          {isLiveAgentActive && (
+            <span className="text-xs bg-green-500 px-2 py-0.5 rounded-full">
+              {isWebSocketConnected ? 'Live Agent' : 'Connecting...'}
+            </span>
+          )}
+        </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => {
+            chatbotService.websocket.disconnect()
+            setIsLiveAgentActive(false)
+            setIsWebSocketConnected(false)
+            onClose()
+          }}
           className="p-1.5 rounded-lg hover:bg-white/20 transition-colors"
           aria-label="Close chat"
         >

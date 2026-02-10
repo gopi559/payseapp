@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { IoHome, IoCashOutline } from 'react-icons/io5'
+import { IoHome } from 'react-icons/io5'
 import { MdOutlineArrowOutward } from 'react-icons/md'
 import { GoArrowDownLeft } from 'react-icons/go'
 import { FaCreditCard, FaListAlt } from 'react-icons/fa'
@@ -58,8 +58,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
     { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
     { icon: <FaCreditCard />, label: 'Wallet to Card', route: '/customer/wallet-to-card', isComponent: true },
+    { icon: <FaCreditCard />, label: 'Card to Card', route: '/customer/card-to-card', isComponent: true },
     { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
-    { icon: <IoCashOutline />, label: 'Cash Out', route: '/customer/cash-out', isComponent: true },
     { icon: <CgProfile />, label: 'Profile', route: '/customer/profile', isComponent: true },
   ]
 
