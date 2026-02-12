@@ -6,6 +6,7 @@ import ConfirmCard from '../../Reusable/ConfirmCard'
 import Button from '../../Reusable/Button'
 import OtpInput from '../../Reusable/OtpInput'
 import cardToCardService from './cardToCard.service'
+import { generateStan } from '../../utils/generateStan'
 
 const CardToCardConfirm = () => {
   const navigate = useNavigate()
@@ -34,6 +35,8 @@ const CardToCardConfirm = () => {
     setError('')
     setOtpError('')
     try {
+      // Generate STAN before sending OTP
+      const stan = generateStan()
       const { data } = await cardToCardService.sendOtp({
         from_card: cardToCardData.from_card,
         to_card: cardToCardData.to_card,
@@ -42,9 +45,10 @@ const CardToCardConfirm = () => {
         txn_amount: cardToCardData.txn_amount,
       })
       const rrn = data?.rrn ?? ''
-      const stan = data?.stan ?? ''
+      // Use generated STAN if API doesn't return one, otherwise use API's STAN
+      const finalStan = data?.stan ?? stan
       // Update cardToCardData with RRN and STAN
-      const updatedData = { ...cardToCardData, rrn, stan }
+      const updatedData = { ...cardToCardData, rrn, stan: finalStan }
       sessionStorage.setItem('cardToCardData', JSON.stringify(updatedData))
       setCardToCardData(updatedData)
       setOtpSent(true)

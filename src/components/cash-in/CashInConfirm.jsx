@@ -6,6 +6,7 @@ import ConfirmCard from '../../Reusable/ConfirmCard'
 import Button from '../../Reusable/Button'
 import OtpInput from '../../Reusable/OtpInput'
 import cashInService from './cashIn.service'
+import { generateStan } from '../../utils/generateStan'
 
 const CashInConfirm = () => {
   const navigate = useNavigate()
@@ -34,6 +35,8 @@ const CashInConfirm = () => {
     setError('')
     setOtpError('')
     try {
+      // Generate STAN before sending OTP
+      const stan = generateStan()
       const { data } = await cashInService.sendOtp({
         card_number: cashInData.card_number,
         cvv: cashInData.cvv,
@@ -41,9 +44,10 @@ const CashInConfirm = () => {
         txn_amount: cashInData.txn_amount,
       })
       const rrn = data?.rrn ?? ''
-      const stan = data?.stan ?? ''
+      // Use generated STAN if API doesn't return one, otherwise use API's STAN
+      const finalStan = data?.stan ?? stan
       // Update cashInData with RRN and STAN
-      const updatedData = { ...cashInData, rrn, stan }
+      const updatedData = { ...cashInData, rrn, stan: finalStan }
       sessionStorage.setItem('cashInData', JSON.stringify(updatedData))
       setCashInData(updatedData)
       setOtpSent(true)

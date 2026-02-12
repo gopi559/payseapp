@@ -41,7 +41,7 @@ const DisputeList = () => {
   const totalItems = data.length
 
   const headers = [
-    { key: 'id', label: 'ID' },
+    // { key: 'id', label: 'ID' },
     { key: 'transaction_id', label: 'Transaction ID' },
     { key: 'user_id', label: 'User ID' },
     { key: 'dispute_type_id', label: 'Dispute Type ID' },
@@ -50,6 +50,7 @@ const DisputeList = () => {
     { key: 'assigned_to', label: 'Assigned To' },
     {
       key: 'created_at',
+      
       label: 'Created At',
       content: (row) => formatTableDateTime(row.created_at),
     },
