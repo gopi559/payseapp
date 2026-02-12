@@ -91,3 +91,4 @@ export const REQ_MONEY_LIST = `${MAIN_API_URL}/transaction_web/customer/reqmoney
 
 export const CARD_TO_CARD_SEND_OTP = `${MAIN_API_URL}/external_card/card_to_card/send_otp`;
 export const CARD_TO_CARD_TRANSFER = `${MAIN_API_URL}/external_card/card_to_card`;
+export const PROFILE_IMAGE = `${MAIN_API_URL}/login/profile/image `; 
