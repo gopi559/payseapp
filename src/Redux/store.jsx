@@ -10,6 +10,7 @@ const authSlice = createSlice({
     isAuthenticated: false,
     user: null,
     token: null,
+    profileImage: null,
   },
   reducers: {
     setUser: (state, action) => {
@@ -20,6 +21,9 @@ const authSlice = createSlice({
     },
     setAuthenticated: (state, action) => {
       state.isAuthenticated = action.payload
+    },
+    setProfileImage: (state, action) => {
+      state.profileImage = action.payload
     },
     login: (state, action) => {
       state.isAuthenticated = true
@@ -34,6 +38,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false
       state.user = null
       state.token = null
+      state.profileImage = null
     },
   },
 })
@@ -76,7 +81,7 @@ const transactionSlice = createSlice({
   },
 })
 
-export const { setUser, setToken, setAuthenticated, login, logout } = authSlice.actions
+export const { setUser, setToken, setAuthenticated, setProfileImage, login, logout } = authSlice.actions
 export const { setWalletId, setBalance, updateBalance } = walletSlice.actions
 export const { addTransaction, setTransactions, clearTransactions } = transactionSlice.actions
 

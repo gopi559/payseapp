@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setToken, setUserType } from "../Redux/AuthToken";
-import { login } from "../Redux/store";
+import { login, setProfileImage } from "../Redux/store";
 import { CHECK_MOBILE, GENERATE_OTP, VERIFY_OTP } from "../utils/constant";
 import { callApi } from "../services/api";
+import profileService from "../components/profile/profile.service.jsx";
 
 const useLogin = () => {
   const [errors, setErrors] = useState({});
@@ -92,6 +93,25 @@ const useLogin = () => {
         })
       );
       if (data?.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
+
+      // Fetch profile image immediately after login
+      const regInfo = data?.reg_info || user;
+      const userId = regInfo?.user_id ?? regInfo?.id ?? null;
+      if (userId) {
+        profileService.fetchImage({
+          user_id: userId,
+          page: 1,
+          no_of_data: 50,
+          is_temp: 0,
+        }).then((result) => {
+          if (result.imageUrl) {
+            dispatch(setProfileImage(result.imageUrl));
+          }
+        }).catch((err) => {
+          // Silently fail - user might not have uploaded an image yet
+          console.log('Profile image not found:', err?.message);
+        });
+      }
 
       if (userType === 1) {
         navigate("/customer/home");

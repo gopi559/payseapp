@@ -10,7 +10,10 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
   const dropdownRef = useRef(null)
   const user = useSelector((state) => state.auth.user)
   const balance = useSelector((state) => state.wallet.balance)
+  const profileImage = useSelector((state) => state.auth.profileImage)
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [imageError, setImageError] = useState(false)
+  const [imageKey, setImageKey] = useState(0)
 
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
@@ -36,6 +39,12 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  // Reset image error and force re-render when profile image changes
+  useEffect(() => {
+    setImageError(false)
+    setImageKey((prev) => prev + 1) // Force re-render by changing key
+  }, [profileImage])
 
   const handleProfileDetails = () => {
     navigate('/customer/profile/details')
@@ -83,11 +92,27 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
           <button
             type="button"
             onClick={toggleDropdown}
-            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer"
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer overflow-hidden"
             aria-label="Profile menu"
             aria-expanded={isDropdownOpen}
           >
-            <span className="text-lg">👤</span>
+            {profileImage && !imageError ? (
+              <img 
+                key={imageKey}
+                src={`${profileImage}${profileImage.includes('?') ? '&' : '?'}t=${Date.now()}`}
+                alt="Profile" 
+                className="w-full h-full object-cover"
+                onError={() => {
+                  console.log('Header image error:', profileImage)
+                  setImageError(true)
+                }}
+                onLoad={() => {
+                  setImageError(false)
+                }}
+              />
+            ) : (
+              <span className="text-lg">👤</span>
+            )}
           </button>
 
           {isDropdownOpen && (

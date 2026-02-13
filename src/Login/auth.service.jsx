@@ -1,5 +1,5 @@
 import Store from "../Redux/store.jsx"
-import { login, logout, setWalletId, setBalance } from "../Redux/store.jsx"
+import { login, logout, setWalletId, setBalance, setProfileImage } from "../Redux/store.jsx"
 import { callApi } from "../services/api.jsx"
 import {
   CHECK_MOBILE,
@@ -8,6 +8,7 @@ import {
   CUSTOMER_BALANCE,
 } from "../utils/constant.jsx"
 import { cacheCurrentLocation } from "../utils/deviceLocation.jsx"
+import profileService from "../components/profile/profile.service.jsx"
 
 const fetchCustomerBalance = async () => {
   try {
@@ -84,6 +85,24 @@ const authService = {
       if (regInfo?.user_ref) Store.dispatch(setWalletId(regInfo.user_ref))
 
       await fetchCustomerBalance()
+
+      // Fetch profile image immediately after login
+      const userId = regInfo?.user_id ?? regInfo?.id ?? null
+      if (userId) {
+        profileService.fetchImage({
+          user_id: userId,
+          page: 1,
+          no_of_data: 50,
+          is_temp: 0,
+        }).then((result) => {
+          if (result.imageUrl) {
+            Store.dispatch(setProfileImage(result.imageUrl))
+          }
+        }).catch((err) => {
+          // Silently fail - user might not have uploaded an image yet
+          console.log('Profile image not found:', err?.message)
+        })
+      }
 
       return { success: true, data: res?.data }
     } catch (error) {
