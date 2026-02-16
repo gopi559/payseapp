@@ -168,9 +168,7 @@ const LoginForm = () => {
                 {loading ? 'Sending OTP...' : 'Continue'}
               </Button>
               
-              <p className="text-center text-sm text-gray-500">
-                Enter your registered mobile number (with or without country code)
-              </p>
+      
             </form>
           </div>
 
