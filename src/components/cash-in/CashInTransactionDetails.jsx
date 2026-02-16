@@ -6,6 +6,7 @@ import { HiOutlineUser, HiOutlinePhone, HiOutlineCreditCard, HiOutlineBuildingOf
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
+import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 
 function escapeHtml(str) {
   const s = String(str ?? '')
@@ -18,6 +19,7 @@ const downloadTransactionPdf = (details, senderName, senderMobile, senderAccount
     alert('Please allow pop-ups to download PDF.')
     return
   }
+
 
   // Format date and time
   const formatDateTime = (dateTimeStr) => {
@@ -75,28 +77,63 @@ const downloadTransactionPdf = (details, senderName, senderMobile, senderAccount
     }).join('')
   }
 
-  win.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Transaction ${escapeHtml(String(details?.txn_id ?? ''))}</title>
-      <style>
-        body { font-family: system-ui, sans-serif; padding: 24px; color: #111; }
-        h1 { font-size: 20px; margin-bottom: 20px; }
-        h2 { font-size: 16px; margin-top: 24px; margin-bottom: 12px; color: #374151; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-      </style>
-    </head>
-    <body>
-      <h1>Transaction Details</h1>
-      <table><tbody>${formatRows(transactionRows)}</tbody></table>
-      <h2>Sender Details</h2>
-      <table><tbody>${formatRows(senderRows)}</tbody></table>
-      <h2>Receiver Details</h2>
-      <table><tbody>${formatRows(receiverRows)}</tbody></table>
-    </body>
-    </html>
-  `)
+win.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Transaction ${escapeHtml(String(details?.txn_id ?? ''))}</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 24px;
+      color: #111;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+    .logo {
+      height: 40px;
+    }
+    h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    h2 {
+      font-size: 16px;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      color: #374151;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <h1>Transaction Details</h1>
+    <img src="${PAYSEY_LOGO_URL}" class="logo" alt="PayseyPay Logo" />
+  </div>
+
+  <table><tbody>${formatRows(transactionRows)}</tbody></table>
+
+  <h2>Sender Details</h2>
+  <table><tbody>${formatRows(senderRows)}</tbody></table>
+
+  <h2>Receiver Details</h2>
+  <table><tbody>${formatRows(receiverRows)}</tbody></table>
+</body>
+</html>
+`)
+
   win.document.close()
   win.focus()
   win.print()
