@@ -1,23 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import Button from './Button'
 
-const OtpPopup = ({
-  open,
-  onClose,
-  onConfirm,
-  loading,
-}) => {
+const OtpPopup = ({ open, onConfirm, onCancel, loading }) => {
   const [otp, setOtp] = useState(['', '', '', ''])
-  const navigate = useNavigate()
 
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-    }
-    return () => {
-      document.body.style.overflow = ''
-    }
+    if (open) document.body.style.overflow = 'hidden'
+    return () => (document.body.style.overflow = '')
   }, [open])
 
   if (!open) return null
@@ -27,7 +16,6 @@ const OtpPopup = ({
     const newOtp = [...otp]
     newOtp[index] = value
     setOtp(newOtp)
-
     if (value && index < 3) {
       document.getElementById(`otp-${index + 1}`)?.focus()
     }
@@ -69,12 +57,7 @@ const OtpPopup = ({
 
         <button
           className="w-full mt-4 text-gray-500 text-sm"
-          onClick={() => {
-            if (typeof onClose === 'function') {
-              onClose()
-            }
-            navigate('customer/cash-in/cards')
-          }}
+          onClick={onCancel}
         >
           Cancel
         </button>
