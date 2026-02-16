@@ -41,7 +41,7 @@ export const API_CHATBOT_REQUEST_LIVE_AGENT = `${CHATBOT_BASE_URL}/chatbot/reque
 
 
 export const getWebSocketUrl = (endpoint) => {
-  const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'wss:'
   const baseUrl = 'aml.innovitegra.in'
   return `${protocol}//${baseUrl}${endpoint}`
 }
@@ -93,3 +93,6 @@ export const CARD_TO_CARD_SEND_OTP = `${MAIN_API_URL}/external_card/card_to_card
 export const CARD_TO_CARD_TRANSFER = `${MAIN_API_URL}/external_card/card_to_card`;
 export const PROFILE_IMAGE = `${MAIN_API_URL}/login/profile/image`
 export const PROFILE_IMAGE_UPLOAD = `${MAIN_API_URL}/login/profile/image/upload`
+
+
+export const CARD_CHECK_BALANCE = `${MAIN_API_URL}/external_card/balance_inquiry`

@@ -73,7 +73,7 @@ class CustomerWebSocket {
                   text: data.message || data.text || '',
                   timestamp: data.timestamp || new Date().toISOString(),
                   sender: data.sender || 'agent',
-                  cust_id: data.cust_id,
+                  cust_id: Number(data.cust_id),
                 })
               } catch (err) {
                 console.error('Error in message handler:', err)
@@ -118,22 +118,27 @@ class CustomerWebSocket {
     }
   }
 
-  sendMessage(sessionId, message) {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-      throw new Error('WebSocket is not connected')
-    }
-    
-    if (!sessionId || !message) {
-      throw new Error('session_id and message are required')
-    }
-
-    const payload = {
-      session_id: sessionId,
-      message: message,
-    }
-    
-    this.ws.send(JSON.stringify(payload))
+sendMessage(sessionId, message) {
+  if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+    throw new Error('WebSocket is not connected')
   }
+
+  if (!this.custId) {
+    throw new Error('cust_id is missing')
+  }
+
+  if (!sessionId || !message) {
+    throw new Error('session_id and message are required')
+  }
+
+  const payload = {
+    cust_id: Number(this.custId),
+    session_id: sessionId,
+    message: message,
+  }
+
+  this.ws.send(JSON.stringify(payload))
+}
 
   addMessageHandler(handler) {
     if (typeof handler === 'function') {
@@ -177,7 +182,7 @@ const chatbotService = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        cust_id,
+        cust_id:Number(cust_id),
         message,
         new_chat,
       }),
@@ -205,7 +210,7 @@ const chatbotService = {
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({ cust_id: id }),
+      body: JSON.stringify({ cust_id: Number(id) }),
     })
 
     const res = await response.json().catch(() => null)

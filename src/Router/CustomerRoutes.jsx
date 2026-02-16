@@ -16,10 +16,17 @@ import CardToCardStart from '../components/card-to-card/CardToCardStart'
 import CardToCardConfirm from '../components/card-to-card/CardToCardConfirm'
 import CardToCardSuccess from '../components/card-to-card/CardToCardSuccess'
 import CardToCardTransactionDetails from '../components/card-to-card/CardToCardTransactionDetails'
+
+
 import CashInPage from '../components/cash-in/CashInPage'
 import CashInConfirm from '../components/cash-in/CashInConfirm'
 import CashInSuccess from '../components/cash-in/CashInSuccess'
 import CashInTransactionDetails from '../components/cash-in/CashInTransactionDetails'
+
+
+import CashInMethod from '../components/cash-in/CashInMethod'
+import CashInCardList from '../components/cash-in/CashInCardList'
+
 import HistoryPage from '../components/history/HistoryPage'
 import TransactionDetails from '../components/history/TransactionDetails'
 import CardsPage from '../components/cards/PaysePayCards/CardsPage'
@@ -159,38 +166,58 @@ export const customerRoutes = [
       </Suspense>
     ),
   },
-  {
-    path: 'cash-in',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CashInPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'cash-in/confirm',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CashInConfirm />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'cash-in/success',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CashInSuccess />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'cash-in/details',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CashInTransactionDetails />
-      </Suspense>
-    ),
-  },
+ 
+ 
+ 
+{
+  path: 'cash-in',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInMethod />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/cards',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInCardList />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/add',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInPage />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/confirm',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInConfirm />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/success',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInSuccess />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/details',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInTransactionDetails />
+    </Suspense>
+  ),
+},
+
   {
     path: 'history',
     element: (

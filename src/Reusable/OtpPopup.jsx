@@ -1,231 +1,86 @@
-import React, { useState, useEffect } from 'react'
-import { toast } from 'react-toastify'
-import OtpInput from './OtpInput'
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Button from './Button'
-import { HiX, HiCheckCircle } from 'react-icons/hi'
 
-/**
- * Reusable OTP Popup Component
- * 
- * @param {boolean} isOpen - Controls popup visibility
- * @param {function} onClose - Callback when popup closes
- * @param {function} onVerify - Async function that verifies OTP and completes transaction
- * @param {function} onSendOtp - Async function that sends OTP
- * @param {string} mobileNumber - Mobile number to display (where OTP is sent)
- * @param {string} title - Optional title for the popup
- * @param {string} successMessage - Optional success message (default: "Transaction successful!")
- */
 const OtpPopup = ({
-  isOpen,
+  open,
   onClose,
-  onVerify,
-  onSendOtp,
-  mobileNumber = '',
-  title = 'Enter OTP',
-  successMessage = 'Transaction successful!',
+  onConfirm,
+  loading,
 }) => {
-  const [otp, setOtp] = useState('')
-  const [otpError, setOtpError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sendingOtp, setSendingOtp] = useState(false)
-  const [otpSent, setOtpSent] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [otp, setOtp] = useState(['', '', '', ''])
+  const navigate = useNavigate()
 
-  // Reset state when popup opens/closes
   useEffect(() => {
-    if (isOpen) {
-      setOtp('')
-      setOtpError('')
-      setOtpSent(false)
-      setShowSuccess(false)
-      // Auto-send OTP when popup opens
-      if (onSendOtp) {
-        const sendOtp = async () => {
-          setSendingOtp(true)
-          setOtpError('')
-          try {
-            await onSendOtp()
-            setOtpSent(true)
-            setOtp('')
-            toast.success('OTP sent successfully')
-          } catch (err) {
-            const msg = err?.message || 'Failed to send OTP. Please try again.'
-            setOtpError(msg)
-            toast.error(msg)
-          } finally {
-            setSendingOtp(false)
-          }
-        }
-        sendOtp()
-      }
-    } else {
-      // Reset all state when closing
-      setOtp('')
-      setOtpError('')
-      setOtpSent(false)
-      setShowSuccess(false)
+    if (open) {
+      document.body.style.overflow = 'hidden'
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen])
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [open])
 
-  const handleSendOtp = async () => {
-    if (!onSendOtp) return
-    setSendingOtp(true)
-    setOtpError('')
-    try {
-      await onSendOtp()
-      setOtpSent(true)
-      setOtp('')
-      toast.success('OTP sent successfully')
-    } catch (err) {
-      const msg = err?.message || 'Failed to send OTP. Please try again.'
-      setOtpError(msg)
-      toast.error(msg)
-    } finally {
-      setSendingOtp(false)
+  if (!open) return null
+
+  const handleChange = (value, index) => {
+    if (!/^\d?$/.test(value)) return
+    const newOtp = [...otp]
+    newOtp[index] = value
+    setOtp(newOtp)
+
+    if (value && index < 3) {
+      document.getElementById(`otp-${index + 1}`)?.focus()
     }
   }
 
-  const handleVerify = async () => {
-    if (!otp || otp.length !== 6) {
-      setOtpError('Please enter the 6-digit OTP')
-      return
-    }
-    if (!onVerify) {
-      setOtpError('Verification function not provided')
-      return
-    }
-    setLoading(true)
-    setOtpError('')
-    try {
-      await onVerify(otp)
-      // Show success message
-      setShowSuccess(true)
-      toast.success(successMessage)
-      // Auto-close after 1.5 seconds
-      setTimeout(() => {
-        setShowSuccess(false)
-        if (onClose) {
-          onClose(true) // Pass true to indicate success
-        }
-      }, 1500)
-    } catch (err) {
-      const msg = err?.message || 'Invalid or expired OTP. Please try again.'
-      setOtpError(msg)
-      toast.error(msg)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleClose = () => {
-    if (!loading && !sendingOtp) {
-      onClose()
-    }
-  }
-
-  if (!isOpen) return null
+  const otpValue = otp.join('')
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md transform transition-all">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
-          <button
-            onClick={handleClose}
-            disabled={loading || sendingOtp}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Close"
-          >
-            <HiX className="w-5 h-5 text-gray-500" />
-          </button>
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
+      <div className="w-full max-w-[420px] bg-white rounded-3xl p-6 shadow-xl">
+        <h2 className="text-lg font-semibold mb-2">Enter OTP</h2>
+
+        <p className="text-sm text-gray-500 mb-4">
+          Enter the OTP sent to your registered mobile number
+        </p>
+
+        <div className="flex justify-between gap-3 mb-6">
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              id={`otp-${index}`}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleChange(e.target.value, index)}
+              className="w-14 h-14 text-center text-xl border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          ))}
         </div>
 
-        {/* Content */}
-        <div className="p-4 sm:p-6">
-          {showSuccess ? (
-            // Success State
-            <div className="text-center py-8">
-              <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                  <HiCheckCircle className="w-10 h-10 text-green-600" />
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Success!</h3>
-              <p className="text-gray-600">{successMessage}</p>
-            </div>
-          ) : (
-            <>
-              {/* OTP Info */}
-              {mobileNumber && (
-                <div className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 mb-6">
-                  <p className="text-sm text-gray-600">
-                    {otpSent ? (
-                      <>
-                        OTP sent to <span className="font-medium text-gray-800">{mobileNumber}</span>
-                      </>
-                    ) : (
-                      <>
-                        Sending OTP to <span className="font-medium text-gray-800">{mobileNumber}</span>...
-                      </>
-                    )}
-                  </p>
-                </div>
-              )}
+        <Button
+          fullWidth
+          disabled={otpValue.length !== 4 || loading}
+          onClick={() => onConfirm(otpValue)}
+        >
+          {loading ? 'Processing...' : 'Complete Transaction'}
+        </Button>
 
-              {/* OTP Input */}
-              <div className="mb-6">
-                <OtpInput
-                  length={6}
-                  onChange={setOtp}
-                  error={otpError}
-                  disabled={loading || sendingOtp || !otpSent}
-                />
-              </div>
-
-              {/* Error Message */}
-              {otpError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
-                  {otpError}
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                {!otpSent ? (
-                  <Button
-                    onClick={handleSendOtp}
-                    fullWidth
-                    disabled={sendingOtp}
-                  >
-                    {sendingOtp ? 'Sending OTP...' : 'Send OTP'}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleVerify}
-                    fullWidth
-                    disabled={loading || otp.length !== 6}
-                  >
-                    {loading ? 'Verifying...' : 'Verify & Confirm'}
-                  </Button>
-                )}
-                <Button
-                  onClick={handleClose}
-                  variant="outline"
-                  fullWidth
-                  disabled={loading || sendingOtp}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </>
-          )}
-        </div>
+        <button
+          className="w-full mt-4 text-gray-500 text-sm"
+          onClick={() => {
+            if (typeof onClose === 'function') {
+              onClose()
+            }
+            navigate('customer/cash-in/cards')
+          }}
+        >
+          Cancel
+        </button>
       </div>
     </div>
   )
 }
 
 export default OtpPopup
-
