@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import Button from './Button'
+import { HiExclamationTriangle } from 'react-icons/hi2'
 
 const ConfirmTransactionPopup = ({
   open,
@@ -16,30 +17,70 @@ const ConfirmTransactionPopup = ({
 
   if (!open || !card) return null
 
-  const masked =
-    card.card_number.slice(0, 4) +
-    ' **** **** ' +
-    card.card_number.slice(-4)
+  const maskedCard = `${card.cardholder_name} •••• ${card.card_number.slice(-4)}`
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
-      <div className="w-full max-w-[420px] bg-white rounded-3xl p-6">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center">
+      <div className="w-full max-w-md bg-white rounded-t-3xl px-5 pt-4 pb-6 shadow-2xl">
 
-        <p className="text-sm text-gray-500 mb-4">Confirm Transaction</p>
+        {/* Handle */}
+        <div className="w-12 h-1 bg-green-300 rounded-full mx-auto mb-4" />
 
-        <div className="space-y-2 mb-6">
-          <div>{masked}</div>
-          <div>{card.cardholder_name}</div>
-          <div className="font-semibold">₹{amount}</div>
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4">
+          <HiExclamationTriangle className="w-6 h-6 text-green-500" />
+          <h2 className="text-xl font-semibold">Confirm Transaction</h2>
         </div>
 
-        <Button fullWidth onClick={onSendOtp} disabled={loading}>
-          {loading ? 'Sending OTP…' : 'Send OTP'}
-        </Button>
+        {/* Details */}
+        <div className="space-y-4 text-sm">
+          <div>
+            <p className="text-gray-500">From</p>
+            <p className="text-green-600 font-medium">{maskedCard}</p>
+          </div>
 
-        <button onClick={onCancel} className="w-full mt-4 text-sm text-gray-500">
-          Cancel
-        </button>
+          <div>
+            <p className="text-gray-500">To</p>
+            <p className="text-green-600 font-medium">
+              Wallet
+            </p>
+          </div>
+
+          <div className="flex justify-between pt-2">
+            <span className="text-gray-600">Amount</span>
+            <span className="text-green-600 font-semibold">
+              ₹{Number(amount).toFixed(2)}
+            </span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-gray-600">Description</span>
+            <span className="text-green-600">
+              Add money to wallet
+            </span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="mt-6 space-y-3">
+          <Button
+            fullWidth
+            onClick={onSendOtp}
+            disabled={loading}
+          >
+            {loading ? 'Sending OTP...' : 'Confirm Transaction'}
+          </Button>
+
+          <Button
+            fullWidth
+            variant="outline"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Cancel Transaction
+          </Button>
+        </div>
+
       </div>
     </div>
   )

@@ -23,15 +23,15 @@ const CashInCardList = () => {
   const [activeIndex, setActiveIndex] = useState(0)
   const [amount, setAmount] = useState('')
 
-  const [step, setStep] = useState(null) 
   // null | 'CVV' | 'CONFIRM' | 'OTP'
+  const [step, setStep] = useState(null)
 
   const [selectedCard, setSelectedCard] = useState(null)
   const [cvvData, setCvvData] = useState(null)
   const [txnMeta, setTxnMeta] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  /* fetch cards */
+  /* ---------------- FETCH CARDS ---------------- */
   useEffect(() => {
     fetchCards()
   }, [])
@@ -62,10 +62,10 @@ const CashInCardList = () => {
     }
   }
 
-  /* continue → CVV popup */
+  /* ---------------- STEP 1 → CVV POPUP ---------------- */
   const handleContinue = () => {
     if (!amount || Number(amount) <= 0) {
-      toast.error('Enter valid amount')
+      toast.error('Enter a valid amount')
       return
     }
 
@@ -73,13 +73,13 @@ const CashInCardList = () => {
     setStep('CVV')
   }
 
-  /* CVV confirmed */
+  /* ---------------- STEP 2 → CONFIRM POPUP ---------------- */
   const handleCvvConfirm = ({ cvv, expiry }) => {
     setCvvData({ cvv, expiry })
     setStep('CONFIRM')
   }
 
-  /* Send OTP */
+  /* ---------------- STEP 3 → SEND OTP ---------------- */
   const handleSendOtp = async () => {
     if (!selectedCard || !cvvData) return
 
@@ -102,14 +102,20 @@ const CashInCardList = () => {
       setStep('OTP')
       toast.success('OTP sent')
     } catch (e) {
-      toast.error(e.message || 'OTP failed')
+      toast.error(e.message || 'Failed to send OTP')
     } finally {
       setLoading(false)
     }
   }
 
-  /* Confirm OTP */
+  /* ---------------- STEP 4 → CONFIRM OTP ---------------- */
   const handleConfirmOtp = async (otp) => {
+    if (!txnMeta?.rrn || !txnMeta?.stan) {
+      toast.error('Session expired. Please try again.')
+      resetFlow()
+      return
+    }
+
     setLoading(true)
     try {
       await cashInService.confirmCardToWallet({
@@ -122,7 +128,7 @@ const CashInCardList = () => {
         stan: txnMeta.stan,
       })
 
-      setStep(null)
+      resetFlow()
       navigate('/customer/cash-in/success')
     } catch (e) {
       toast.error(e.message || 'Transaction failed')
@@ -131,11 +137,19 @@ const CashInCardList = () => {
     }
   }
 
+  /* ---------------- RESET (CANCEL / FAIL SAFE) ---------------- */
+  const resetFlow = () => {
+    setStep(null)
+    setCvvData(null)
+    setTxnMeta(null)
+    setLoading(false)
+  }
+
   return (
     <PageContainer>
       <div className="px-4 py-4 max-w-md mx-auto">
 
-        {/* Cards */}
+        {/* Card carousel */}
         <div
           ref={scrollRef}
           onScroll={() => {
@@ -145,7 +159,7 @@ const CashInCardList = () => {
           }}
           className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
         >
-          {cards.map((card, i) => (
+          {cards.map((card) => (
             <div key={card.id} className="snap-center shrink-0 w-full">
               <BankCard card={card} />
             </div>
@@ -168,36 +182,40 @@ const CashInCardList = () => {
         </div>
 
         <div className="mt-6">
-          <Button fullWidth onClick={handleContinue}>
+          <Button
+            fullWidth
+            onClick={handleContinue}
+            disabled={!amount || Number(amount) <= 0}
+          >
             Continue
           </Button>
         </div>
       </div>
 
-      {/* CVV */}
+      {/* CVV POPUP */}
       <CvvPopup
         open={step === 'CVV'}
         loading={loading}
-        onClose={() => setStep(null)}
+        onClose={resetFlow}
         onConfirm={handleCvvConfirm}
       />
 
-      {/* Confirm */}
+      {/* CONFIRM POPUP */}
       <ConfirmTransactionPopup
         open={step === 'CONFIRM'}
         card={selectedCard}
         amount={amount}
         loading={loading}
         onSendOtp={handleSendOtp}
-        onCancel={() => setStep(null)}
+        onCancel={resetFlow}
       />
 
-      {/* OTP */}
+      {/* OTP POPUP */}
       <OtpPopup
         open={step === 'OTP'}
         loading={loading}
         onConfirm={handleConfirmOtp}
-        onCancel={() => setStep(null)}
+        onCancel={resetFlow}
       />
     </PageContainer>
   )
