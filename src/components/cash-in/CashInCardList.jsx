@@ -108,34 +108,60 @@ const CashInCardList = () => {
     }
   }
 
-  /* ---------------- STEP 4 → CONFIRM OTP ---------------- */
-  const handleConfirmOtp = async (otp) => {
-    if (!txnMeta?.rrn || !txnMeta?.stan) {
-      toast.error('Session expired. Please try again.')
-      resetFlow()
-      return
-    }
-
-    setLoading(true)
-    try {
-      await cashInService.confirmCardToWallet({
-        card_number: selectedCard.card_number,
-        txn_amount: amount,
-        cvv: cvvData.cvv,
-        expiry_date: cvvData.expiry,
-        otp,
-        rrn: txnMeta.rrn,
-        stan: txnMeta.stan,
-      })
-
-      resetFlow()
-      navigate('/customer/cash-in/success')
-    } catch (e) {
-      toast.error(e.message || 'Transaction failed')
-    } finally {
-      setLoading(false)
-    }
+const handleConfirmOtp = async (otp) => {
+  if (!txnMeta?.rrn || !txnMeta?.stan) {
+    toast.error('Session expired. Please try again.')
+    resetFlow()
+    return
   }
+
+  setLoading(true)
+  try {
+    const { data } = await cashInService.confirmCardToWallet({
+      card_number: selectedCard.card_number,
+      txn_amount: amount,
+      cvv: cvvData.cvv,
+      expiry_date: cvvData.expiry,
+      otp,
+      rrn: txnMeta.rrn,
+      stan: txnMeta.stan,
+    })
+
+    /**
+     * ✅ SINGLE SOURCE OF TRUTH FOR ALL NEXT SCREENS
+     */
+    sessionStorage.setItem(
+      'cashInSuccess',
+      JSON.stringify({
+        // ---- BACKEND RESPONSE ----
+        txn_id: data.txn_id,
+        rrn: data.rrn,
+        txn_amount: data.txn_amount,
+        txn_time: data.txn_time,
+
+        // ---- FRONTEND CONTEXT (REQUIRED) ----
+        txn_type: 'CARD_TO_WALLET',
+        txn_desc: 'Card To Wallet',
+        channel_type: 'WEB',
+        status: 1,
+
+        // ---- SENDER (CARD) ----
+        card_number: selectedCard.card_number,
+        card_name: selectedCard.card_name,
+
+        // ---- RECEIVER ----
+        to: 'Wallet',
+      })
+    )
+
+    resetFlow()
+    navigate('/customer/cash-in/success')
+  } catch (e) {
+    toast.error(e.message || 'Transaction failed')
+  } finally {
+    setLoading(false)
+  }
+}
 
   /* ---------------- RESET (CANCEL / FAIL SAFE) ---------------- */
   const resetFlow = () => {

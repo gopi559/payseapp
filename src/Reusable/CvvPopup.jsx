@@ -76,7 +76,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
             value={expiry}
             onChange={(e) => {
               let v = e.target.value.replace(/[^\d]/g, '')
-              if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2, 4)
+              if (v.length > 2) v = v.slice(0, 2) + v.slice(2, 4)
               setExpiry(v)
             }}
             placeholder="MM/YY"
