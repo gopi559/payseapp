@@ -38,7 +38,7 @@ const cardToCardService = {
       from_card: String(from_card).trim().replace(/\s/g, ''),
       to_card: String(to_card).trim().replace(/\s/g, ''),
       cvv: String(cvv).trim(),
-      expiry_date: String(expiry_date).trim(),
+expiry_date: String(expiry_date).replace('/', '').trim(),
       otp: '',
       txn_amount: parseFloat(txn_amount),
     }
@@ -81,7 +81,7 @@ const cardToCardService = {
       to_card: String(to_card).trim().replace(/\s/g, ''),
       txn_amount: parseFloat(txn_amount),
       cvv: String(cvv).trim(),
-      expiry_date: String(expiry_date).trim(),
+expiry_date: String(expiry_date).replace('/', '').trim(),
       otp: String(otp).trim(),
       ...(rrn && { rrn: String(rrn).trim() }),
       ...(stan && { stan: String(stan).trim() }),

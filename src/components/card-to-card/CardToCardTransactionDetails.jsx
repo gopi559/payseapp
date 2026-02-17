@@ -5,6 +5,7 @@ import { HiOutlineCreditCard } from 'react-icons/hi2'
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
+import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 
 function escapeHtml(str) {
   const s = String(str ?? '')
@@ -18,20 +19,18 @@ const downloadTransactionPdf = (details) => {
     return
   }
 
-  // Format date and time
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return '—'
     try {
       const date = new Date(dateTimeStr)
-      const options = { 
-        year: 'numeric', 
-        month: 'short', 
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true
-      }
-      return date.toLocaleString('en-US', options).replace(',', ' at')
+        hour12: true,
+      }).replace(',', ' at')
     } catch {
       return dateTimeStr
     }
@@ -40,74 +39,97 @@ const downloadTransactionPdf = (details) => {
   const maskedFromCard = details?.from_card
     ? `${details.from_card.slice(0, 4)} **** **** ${details.from_card.slice(-4)}`
     : '—'
+
   const maskedToCard = details?.to_card
     ? `${details.to_card.slice(0, 4)} **** **** ${details.to_card.slice(-4)}`
     : '—'
 
-  // Build transaction data rows
+  /* ---------------- TRANSACTION ---------------- */
   const transactionRows = [
-    { label: 'Transaction ID', value: details?.txn_id != null ? String(details.txn_id) : '—' },
+    { label: 'Transaction ID', value: details?.txn_id ?? '—' },
     { label: 'RRN', value: details?.rrn ?? '—' },
     { label: 'Transaction Type', value: details?.txn_type ?? 'CARD_TO_CARD' },
-    { label: 'Description', value: details?.txn_desc ?? details?.txn_short_desc ?? 'Card To Card' },
-    { label: 'Date & Time', value: formatDateTime(details?.txn_time ?? details?.created_at ?? '') },
-    { label: 'Amount', value: details?.txn_amount != null ? `₹${Number(details.txn_amount).toFixed(2)}` : '₹0.00' },
+    { label: 'Description', value: details?.txn_desc ?? 'Card To Card' },
+    { label: 'Date & Time', value: formatDateTime(details?.txn_time) },
+    { label: 'Amount', value: `₹${Number(details?.txn_amount ?? 0).toFixed(2)}` },
     { label: 'Channel', value: details?.channel_type ?? 'WEB' },
-    { label: 'Status', value: details?.status === 1 ? 'Success' : String(details?.status ?? 'SUCCESS') },
-    { label: 'Fee Amount', value: details?.fee_amount != null ? `₹${Number(details.fee_amount).toFixed(2)}` : '₹0.00' },
+    { label: 'Status', value: details?.status === 1 ? 'Success' : 'SUCCESS' },
+    { label: 'Fee Amount', value: `₹${Number(details?.fee_amount ?? 0).toFixed(2)}` },
     { label: 'Remarks', value: details?.remarks ?? '—' },
   ]
 
-  // From Card Details
+  /* ---------------- FROM CARD ---------------- */
   const fromCardRows = [
     { label: 'Card Number', value: maskedFromCard },
-    { label: 'Card Name', value: details?.from_card_name || '—' },
+    { label: 'Card Name', value: details?.from_card_name ?? '—' },
     { label: 'Mobile Number', value: 'NA' },
     { label: 'Account Number', value: 'NA' },
   ]
 
-  // To Card Details
+  /* ---------------- TO CARD ---------------- */
   const toCardRows = [
     { label: 'Card Number', value: maskedToCard },
-    { label: 'Card Name', value: details?.to_card_name || '—' },
+    { label: 'Card Name', value: details?.to_card_name ?? '—' },
     { label: 'Mobile Number', value: 'NA' },
     { label: 'Account Number', value: 'NA' },
   ]
 
-  const formatRows = (rows) => {
-    return rows.map(({ label, value }) => {
-      const displayValue = value == null || value === '' ? '—' : String(value)
-      return `<tr><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;vertical-align:top;">${escapeHtml(displayValue)}</td></tr>`
-    }).join('')
-  }
+  const formatRows = (rows) =>
+    rows.map(r => `
+      <tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;">
+          ${escapeHtml(r.label)}
+        </td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;">
+          ${escapeHtml(r.value)}
+        </td>
+      </tr>
+    `).join('')
 
   win.document.write(`
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Transaction ${escapeHtml(String(details?.txn_id ?? ''))}</title>
+      <title>Transaction ${escapeHtml(details?.txn_id)}</title>
       <style>
-        body { font-family: system-ui, sans-serif; padding: 24px; color: #111; }
-        h1 { font-size: 20px; margin-bottom: 20px; }
-        h2 { font-size: 16px; margin-top: 24px; margin-bottom: 12px; color: #374151; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        body { font-family: system-ui, sans-serif; padding: 24px; }
+        .header {
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          border-bottom:2px solid #e5e7eb;
+          padding-bottom:12px;
+          margin-bottom:20px;
+        }
+        img { height:40px; }
+        h1 { font-size:20px; margin:0; }
+        h2 { font-size:16px; margin-top:24px; color:#374151; }
+        table { width:100%; border-collapse:collapse; margin-bottom:24px; }
       </style>
     </head>
     <body>
-      <h1>Transaction Details</h1>
+      <div class="header">
+        <h1>Transaction Details</h1>
+        <img src="${PAYSEY_LOGO_URL}" />
+      </div>
+
       <table><tbody>${formatRows(transactionRows)}</tbody></table>
+
       <h2>From Card Details</h2>
       <table><tbody>${formatRows(fromCardRows)}</tbody></table>
+
       <h2>To Card Details</h2>
       <table><tbody>${formatRows(toCardRows)}</tbody></table>
     </body>
     </html>
   `)
+
   win.document.close()
   win.focus()
   win.print()
   win.onafterprint = () => win.close()
 }
+
 
 const CardToCardTransactionDetails = () => {
   const navigate = useNavigate()

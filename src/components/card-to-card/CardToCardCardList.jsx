@@ -1,30 +1,33 @@
+// src/components/card-to-card/CardToCardCardList.jsx
+
 import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
+
 import PageContainer from '../../Reusable/PageContainer'
 import BankCard from '../../Reusable/BankCard'
-import Button from '../../Reusable/Button'
 import AmountInput from '../../Reusable/AmountInput'
-import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId } from '../../services/api'
-import { toast } from 'react-toastify'
-import { useNavigate } from 'react-router-dom'
-import cashInService from './cashIn.service'
+import Input from '../../Reusable/Input'
+import Button from '../../Reusable/Button'
 
 import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
 
-
+import cardToCardService from './cardToCard.service'
+import { BENIFICIARY_LIST } from '../../utils/constant'
+import { getAuthToken, deviceId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
 
-const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
-
-const CashInCardList = () => {
+const CardToCardCardList = () => {
   const navigate = useNavigate()
   const scrollRef = useRef(null)
 
   const [cards, setCards] = useState([])
   const [activeIndex, setActiveIndex] = useState(0)
+
   const [amount, setAmount] = useState('')
+  const [toCard, setToCard] = useState('')
 
   // null | 'CVV' | 'CONFIRM' | 'OTP'
   const [step, setStep] = useState(null)
@@ -65,10 +68,21 @@ const CashInCardList = () => {
     }
   }
 
-  /* ---------------- STEP 1 → CVV POPUP ---------------- */
+  /* ---------------- STEP 1 → CVV ---------------- */
   const handleContinue = () => {
     if (!amount || Number(amount) <= 0) {
-      toast.error('Enter a valid amount')
+      toast.error('Enter valid amount')
+      return
+    }
+
+    if (!toCard || toCard.length !== 16) {
+      toast.error('Enter valid destination card')
+      return
+    }
+
+    const fromCard = cards[activeIndex]?.card_number
+    if (fromCard === toCard) {
+      toast.error('From and To card cannot be same')
       return
     }
 
@@ -76,7 +90,7 @@ const CashInCardList = () => {
     setStep('CVV')
   }
 
-  /* ---------------- STEP 2 → CONFIRM POPUP ---------------- */
+  /* ---------------- STEP 2 → CONFIRM ---------------- */
   const handleCvvConfirm = ({ cvv, expiry }) => {
     setCvvData({ cvv, expiry })
     setStep('CONFIRM')
@@ -90,8 +104,9 @@ const CashInCardList = () => {
     try {
       const stan = generateStan()
 
-      const { data } = await cashInService.sendOtp({
-        card_number: selectedCard.card_number,
+      const { data } = await cardToCardService.sendOtp({
+        from_card: selectedCard.card_number,
+        to_card: toCard,
         cvv: cvvData.cvv,
         expiry_date: cvvData.expiry,
         txn_amount: amount,
@@ -111,62 +126,61 @@ const CashInCardList = () => {
     }
   }
 
-const handleConfirmOtp = async (otp) => {
-  if (!txnMeta?.rrn || !txnMeta?.stan) {
-    toast.error('Session expired. Please try again.')
-    resetFlow()
-    return
-  }
+  /* ---------------- STEP 4 → CONFIRM OTP ---------------- */
+  const handleConfirmOtp = async (otp) => {
+    if (!txnMeta?.rrn || !txnMeta?.stan) {
+      toast.error('Session expired. Please try again.')
+      resetFlow()
+      return
+    }
 
-  setLoading(true)
-  try {
-    const { data } = await cashInService.confirmCardToWallet({
-      card_number: selectedCard.card_number,
-      txn_amount: amount,
-      cvv: cvvData.cvv,
-      expiry_date: cvvData.expiry,
-      otp,
-      rrn: txnMeta.rrn,
-      stan: txnMeta.stan,
-    })
-
-    /**
-     * ✅ SINGLE SOURCE OF TRUTH FOR ALL NEXT SCREENS
-     */
-    sessionStorage.setItem(
-      'cashInSuccess',
-      JSON.stringify({
-        // ---- BACKEND RESPONSE ----
-        txn_id: data.txn_id,
-        rrn: data.rrn,
-        txn_amount: data.txn_amount,
-        txn_time: data.txn_time,
-
-        // ---- FRONTEND CONTEXT (REQUIRED) ----
-        txn_type: 'CARD_TO_WALLET',
-        txn_desc: 'Card To Wallet',
-        channel_type: 'WEB',
-        status: 1,
-
-        // ---- SENDER (CARD) ----
-        card_number: selectedCard.card_number,
-        card_name: selectedCard.card_name,
-
-        // ---- RECEIVER ----
-        to: 'Wallet',
+    setLoading(true)
+    try {
+      const { data } = await cardToCardService.confirmCardToCard({
+        from_card: selectedCard.card_number,
+        to_card: toCard,
+        txn_amount: amount,
+        cvv: cvvData.cvv,
+        expiry_date: cvvData.expiry,
+        otp,
+        rrn: txnMeta.rrn,
+        stan: txnMeta.stan,
       })
-    )
 
-    resetFlow()
-    navigate('/customer/cash-in/success')
-  } catch (e) {
-    toast.error(e.message || 'Transaction failed')
-  } finally {
-    setLoading(false)
+      sessionStorage.setItem(
+        'cardToCardSuccess',
+        JSON.stringify({
+          // backend
+          txn_id: data?.txn_id,
+          rrn: data?.rrn,
+          txn_amount: data?.txn_amount,
+          txn_time: data?.txn_time,
+
+          // frontend context
+          txn_type: 'CARD_TO_CARD',
+          txn_desc: 'Card to Card transfer',
+          channel_type: 'WEB',
+          status: 1,
+
+          // from
+          from_card: selectedCard.card_number,
+          from_card_name: selectedCard.card_name,
+
+          // to
+          to_card: toCard,
+        })
+      )
+
+      resetFlow()
+      navigate('/customer/card-to-card/success')
+    } catch (e) {
+      toast.error(e.message || 'Transaction failed')
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
-  /* ---------------- RESET (CANCEL / FAIL SAFE) ---------------- */
+  /* ---------------- RESET ---------------- */
   const resetFlow = () => {
     setStep(null)
     setCvvData(null)
@@ -195,33 +209,25 @@ const handleConfirmOtp = async (otp) => {
           ))}
         </div>
 
-        {/* Amount */}
-        <AmountInput label="Add Amount" value={amount} onChange={setAmount} />
+        <AmountInput label="Amount" value={amount} onChange={setAmount} />
 
-        <div className="grid grid-cols-5 gap-2 mt-4">
-          {QUICK_AMOUNTS.map((a) => (
-            <button
-              key={a}
-              onClick={() => setAmount(String(a))}
-              className="border rounded-full py-2 text-sm"
-            >
-              {a}
-            </button>
-          ))}
-        </div>
+        <Input
+          label="Destination Card"
+          value={toCard}
+          onChange={(e) => setToCard(e.target.value.replace(/\D/g, ''))}
+          maxLength={16}
+          inputMode="numeric"
+          placeholder="1234 5678 9012 3456"
+        />
 
         <div className="mt-6">
-          <Button
-            fullWidth
-            onClick={handleContinue}
-            disabled={!amount || Number(amount) <= 0}
-          >
+          <Button fullWidth onClick={handleContinue}>
             Continue
           </Button>
         </div>
       </div>
 
-      {/* CVV POPUP */}
+      {/* CVV */}
       <CvvPopup
         open={step === 'CVV'}
         loading={loading}
@@ -229,20 +235,20 @@ const handleConfirmOtp = async (otp) => {
         onConfirm={handleCvvConfirm}
       />
 
-      {/* CONFIRM POPUP */}
+      {/* CONFIRM */}
 <ConfirmTransactionPopup
   open={step === 'CONFIRM'}
   card={selectedCard}
   amount={amount}
-  to="Wallet"
-  description="Add money to wallet"
+  to={`Card •••• ${toCard.slice(-4)}`}
+  description="Card to Card transfer"
   loading={loading}
   onSendOtp={handleSendOtp}
   onCancel={resetFlow}
 />
 
 
-      {/* OTP POPUP */}
+      {/* OTP */}
       <OtpPopup
         open={step === 'OTP'}
         loading={loading}
@@ -253,4 +259,4 @@ const handleConfirmOtp = async (otp) => {
   )
 }
 
-export default CashInCardList
+export default CardToCardCardList

@@ -6,6 +6,8 @@ const ConfirmTransactionPopup = ({
   open,
   card,
   amount,
+  to,              // ✅ dynamic (Wallet / Card •••• 3456)
+  description,     // ✅ dynamic (Add money / Card to Card transfer)
   loading,
   onSendOtp,
   onCancel,
@@ -21,7 +23,7 @@ const ConfirmTransactionPopup = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center">
-<div className="w-full max-w-md bg-white rounded-t-3xl px-5 pt-4 pb-6 shadow-2xl ml-0 md:ml-72">
+      <div className="w-full max-w-md bg-white rounded-t-3xl px-5 pt-4 pb-6 shadow-2xl ml-0 md:ml-72">
 
         {/* Handle */}
         <div className="w-12 h-1 bg-green-300 rounded-full mx-auto mb-4" />
@@ -41,9 +43,7 @@ const ConfirmTransactionPopup = ({
 
           <div>
             <p className="text-gray-500">To</p>
-            <p className="text-green-600 font-medium">
-              Wallet
-            </p>
+            <p className="text-green-600 font-medium">{to}</p>
           </div>
 
           <div className="flex justify-between pt-2">
@@ -55,9 +55,7 @@ const ConfirmTransactionPopup = ({
 
           <div className="flex justify-between">
             <span className="text-gray-600">Description</span>
-            <span className="text-green-600">
-              Add money to wallet
-            </span>
+            <span className="text-green-600">{description}</span>
           </div>
         </div>
 

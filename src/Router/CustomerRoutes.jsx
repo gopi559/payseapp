@@ -12,10 +12,6 @@ import WalletToCardStart from '../components/wallet-to-card/WalletToCardStart'
 import WalletToCardConfirm from '../components/wallet-to-card/WalletToCardConfirm'
 import WalletToCardSuccess from '../components/wallet-to-card/WalletToCardSuccess'
 import WalletToCardTransactionDetails from '../components/wallet-to-card/WalletToCardTransactionDetails'
-import CardToCardStart from '../components/card-to-card/CardToCardStart'
-import CardToCardConfirm from '../components/card-to-card/CardToCardConfirm'
-import CardToCardSuccess from '../components/card-to-card/CardToCardSuccess'
-import CardToCardTransactionDetails from '../components/card-to-card/CardToCardTransactionDetails'
 
 
 import CashInPage from '../components/cash-in/CashInPage'
@@ -26,6 +22,11 @@ import CashInTransactionDetails from '../components/cash-in/CashInTransactionDet
 
 import CashInMethod from '../components/cash-in/CashInMethod'
 import CashInCardList from '../components/cash-in/CashInCardList'
+
+
+import CardToCardCardList from '../components/card-to-card/CardToCardCardList'
+import CardToCardSuccess from '../components/card-to-card/CardToCardSuccess'
+import CardToCardTransactionDetails from '../components/card-to-card/CardToCardTransactionDetails'
 
 import HistoryPage from '../components/history/HistoryPage'
 import TransactionDetails from '../components/history/TransactionDetails'
@@ -134,22 +135,22 @@ export const customerRoutes = [
       </Suspense>
     ),
   },
-  {
-    path: 'card-to-card',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CardToCardStart />
-      </Suspense>
-    ),
-  },
-  {
-    path: 'card-to-card/confirm',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <CardToCardConfirm />
-      </Suspense>
-    ),
-  },
+
+
+
+{
+  path: 'card-to-card',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CardToCardCardList />
+    </Suspense>
+  ),
+},
+
+
+
+
+
   {
     path: 'card-to-card/success',
     element: (
