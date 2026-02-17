@@ -4,6 +4,7 @@ import mobileAppReducer from './MobileAppSlice.jsx'
 import authTokenReducer from './AuthToken.jsx'
 import { loadState, saveState } from './Middleware.jsx'
 
+/* ===================== AUTH SLICE ===================== */
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
@@ -11,6 +12,7 @@ const authSlice = createSlice({
     user: null,
     token: null,
     profileImage: null,
+    profileImageId: null,
   },
   reducers: {
     setUser: (state, action) => {
@@ -22,27 +24,53 @@ const authSlice = createSlice({
     setAuthenticated: (state, action) => {
       state.isAuthenticated = action.payload
     },
+
     setProfileImage: (state, action) => {
-      state.profileImage = action.payload
+      if (state.profileImage && state.profileImage.startsWith('blob:')) {
+        URL.revokeObjectURL(state.profileImage)
+      }
+
+      state.profileImage = action.payload?.url ?? null
+      state.profileImageId = action.payload?.id ?? null
     },
+
     login: (state, action) => {
       state.isAuthenticated = true
-      if (action.payload && typeof action.payload === 'object' && ('user' in action.payload || 'token' in action.payload)) {
-        state.user = action.payload.user ?? state.user
-        state.token = action.payload.token ?? state.token
+
+      if (state.profileImage && state.profileImage.startsWith('blob:')) {
+        URL.revokeObjectURL(state.profileImage)
+      }
+
+      state.profileImage = null
+      state.profileImageId = null
+
+      if (
+        action.payload &&
+        typeof action.payload === 'object' &&
+        ('user' in action.payload || 'token' in action.payload)
+      ) {
+        state.user = action.payload.user ?? null
+        state.token = action.payload.token ?? null
       } else {
         state.user = action.payload
       }
     },
+
     logout: (state) => {
+      if (state.profileImage && state.profileImage.startsWith('blob:')) {
+        URL.revokeObjectURL(state.profileImage)
+      }
+
       state.isAuthenticated = false
       state.user = null
       state.token = null
       state.profileImage = null
+      state.profileImageId = null
     },
   },
 })
 
+/* ===================== WALLET SLICE ===================== */
 const walletSlice = createSlice({
   name: 'wallet',
   initialState: {
@@ -63,6 +91,7 @@ const walletSlice = createSlice({
   },
 })
 
+/* ===================== TRANSACTION SLICE ===================== */
 const transactionSlice = createSlice({
   name: 'transaction',
   initialState: {
@@ -81,11 +110,29 @@ const transactionSlice = createSlice({
   },
 })
 
-export const { setUser, setToken, setAuthenticated, setProfileImage, login, logout } = authSlice.actions
-export const { setWalletId, setBalance, updateBalance } = walletSlice.actions
-export const { addTransaction, setTransactions, clearTransactions } = transactionSlice.actions
+/* ===================== EXPORT ACTIONS ===================== */
+export const {
+  setUser,
+  setToken,
+  setAuthenticated,
+  setProfileImage,
+  login,
+  logout,
+} = authSlice.actions
 
-// Reference pattern: reducer object + preloadedState filtered to reducer keys only (avoids RTK warnings when old keys exist)
+export const {
+  setWalletId,
+  setBalance,
+  updateBalance,
+} = walletSlice.actions
+
+export const {
+  addTransaction,
+  setTransactions,
+  clearTransactions,
+} = transactionSlice.actions
+
+/* ===================== STORE CONFIG ===================== */
 const reducer = {
   auth: authSlice.reducer,
   token: authTokenReducer,
@@ -96,6 +143,7 @@ const reducer = {
 }
 
 const loadedState = loadState()
+
 const preloadedState =
   loadedState && typeof loadedState === 'object'
     ? Object.keys(reducer).reduce((acc, key) => {

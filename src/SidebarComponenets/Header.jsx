@@ -1,25 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { MdPerson, MdLogout } from 'react-icons/md'
 import { formatAmount } from '../utils/formatAmount'
 import authService from '../Login/auth.service.jsx'
+import profileService from '../components/profile/profile.service'
+import { setProfileImage } from '../Redux/store.jsx'
 
 const Header = ({ onMenuClick, onToggleSidebar }) => {
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   const dropdownRef = useRef(null)
+
   const user = useSelector((state) => state.auth.user)
   const balance = useSelector((state) => state.wallet.balance)
   const profileImage = useSelector((state) => state.auth.profileImage)
+  const profileImageId = useSelector((state) => state.auth.profileImageId)
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [imageError, setImageError] = useState(false)
-  const [imageKey, setImageKey] = useState(0)
 
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
-  const displayName = userKyc?.first_name || userKyc?.last_name
-    ? [userKyc.first_name, userKyc.last_name].filter(Boolean).join(' ')
-    : regInfo?.mobile || regInfo?.email || user?.name || 'User'
+
+  const displayName =
+    userKyc?.first_name || userKyc?.last_name
+      ? [userKyc.first_name, userKyc.last_name].filter(Boolean).join(' ')
+      : regInfo?.mobile || regInfo?.email || 'User'
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -40,11 +46,22 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Reset image error and force re-render when profile image changes
+  // ✅ FETCH PROFILE IMAGE IMMEDIATELY AFTER LOGIN
   useEffect(() => {
-    setImageError(false)
-    setImageKey((prev) => prev + 1) // Force re-render by changing key
-  }, [profileImage])
+    if (!profileImage && profileImageId) {
+      profileService
+        .fetchImageById({ image_id: profileImageId })
+        .then((res) => {
+          dispatch(
+            setProfileImage({
+              id: res.imageId,
+              url: res.imageUrl,
+            })
+          )
+        })
+        .catch(() => {})
+    }
+  }, [profileImage, profileImageId, dispatch])
 
   const handleProfileDetails = () => {
     navigate('/customer/profile/details')
@@ -68,20 +85,22 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
         <div className="flex items-center gap-3">
           <button
             onClick={onMenuClick}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors lg:hidden"
+            className="p-2 hover:bg-white/20 rounded-lg lg:hidden"
             aria-label="Menu"
           >
             <span className="text-xl">☰</span>
           </button>
+
           {onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="hidden lg:block p-2 hover:bg-white/20 rounded-lg transition-colors"
+              className="hidden lg:block p-2 hover:bg-white/20 rounded-lg"
               aria-label="Toggle Sidebar"
             >
               <span className="text-xl">☰</span>
             </button>
           )}
+
           <div>
             <p className="text-xs opacity-90">{getGreeting()}</p>
             <h2 className="text-lg font-bold">{displayName}</h2>
@@ -92,23 +111,14 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
           <button
             type="button"
             onClick={toggleDropdown}
-            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer overflow-hidden"
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center overflow-hidden hover:bg-white/30"
             aria-label="Profile menu"
-            aria-expanded={isDropdownOpen}
           >
-            {profileImage && !imageError ? (
-              <img 
-                key={imageKey}
-                src={`${profileImage}${profileImage.includes('?') ? '&' : '?'}t=${Date.now()}`}
-                alt="Profile" 
+            {profileImage ? (
+              <img
+                src={profileImage}
+                alt="Profile"
                 className="w-full h-full object-cover"
-                onError={() => {
-                  console.log('Header image error:', profileImage)
-                  setImageError(true)
-                }}
-                onLoad={() => {
-                  setImageError(false)
-                }}
               />
             ) : (
               <span className="text-lg">👤</span>
@@ -116,41 +126,42 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
           </button>
 
           {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white text-gray-800 border border-gray-200 shadow-lg rounded-lg z-50 overflow-hidden">
-              <div className="p-3 border-b border-gray-100 bg-gray-50">
-                <p className="font-semibold text-brand-dark truncate">{displayName}</p>
+            <div className="absolute right-0 mt-2 w-56 bg-white text-gray-800 border shadow-lg rounded-lg z-50 overflow-hidden">
+              <div className="p-3 border-b bg-gray-50">
+                <p className="font-semibold truncate">{displayName}</p>
                 {regInfo?.mobile && (
-                  <p className="text-xs text-gray-500 truncate mt-0.5">{regInfo.mobile}</p>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">
+                    {regInfo.mobile}
+                  </p>
                 )}
               </div>
+
               <ul className="py-1">
                 <li>
                   <button
-                    type="button"
                     onClick={handleProfileDetails}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-gray-100 transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                   >
-                    <MdPerson className="text-gray-600 shrink-0" size={18} />
+                    <MdPerson size={18} />
                     Profile Details
                   </button>
                 </li>
+
                 <li>
                   <button
-                    type="button"
                     onClick={handleProfile}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-gray-100 transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                   >
-                    <span className="text-base shrink-0">👤</span>
-                    Profile
+                    👤 Profile
                   </button>
                 </li>
-                <li className="border-t border-gray-100">
+
+                <li className="border-t">
                   <button
-                    type="button"
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left hover:bg-gray-100 text-red-600 transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                   >
-                    <MdLogout className="shrink-0" size={18} />
+                    <MdLogout size={18} />
                     Logout
                   </button>
                 </li>
@@ -159,7 +170,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
           )}
         </div>
       </div>
-      
+
       <div className="mt-2">
         <p className="text-xs opacity-90 mb-0.5">Available balance</p>
         <p className="text-2xl font-bold">{formatAmount(balance)}</p>
@@ -169,4 +180,3 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
 }
 
 export default Header
-

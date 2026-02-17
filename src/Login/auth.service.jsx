@@ -56,59 +56,55 @@ const authService = {
     }
   },
 
-  verifyOtp: async (mobile, otp) => {
-    try {
-      cacheCurrentLocation({ timeoutMs: 5000 }).catch(() => {})
+verifyOtp: async (mobile, otp) => {
+  try {
+    cacheCurrentLocation({ timeoutMs: 5000 }).catch(() => {})
 
-      const res = await callApi(VERIFY_OTP, { mobile, otp })
+    const res = await callApi(VERIFY_OTP, { mobile, otp })
 
-      if (!(res?.code === 1 || String(res?.status).toUpperCase() === "SUCCESS")) {
-        return { success: false, error: res?.message }
-      }
-
-      const regInfo = res?.data?.reg_info || {}
-
-      Store.dispatch(
-        login({
-          user: {
-            reg_info: regInfo,
-            user_kyc: res?.data?.user_kyc || null,
-            mfa_id: res?.data?.mfa_id,
-            session_expiry_timeout: res?.data?.session_expiry_timeout,
-            session_expiry_unit: res?.data?.session_expiry_unit,
-            user_inactivity_timeout: res?.data?.user_inactivity_timeout,
-          },
-          token: res?.data?.token || null,
-        })
-      )
-
-      if (regInfo?.user_ref) Store.dispatch(setWalletId(regInfo.user_ref))
-
-      await fetchCustomerBalance()
-
-      // Fetch profile image immediately after login
-      const userId = regInfo?.user_id ?? regInfo?.id ?? null
-      if (userId) {
-        profileService.fetchImage({
-          user_id: userId,
-          page: 1,
-          no_of_data: 50,
-          is_temp: 0,
-        }).then((result) => {
-          if (result.imageUrl) {
-            Store.dispatch(setProfileImage(result.imageUrl))
-          }
-        }).catch((err) => {
-          // Silently fail - user might not have uploaded an image yet
-          console.log('Profile image not found:', err?.message)
-        })
-      }
-
-      return { success: true, data: res?.data }
-    } catch (error) {
-      return { success: false, error: error?.message }
+    if (!(res?.code === 1 || String(res?.status).toUpperCase() === "SUCCESS")) {
+      return { success: false, error: res?.message }
     }
-  },
+
+    const regInfo = res?.data?.reg_info || {}
+
+    // Build profile image URL directly from login response
+    let profileImage = null
+    if (res?.data?.img_url) {
+      profileImage = res.data.img_url
+    } else if (res?.data?.img_id) {
+      profileImage = `${import.meta.env.VITE_API_BASE_URL}/login/profile/image/${res.data.img_id}`
+    }
+
+    Store.dispatch(
+      login({
+        user: {
+          reg_info: regInfo,
+          user_kyc: res?.data?.user_kyc || null,
+          mfa_id: res?.data?.mfa_id,
+          session_expiry_timeout: res?.data?.session_expiry_timeout,
+          session_expiry_unit: res?.data?.session_expiry_unit,
+          user_inactivity_timeout: res?.data?.user_inactivity_timeout,
+        },
+        token: res?.data?.token || null,
+      })
+    )
+
+    if (profileImage) {
+      Store.dispatch(setProfileImage(profileImage))
+    }
+
+    if (regInfo?.user_ref) {
+      Store.dispatch(setWalletId(regInfo.user_ref))
+    }
+
+    await fetchCustomerBalance()
+
+    return { success: true, data: res?.data }
+  } catch (error) {
+    return { success: false, error: error?.message }
+  }
+},
 
   logout: () => {
     Store.dispatch(logout())
