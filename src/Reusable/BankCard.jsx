@@ -11,7 +11,7 @@ const BankCard = ({ card, onBalance }) => {
       <img
         src={BlankATMCard}
         alt="ATM Card"
-        className="absolute -top-14 left-0 w-full h-full object-cover opacity-90 pointer-events-none"
+        className="absolute -top-14 left-0 w-full h-full object-cover opacity-90 pointer-events-none mb-2"
       />
 
       {/* CONTENT */}
@@ -24,7 +24,7 @@ const BankCard = ({ card, onBalance }) => {
         {/* Push text DOWN below chip & wifi */}
         <div className="mt-12">
           {/* Card number */}
-          <div className="text-sm text-gray-700 mb-1">
+<div className="text-sm text-gray-700 mt-4">
             Card number
           </div>
           <div className="text-lg font-mono tracking-widest text-gray-900 mb-5">
@@ -32,7 +32,7 @@ const BankCard = ({ card, onBalance }) => {
           </div>
 
           {/* Card holder */}
-          <div className="text-sm text-gray-700 mb-1">
+          <div className="text-sm text-gray-700 mb-2">
             Card holder name
           </div>
           <div className="text-sm font-semibold text-gray-900">
