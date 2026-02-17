@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { MdPerson, MdLogout } from 'react-icons/md'
+import { MdPerson, MdLogout, MdRefresh } from 'react-icons/md'
 import { formatAmount } from '../utils/formatAmount'
 import authService from '../Login/auth.service.jsx'
 import profileService from '../components/profile/profile.service'
@@ -18,6 +18,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
   const profileImageId = useSelector((state) => state.auth.profileImageId)
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
@@ -46,7 +47,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // ✅ FETCH PROFILE IMAGE IMMEDIATELY AFTER LOGIN
+  // fetch profile image
   useEffect(() => {
     if (!profileImage && profileImageId) {
       profileService
@@ -62,6 +63,13 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
         .catch(() => {})
     }
   }, [profileImage, profileImageId, dispatch])
+
+  const handleBalanceRefresh = async () => {
+    if (isRefreshing) return
+    setIsRefreshing(true)
+    await authService.fetchCustomerBalance()
+    setIsRefreshing(false)
+  }
 
   const handleProfileDetails = () => {
     navigate('/customer/profile/details')
@@ -81,7 +89,8 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
 
   return (
     <div className="bg-brand-secondary text-white px-4 py-3">
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between">
+        {/* LEFT */}
         <div className="flex items-center gap-3">
           <button
             onClick={onMenuClick}
@@ -107,6 +116,28 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
           </div>
         </div>
 
+        {/* CENTER – AVAILABLE BALANCE */}
+        <div className="hidden md:flex items-center gap-3">
+          <span className="text-sm opacity-90">Available balance</span>
+
+          <span className="text-xl font-bold">
+            {formatAmount(balance)}
+          </span>
+
+          <button
+            onClick={handleBalanceRefresh}
+            disabled={isRefreshing}
+            className="p-1 rounded-full hover:bg-white/20 disabled:opacity-50"
+            title="Refresh balance"
+          >
+            <MdRefresh
+              size={20}
+              className={isRefreshing ? 'animate-spin' : ''}
+            />
+          </button>
+        </div>
+
+        {/* RIGHT – PROFILE */}
         <div className="relative shrink-0" ref={dropdownRef}>
           <button
             type="button"
@@ -152,7 +183,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
                     onClick={handleProfile}
                     className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-gray-100"
                   >
-                    👤 Profile
+                    Profile
                   </button>
                 </li>
 
@@ -169,11 +200,6 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
             </div>
           )}
         </div>
-      </div>
-
-      <div className="mt-2">
-        <p className="text-xs opacity-90 mb-0.5">Available balance</p>
-        <p className="text-2xl font-bold">{formatAmount(balance)}</p>
       </div>
     </div>
   )

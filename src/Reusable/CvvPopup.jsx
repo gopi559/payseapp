@@ -20,7 +20,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
   if (!open) return null
 
   const handleContinue = () => {
-    if (cvv.length < 3 || expiry.length < 4) return
+    if (cvv.length !== 3 || expiry.length < 4) return
 
     onConfirm({ cvv, expiry })
   }
