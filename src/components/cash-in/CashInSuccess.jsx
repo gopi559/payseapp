@@ -30,14 +30,12 @@ const CashInSuccess = () => {
 
   if (!details) return null
 
-  // ✅ Correct data mapping
   const txnId = details.txn_id ?? '—'
   const from = details.from ?? '—'
   const amount = details.txn_amount
     ? `₹${Number(details.txn_amount).toFixed(2)}`
     : '₹0.00'
 
-  // ✅ Use BACKEND txn_time, not current time
   const dateTime = details.txn_time
     ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString('en-IN', {
         day: '2-digit',

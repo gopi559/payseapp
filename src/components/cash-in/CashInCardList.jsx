@@ -8,9 +8,12 @@ import { getAuthToken, deviceId } from '../../services/api'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import cashInService from './cashIn.service'
+
 import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
+
+
 import { generateStan } from '../../utils/generateStan'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
