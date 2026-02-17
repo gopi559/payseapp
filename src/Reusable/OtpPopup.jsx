@@ -25,7 +25,7 @@ const OtpPopup = ({ open, onConfirm, onCancel, loading }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
-      <div className="w-full max-w-[420px] bg-white rounded-3xl p-6 shadow-xl">
+<div className="w-full max-w-[420px] bg-white rounded-3xl p-6 shadow-xl ml-0 md:ml-72">
         <h2 className="text-lg font-semibold mb-2">Enter OTP</h2>
 
         <p className="text-sm text-gray-500 mb-4">

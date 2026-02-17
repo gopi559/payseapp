@@ -21,7 +21,7 @@ const ConfirmTransactionPopup = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center">
-      <div className="w-full max-w-md bg-white rounded-t-3xl px-5 pt-4 pb-6 shadow-2xl">
+<div className="w-full max-w-md bg-white rounded-t-3xl px-5 pt-4 pb-6 shadow-2xl ml-0 md:ml-72">
 
         {/* Handle */}
         <div className="w-12 h-1 bg-green-300 rounded-full mx-auto mb-4" />
