@@ -96,3 +96,7 @@ export const PROFILE_IMAGE_UPLOAD = `${MAIN_API_URL}/login/profile/image/upload`
 
 
 export const CARD_CHECK_BALANCE = `${MAIN_API_URL}/external_card/balance_inquiry`
+
+
+
+
