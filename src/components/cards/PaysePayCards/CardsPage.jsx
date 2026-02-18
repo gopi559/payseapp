@@ -10,6 +10,8 @@ import { formatAmount } from '../../../utils/formatAmount'
 import cardService from './card.service'
 import { getAuthToken, deviceId } from '../../../services/api'
 import { CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '../../../utils/constant'
+import ChipIcon from '../../../assets/Chip.svg'
+import WifiIcon from '../../../assets/wifi.svg'
 
 const NUM_DATA = 20
 
@@ -51,76 +53,26 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
     
     
     
-{/* Premium Gold EMV Chip */}
-<div className="absolute top-12 sm:top-14 lg:top-16 left-3 sm:left-4 z-20">
-  <svg
-    viewBox="0 0 200 140"
-    className="w-10 h-7 sm:w-12 sm:h-8 lg:w-12 lg:h-8"
-  >
-    <defs>
-      <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#FFD86A" />
-        <stop offset="50%" stopColor="#D4A017" />
-        <stop offset="100%" stopColor="#9E7400" />
-      </linearGradient>
+{/* Chip icon */}
+<img
+  src={ChipIcon}
+  alt="Chip"
+  className="absolute top-12 sm:top-14 lg:top-16 left-4 w-10 sm:w-12 z-20"
+  draggable={false}
+/>
 
-      <linearGradient id="edge" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#FFF2B0" />
-        <stop offset="100%" stopColor="#B8860B" />
-      </linearGradient>
-    </defs>
-
-    {/* outer body */}
-    <rect x="2" y="2" rx="22" ry="22" width="196" height="136" fill="url(#gold)" />
-
-    {/* top center */}
-    <path
-      d="M100 8 L132 36 Q100 52 68 36 Z"
-      fill="url(#edge)"
-    />
-
-    {/* center vertical */}
-    <path
-      d="M92 36 H108 V104 H92 Z"
-      fill="url(#edge)"
-    />
-
-    {/* left top */}
-    <path
-      d="M10 10 H90 Q74 38 54 52 H10 Z"
-      fill="url(#edge)"
-    />
-
-    {/* right top */}
-    <path
-      d="M190 10 H110 Q126 38 146 52 H190 Z"
-      fill="url(#edge)"
-    />
-
-    {/* left bottom */}
-    <path
-      d="M10 130 H90 Q74 102 54 88 H10 Z"
-      fill="url(#edge)"
-    />
-
-    {/* right bottom */}
-    <path
-      d="M190 130 H110 Q126 102 146 88 H190 Z"
-      fill="url(#edge)"
-    />
-
-    {/* mid left */}
-    <rect x="10" y="52" width="70" height="36" rx="6" fill="url(#edge)" />
-
-    {/* mid right */}
-    <rect x="120" y="52" width="70" height="36" rx="6" fill="url(#edge)" />
-  </svg>
-</div>
+{/* Contactless / Wifi icon */}
+<img
+  src={WifiIcon}
+  alt="Contactless"
+  className="absolute top-16 sm:top-18 right-4 w-8 sm:w-9 z-20"
+  draggable={false}
+/>
 
 
 
     {/* Card number – gold */}
-    <div className="absolute left-4 right-4 top-20 sm:top-24 text-amber-200 text-base sm:text-lg font-mono tracking-[0.2em] sm:tracking-[0.35em] z-20 truncate">
+<div className="absolute left-4 right-4 top-28 sm:top-32 text-amber-200 text-base sm:text-lg font-mono tracking-[0.25em] sm:tracking-[0.35em] z-20 truncate">
       {card.masked_card || '**** **** **** ****'}
     </div>
     {/* Cardholder – gold */}
@@ -136,7 +88,7 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
         <p className="text-xs text-amber-300/90">Valid Thru</p>
         <p className="font-semibold text-sm sm:text-base text-amber-200">{formatExpiry(card.expiry_on)}</p>
       </div>
-      <span className="text-amber-200/70 text-xs font-mono">▭</span>
+      {/* <span className="text-amber-200/70 text-xs font-mono">▭</span> */}
     </div>
   </button>
 )
