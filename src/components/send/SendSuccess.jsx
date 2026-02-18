@@ -10,17 +10,16 @@ const SendSuccess = () => {
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
-    // Clear any stored data
-    sessionStorage.removeItem('sendData')
     const raw = sessionStorage.getItem('sendSuccess')
-    if (raw) {
-      try {
-        setDetails(JSON.parse(raw))
-      } catch (_) {
-        setDetails({})
-      }
+    if (!raw) return
+    try {
+      setDetails(JSON.parse(raw))
+    } catch {
+      setDetails(null)
     }
   }, [])
+
+  if (!details) return null
 
   const handleDone = () => {
     sessionStorage.removeItem('sendSuccess')
@@ -31,9 +30,11 @@ const SendSuccess = () => {
     navigate('/customer/send/details')
   }
 
-  const txnId = details?.txn_id != null ? String(details.txn_id) : '—'
-  const amount = details?.amount != null ? `₹${Number(details.amount).toFixed(2)}` : '₹0.00'
-  const beneficiaryName = details?.beneficiary_name ?? details?.beneficiary?.displayName ?? '—'
+  const txnId = details?.txn_id ?? '—'
+  const amount = details?.amount
+    ? `₹${Number(details.amount).toFixed(2)}`
+    : '₹0.00'
+  const beneficiaryName = details?.beneficiary_name ?? '—'
 
   return (
     <PageContainer>
@@ -44,31 +45,29 @@ const SendSuccess = () => {
         onDone={handleDone}
         buttonText="Done"
       />
-      
-      {/* Transaction Details */}
+
       <div className="mt-6 mx-auto max-w-xs">
         <div className="bg-white rounded-lg border border-gray-200 p-4 space-y-3">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between">
             <span className="text-sm text-gray-600">Transaction ID</span>
-            <span className="text-sm font-medium text-brand-dark">{txnId}</span>
+            <span className="text-sm font-medium">{txnId}</span>
           </div>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between">
             <span className="text-sm text-gray-600">Amount</span>
-            <span className="text-sm font-medium text-brand-dark">{amount}</span>
+            <span className="text-sm font-medium">{amount}</span>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-600">Beneficiary Name</span>
-            <span className="text-sm font-medium text-brand-dark">{beneficiaryName}</span>
+          <div className="flex justify-between">
+            <span className="text-sm text-gray-600">Beneficiary</span>
+            <span className="text-sm font-medium">{beneficiaryName}</span>
           </div>
         </div>
       </div>
 
-      {/* View Transaction Details Button */}
       <div className="mt-4 mx-auto max-w-xs">
         <Button
-          onClick={handleViewDetails}
           variant="outline"
           fullWidth
+          onClick={handleViewDetails}
           className="border-brand-secondary text-brand-secondary hover:bg-brand-secondary hover:text-white"
         >
           <div className="flex items-center justify-center gap-2">
@@ -82,4 +81,3 @@ const SendSuccess = () => {
 }
 
 export default SendSuccess
-

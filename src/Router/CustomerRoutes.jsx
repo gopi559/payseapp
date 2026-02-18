@@ -4,7 +4,8 @@ import React from 'react'
 // Feature pages
 import HomePage from '../components/home/HomePage.jsx'
 import SendStart from '../components/send/SendStart.jsx'
-import SendConfirm from '../components/send/SendConfirm.jsx'
+
+
 import SendSuccess from '../components/send/SendSuccess.jsx'
 import SendTransactionDetails from '../components/send/SendTransactionDetails.jsx'
 import ReceivePage from '../components/receive/ReceivePage'
@@ -76,14 +77,7 @@ export const customerRoutes = [
       </Suspense>
     ),
   },
-  {
-    path: 'send/confirm',
-    element: (
-      <Suspense fallback={<LinearProgress />}>
-        <SendConfirm />
-      </Suspense>
-    ),
-  },
+
   {
     path: 'send/success',
     element: (
