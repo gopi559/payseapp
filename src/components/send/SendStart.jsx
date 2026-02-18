@@ -167,45 +167,47 @@ const SendStart = () => {
       />
 
       {/* ---------------- OTP POPUP ---------------- */}
-      <OtpPopup
-        open={step === 'OTP'}
-        loading={loading}
-        onConfirm={async (otp) => {
-          setLoading(true)
-          try {
-            await sendService.verifyTransactionOtp(
-              'MOBILE',
-              senderMobile,
-              otp
-            )
+<OtpPopup
+  open={step === 'OTP'}
+  loading={loading}
+  length={6}   // ✅ SEND MONEY = 6 DIGIT OTP
+  onConfirm={async (otp) => {
+    setLoading(true)
+    try {
+      await sendService.verifyTransactionOtp(
+        'MOBILE',
+        senderMobile,
+        otp // now 6 digits
+      )
 
-            const { data } = await sendService.sendMoneyTransaction(
-              beneficiary.user_id,
-              amount,
-              remarks
-            )
+      const { data } = await sendService.sendMoneyTransaction(
+        beneficiary.user_id,
+        amount,
+        remarks
+      )
 
-            sessionStorage.setItem(
-              'sendSuccess',
-              JSON.stringify({
-                ...data,
-                beneficiary_name: beneficiaryName,
-                beneficiary_mobile: beneficiary.reg_mobile,
-                amount,
-                remarks,
-              })
-            )
+      sessionStorage.setItem(
+        'sendSuccess',
+        JSON.stringify({
+          ...data,
+          beneficiary_name: beneficiaryName,
+          beneficiary_mobile: beneficiary.reg_mobile,
+          amount,
+          remarks,
+        })
+      )
 
-            setStep(null)
-            navigate('/customer/send/success')
-          } catch (e) {
-            toast.error(e.message || 'Transaction failed')
-          } finally {
-            setLoading(false)
-          }
-        }}
-        onCancel={() => setStep(null)}
-      />
+      setStep(null)
+      navigate('/customer/send/success')
+    } catch (e) {
+      toast.error(e.message || 'Transaction failed')
+    } finally {
+      setLoading(false)
+    }
+  }}
+  onCancel={() => setStep(null)}
+/>
+
     </PageContainer>
   )
 }
