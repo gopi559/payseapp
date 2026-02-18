@@ -10,13 +10,46 @@ const WalletToCardSuccess = () => {
   useEffect(() => {
     const raw = sessionStorage.getItem('walletToCardSuccess')
     if (!raw) return
-
     try {
       setDetails(JSON.parse(raw))
     } catch {
       setDetails(null)
     }
   }, [])
+
+  if (!details) return null
+
+  const {
+    txn_id,
+    wallet_number,
+    card_number,
+    txn_amount,
+    txn_time,
+  } = details
+
+  const txnId = txn_id ?? '—'
+
+  const from = wallet_number
+    ? `Wallet •••• ${wallet_number.slice(-4)}`
+    : '—'
+
+  const to = card_number
+    ? `Card •••• ${card_number.slice(-4)}`
+    : '—'
+
+  const amount = txn_amount
+    ? `₹${Number(txn_amount).toFixed(2)}`
+    : '₹0.00'
+
+  const dateTime = txn_time
+    ? new Date(txn_time).toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      })
+    : ''
 
   const handleDone = () => {
     sessionStorage.removeItem('walletToCardSuccess')
@@ -27,70 +60,22 @@ const WalletToCardSuccess = () => {
     navigate('/customer/wallet-to-card/details')
   }
 
-  if (!details) return null
-
-  const txnId = details.txn_id ?? '—'
-
-  const from = details.from
-    ? `${details.from}`
-    : '—'
-
-  const to = details.to
-    ? `${details.to} •••• ${details.masked_to?.slice(-4) ?? ''}`
-    : '—'
-
-  const amount = details.amount
-    ? `₹${Number(details.amount).toFixed(2)}`
-    : '₹0.00'
-
-  const dateTime = details.txn_time
-    ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      })
-    : new Date().toLocaleString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      })
-
   return (
     <PageContainer>
       <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-28 bg-white max-w-md mx-auto">
 
-        {/* Success Icon */}
         <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
-          <svg
-            className="w-12 h-12 text-white"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 13l4 4L19 7"
-            />
+          <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
 
-        {/* Title */}
         <h1 className="mt-6 text-2xl font-semibold text-gray-900">
           Transaction Successful
         </h1>
 
-        {/* Date & Time */}
-        <p className="mt-1 text-sm text-gray-500">
-          {dateTime}
-        </p>
+        <p className="mt-1 text-sm text-gray-500">{dateTime}</p>
 
-        {/* Details Card */}
         <div className="mt-6 w-full bg-green-100 rounded-2xl px-5 py-4 space-y-3">
 
           <div className="flex justify-between text-sm">
@@ -109,16 +94,11 @@ const WalletToCardSuccess = () => {
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-green-200">
-            <span className="text-lg font-semibold text-gray-800">
-              Amount:
-            </span>
-            <span className="text-2xl font-bold text-gray-900">
-              {amount}
-            </span>
+            <span className="text-lg font-semibold text-gray-800">Amount:</span>
+            <span className="text-2xl font-bold text-gray-900">{amount}</span>
           </div>
         </div>
 
-        {/* View More */}
         <div className="mt-6 w-full">
           <button
             onClick={handleViewDetails}
@@ -129,7 +109,6 @@ const WalletToCardSuccess = () => {
           </button>
         </div>
 
-        {/* Done */}
         <div className="mt-4 w-full">
           <button
             onClick={handleDone}
@@ -138,6 +117,7 @@ const WalletToCardSuccess = () => {
             Done
           </button>
         </div>
+
       </div>
     </PageContainer>
   )

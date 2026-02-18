@@ -123,72 +123,39 @@ const WalletToCardCardList = () => {
     }
   }
 
-// const handleConfirmOtp = async () => {
-//   setLoading(true)
-//   try {
-//     const dest = destCards[activeDestIndex]
-
-//     // 🔹 CALL API AND CAPTURE RESPONSE
-//     const res = await walletToCardService.walletToCard({
-//       to_card: dest.card_number,
-//       txn_amount: amount,
-//       remarks: 'Wallet To Card',
-//     })
-
-//     // 🔹 STORE COMPLETE DATA (BACKEND + FRONTEND CONTEXT)
-//     sessionStorage.setItem(
-//       'walletToCardSuccess',
-//       JSON.stringify({
-//         // BACKEND RESPONSE
-//         txn_id: res?.data?.txn_id,
-//         rrn: res?.data?.rrn,
-//         txn_amount: res?.data?.txn_amount,
-//         wallet_number: res?.data?.wallet_number,
-//         card_number: res?.data?.card_number,
-//         channel_type: res?.data?.channel_type || 'WEB',
-//         txn_time: new Date().toISOString(),
-//         status: 1,
-
-//         // FRONTEND CONTEXT
-//         txn_type: 'WALLET_TO_CARD',
-//         txn_desc: 'Wallet To Card',
-//         card_name: dest.cardholder_name,
-
-//         // SENDER
-//         from: sourceCard.cardholder_name,
-//       })
-//     )
-
-//     resetFlow()
-//     navigate('/customer/wallet-to-card/success')
-//   } catch (e) {
-//     toast.error(e.message || 'Transaction failed')
-//   } finally {
-//     setLoading(false)
-//   }
-// }
-
-
-
 const handleConfirmOtp = async () => {
   setLoading(true)
   try {
     const dest = destCards[activeDestIndex]
 
-    await walletToCardService.walletToCard({
+    // 🔹 CALL API AND CAPTURE RESPONSE
+    const res = await walletToCardService.walletToCard({
       to_card: dest.card_number,
       txn_amount: amount,
-      remarks: 'Withdraw to card',
+      remarks: 'Wallet To Card',
     })
 
+    // 🔹 STORE COMPLETE DATA (BACKEND + FRONTEND CONTEXT)
     sessionStorage.setItem(
       'walletToCardSuccess',
       JSON.stringify({
+        // BACKEND RESPONSE
+        txn_id: res?.data?.txn_id,
+        rrn: res?.data?.rrn,
+        txn_amount: res?.data?.txn_amount,
+        wallet_number: res?.data?.wallet_number,
+        card_number: res?.data?.card_number,
+        channel_type: res?.data?.channel_type || 'WEB',
+        txn_time: new Date().toISOString(),
+        status: 1,
+
+        // FRONTEND CONTEXT
+        txn_type: 'WALLET_TO_CARD',
+        txn_desc: 'Wallet To Card',
+        card_name: dest.cardholder_name,
+
+        // SENDER
         from: sourceCard.cardholder_name,
-        to: dest.cardholder_name,
-        masked_to: dest.masked_card,
-        amount,
-        otp_bypassed: true,
       })
     )
 
@@ -200,6 +167,43 @@ const handleConfirmOtp = async () => {
     setLoading(false)
   }
 }
+
+
+
+
+// for  testing otp 
+
+
+// const handleConfirmOtp = async () => {
+//   setLoading(true)
+//   try {
+//     const dest = destCards[activeDestIndex]
+
+//     await walletToCardService.walletToCard({
+//       to_card: dest.card_number,
+//       txn_amount: amount,
+//       remarks: 'Withdraw to card',
+//     })
+
+//     sessionStorage.setItem(
+//       'walletToCardSuccess',
+//       JSON.stringify({
+//         from: sourceCard.cardholder_name,
+//         to: dest.cardholder_name,
+//         masked_to: dest.masked_card,
+//         amount,
+//         otp_bypassed: true,
+//       })
+//     )
+
+//     resetFlow()
+//     navigate('/customer/wallet-to-card/success')
+//   } catch (e) {
+//     toast.error(e.message || 'Transaction failed')
+//   } finally {
+//     setLoading(false)
+//   }
+// }
 
 
 
