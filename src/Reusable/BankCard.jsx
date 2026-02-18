@@ -1,61 +1,83 @@
 import React from 'react'
-import BlankATMCard from '../assets/BlankATMCard.svg'
+import Chip from '../assets/Chip.svg'
+import Wifi from '../assets/wifi.svg'
+import PayseyLogoWhite from '../assets/PayseyPaymentLogowhite.png'
 
 const BankCard = ({ card, onBalance }) => {
+  const isMyPayseCard = !card.external_inst_name
+
   return (
     <div
       className="relative rounded-2xl p-5 mb-4 shadow-sm overflow-hidden"
-      style={{ backgroundColor: card.color_code || '#e5e7eb' }}
+      style={{ backgroundColor: card.color_code || '#2fb36f' }}
     >
-      {/* SVG background (chip + wifi moved UP) */}
+      {/* PAYSEY LOGO — TOP RIGHT (OUR CARD) */}
+      {isMyPayseCard && (
+        <img
+          src={PayseyLogoWhite}
+          alt="PaysePay"
+          className="absolute top-4 right-5 h-9"
+        />
+      )}
+
+      {/* BANK NAME — ABOVE WIFI (BENEFICIARY CARD) */}
+      {!isMyPayseCard && (
+        <div className="absolute top-8 right-5 text-xs font-semibold text-gray-800 uppercase">
+          {card.external_inst_name?.trim()}
+        </div>
+      )}
+
+      {/* CHIP — TOP LEFT */}
       <img
-        src={BlankATMCard}
-        alt="ATM Card"
-        className="absolute -top-14 left-0 w-full h-full object-cover opacity-90 pointer-events-none mb-2"
+        src={Chip}
+        alt="Chip"
+        className="absolute top-12 left-5 h-14"
+      />
+
+      {/* WIFI / NFC — TOP RIGHT */}
+      <img
+        src={Wifi}
+        alt="NFC"
+        className="absolute top-14 right-5 h-10"
       />
 
       {/* CONTENT */}
-      <div className="relative z-10">
-        {/* Bank name */}
-        <div className="text-center text-sm font-semibold text-gray-800 mb-8">
-          {card.external_inst_name?.trim()}
-        </div>
-
-        {/* Push text DOWN below chip & wifi */}
-        <div className="mt-12">
-          {/* Card number */}
-<div className="text-sm text-gray-700 mt-4">
+      <div className="relative z-10 mt-32">
+        {/* Card number */}
+        <div className="mb-4">
+          <div className="text-sm text-gray-700">
             Card number
           </div>
-          <div className="text-lg font-mono tracking-widest text-gray-900 mb-5">
-            {card.masked_card}
-          </div>
 
-          {/* Card holder */}
-          <div className="text-sm text-gray-700 mb-2">
-            Card holder name
-          </div>
-          <div className="text-sm font-semibold text-gray-900">
-            {card.cardholder_name}
+          <div className="text-lg font-mono tracking-[0.22em] text-gray-900">
+            {card.masked_card}
           </div>
         </div>
 
-        {/* Balance button – bottom right */}
-        <div className="flex mt-6">
-          <div className="ml-auto">
-            {card.balance ? (
-              <div className="px-4 py-1.5 rounded-full text-sm border border-green-600 text-green-700 font-semibold">
-                Balance : {card.balance}
-              </div>
-            ) : (
-              <button
-                onClick={onBalance}
-                className="px-5 py-2 rounded-full text-sm border border-gray-500 text-gray-700"
-              >
-                Balance
-              </button>
-            )}
+        {/* Card holder + Balance (SAME LINE) */}
+        <div className="flex items-end justify-between">
+          <div>
+            <div className="text-sm text-gray-700 mb-1">
+              Card holder name
+            </div>
+
+            <div className="text-sm font-semibold text-gray-900 uppercase">
+              {card.cardholder_name || card.name_on_card}
+            </div>
           </div>
+
+          {card.balance ? (
+            <div className="px-4 py-1.5 rounded-full text-sm border border-green-700 text-green-800 font-semibold">
+              Balance : {card.balance}
+            </div>
+          ) : (
+            <button
+              onClick={onBalance}
+              className="px-5 py-2 rounded-full text-sm border border-gray-600 text-gray-800"
+            >
+              Balance
+            </button>
+          )}
         </div>
       </div>
     </div>
