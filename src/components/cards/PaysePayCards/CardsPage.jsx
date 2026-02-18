@@ -12,6 +12,7 @@ import { getAuthToken, deviceId } from '../../../services/api'
 import { CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '../../../utils/constant'
 import ChipIcon from '../../../assets/Chip.svg'
 import WifiIcon from '../../../assets/wifi.svg'
+import PayseyLogoWhite from '../../../assets/PayseyPaymentLogowhite.png'
 
 const NUM_DATA = 20
 
@@ -47,9 +48,13 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
       {card.card_status_name || 'Personalized'}
     </span>
     {/* Logo */}
-    <span className="absolute top-3 right-4 text-white font-bold text-lg tracking-tight z-20">
-      Paysey
-    </span>
+<img
+  src={PayseyLogoWhite}
+  alt="Paysey"
+  className="absolute top-3 right-4 h-6 sm:h-7 z-20"
+  draggable={false}
+/>
+
     
     
     
