@@ -16,15 +16,20 @@ import walletToCardService from './walletToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getAuthToken, deviceId } from '../../services/api'
 
+import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
+
+
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
 const WalletToCardCardList = () => {
   const navigate = useNavigate()
   const destScrollRef = useRef(null)
 
-  const [sourceCard, setSourceCard] = useState(null)
+const [sourceCards, setSourceCards] = useState([])
+const [activeSourceIndex, setActiveSourceIndex] = useState(0)
   const [destCards, setDestCards] = useState([])
   const [activeDestIndex, setActiveDestIndex] = useState(null)
+const sourceCard = sourceCards[activeSourceIndex]
 
   const [amount, setAmount] = useState('')
 
@@ -43,21 +48,61 @@ const WalletToCardCardList = () => {
     fetchDestinationCards()
   }, [])
 
-  const fetchSourceCard = async () => {
-    try {
-      const res = await cardService.getList({ card_status: 1 })
-      if (!res.data?.length) throw new Error('No wallet card found')
+const fetchSourceCard = async () => {
+  try {
+    const res = await cardService.getList({ card_status: 1 })
+    if (!res.data?.length) throw new Error('No wallet cards found')
 
-      const raw = res.data[0]
-      setSourceCard({
-        ...raw,
-        cardholder_name: raw.name_on_card,
-        color_code: raw.color_code || '#0fb36c',
-      })
-    } catch (e) {
-      toast.error(e.message || 'Failed to load wallet card')
-    }
+    const mapped = res.data.map((raw) => ({
+      ...raw,
+      cardholder_name: raw.name_on_card,
+      color_code: raw.color_code || '#0fb36c',
+    }))
+
+    setSourceCards(mapped)
+  } catch (e) {
+    toast.error(e.message || 'Failed to load wallet cards')
   }
+}
+
+const fetchSourceCardBalance = async (cardIndex) => {
+  try {
+    const card = sourceCards[cardIndex]
+
+const res = await fetch(CUSTOMER_BALANCE, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${getAuthToken()}`,
+    deviceInfo: JSON.stringify({
+      device_type: 'WEB',
+      device_id: deviceId,
+    }),
+  },
+})
+
+
+    const json = await res.json()
+    if (!res.ok || json.code !== 1) {
+      throw new Error(json.message)
+    }
+
+setSourceCards((prev) =>
+  prev.map((c) => ({
+    ...c,
+    balance: json.data.avail_bal,
+  }))
+)
+
+  } catch (e) {
+    toast.error(e.message || 'Failed to fetch source card balance')
+  }
+}
+
+
+
+
+
 
   const fetchDestinationCards = async () => {
     try {
@@ -84,6 +129,48 @@ const WalletToCardCardList = () => {
       toast.error(e.message || 'Failed to load destination cards')
     }
   }
+
+
+
+
+  const fetchDestCardBalance = async (cardIndex) => {
+  try {
+    const card = destCards[cardIndex]
+
+    const res = await fetch(CARD_CHECK_BALANCE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getAuthToken()}`,
+        deviceInfo: JSON.stringify({
+          device_type: 'WEB',
+          device_id: deviceId,
+        }),
+      },
+      body: JSON.stringify({
+        card_number: card.card_number,
+      }),
+    })
+
+    const json = await res.json()
+    if (!res.ok || json.code !== 1) {
+      throw new Error(json.message)
+    }
+
+    // update only selected card balance
+    setDestCards((prev) =>
+      prev.map((c, i) =>
+        i === cardIndex
+          ? { ...c, balance: json.data.avail_bal
+ }
+          : c
+      )
+    )
+  } catch (e) {
+    toast.error(e.message || 'Failed to fetch balance')
+  }
+}
+
 
   /* ---------------- CONTINUE → CVV ---------------- */
   const handleContinue = () => {
@@ -225,12 +312,42 @@ const handleConfirmOtp = async () => {
     <PageContainer>
       <div className="px-4 py-4 max-w-md mx-auto">
 
-        {sourceCard && (
-          <>
-            <div className="text-sm font-medium mb-2">Source Wallet</div>
-            <BankCard card={sourceCard} />
-          </>
-        )}
+{sourceCards.length > 0 && (
+  <>
+    <div className="text-sm font-medium mb-2">Source Wallet</div>
+
+    <div
+      className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
+      onScroll={(e) => {
+        const c = e.currentTarget
+        setActiveSourceIndex(Math.round(c.scrollLeft / c.offsetWidth))
+      }}
+    >
+      {sourceCards.map((card, index) => (
+        <div
+          key={card.id}
+          className={`snap-center shrink-0 w-full ${
+            activeSourceIndex === index
+              ? 'ring-2 ring-green-500 rounded-xl'
+              : ''
+          }`}
+          onClick={() => setActiveSourceIndex(index)}
+        >
+<BankCard
+  card={card}
+  onBalance={
+    activeSourceIndex === index
+      ? () => fetchSourceCardBalance(index)
+      : undefined
+  }
+/>
+        </div>
+      ))}
+    </div>
+  </>
+)}
+
+
 
         <AmountInput label="Amount" value={amount} onChange={setAmount} />
 
@@ -267,7 +384,14 @@ const handleConfirmOtp = async () => {
                   : ''
               }`}
             >
-              <BankCard card={card} />
+<BankCard
+  card={card}
+  onBalance={
+    activeDestIndex === index
+      ? () => fetchDestCardBalance(index)
+      : undefined
+  }
+/>
             </div>
           ))}
         </div>

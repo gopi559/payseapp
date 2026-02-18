@@ -13,6 +13,7 @@ import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
 
+import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 
 import { generateStan } from '../../utils/generateStan'
 
@@ -65,7 +66,57 @@ const CashInCardList = () => {
     }
   }
 
-  /* ---------------- STEP 1 → CVV POPUP ---------------- */
+
+const fetchCardBalance = async (cardIndex) => {
+  try {
+    const card = cards[cardIndex]
+    const isInternalCard = !card.external_inst_name
+
+    const res = await fetch(
+      isInternalCard ? CUSTOMER_BALANCE : CARD_CHECK_BALANCE,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+          deviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
+        },
+        ...(isInternalCard
+          ? {}
+          : {
+              body: JSON.stringify({
+                card_number: card.card_number,
+              }),
+            }),
+      }
+    )
+
+    const json = await res.json()
+    if (!res.ok || json.code !== 1) {
+      throw new Error(json.message)
+    }
+
+    setCards((prev) =>
+      isInternalCard
+        ? prev.map((c) => ({
+            ...c,
+            balance: json.data.avail_bal,
+          }))
+        : prev.map((c, i) =>
+            i === cardIndex
+              ? { ...c, balance: json.data.avail_bal }
+              : c
+          )
+    )
+  } catch (e) {
+    toast.error(e.message || 'Failed to fetch balance')
+  }
+}
+
+
   const handleContinue = () => {
     if (!amount || Number(amount) <= 0) {
       toast.error('Enter a valid amount')
@@ -76,13 +127,11 @@ const CashInCardList = () => {
     setStep('CVV')
   }
 
-  /* ---------------- STEP 2 → CONFIRM POPUP ---------------- */
   const handleCvvConfirm = ({ cvv, expiry }) => {
     setCvvData({ cvv, expiry })
     setStep('CONFIRM')
   }
 
-  /* ---------------- STEP 3 → SEND OTP ---------------- */
   const handleSendOtp = async () => {
     if (!selectedCard || !cvvData) return
 
@@ -130,9 +179,7 @@ const handleConfirmOtp = async (otp) => {
       stan: txnMeta.stan,
     })
 
-    /**
-     * ✅ SINGLE SOURCE OF TRUTH FOR ALL NEXT SCREENS
-     */
+
     sessionStorage.setItem(
       'cashInSuccess',
       JSON.stringify({
@@ -148,11 +195,9 @@ const handleConfirmOtp = async (otp) => {
         channel_type: 'WEB',
         status: 1,
 
-        // ---- SENDER (CARD) ----
         card_number: selectedCard.card_number,
         card_name: selectedCard.card_name,
 
-        // ---- RECEIVER ----
         to: 'Wallet',
       })
     )
@@ -166,7 +211,6 @@ const handleConfirmOtp = async (otp) => {
   }
 }
 
-  /* ---------------- RESET (CANCEL / FAIL SAFE) ---------------- */
   const resetFlow = () => {
     setStep(null)
     setCvvData(null)
@@ -188,11 +232,19 @@ const handleConfirmOtp = async (otp) => {
           }}
           className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
         >
-          {cards.map((card) => (
-            <div key={card.id} className="snap-center shrink-0 w-full">
-              <BankCard card={card} />
-            </div>
-          ))}
+{cards.map((card, index) => (
+  <div key={card.id} className="snap-center shrink-0 w-full">
+    <BankCard
+      card={card}
+      onBalance={
+        activeIndex === index
+          ? () => fetchCardBalance(index)
+          : undefined
+      }
+    />
+  </div>
+))}
+
         </div>
 
         {/* Amount */}

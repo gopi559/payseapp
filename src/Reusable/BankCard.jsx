@@ -66,7 +66,7 @@ const BankCard = ({ card, onBalance }) => {
             </div>
           </div>
 
-          {card.balance ? (
+{card.balance !== undefined ? (
             <div className="px-4 py-1.5 rounded-full text-sm border border-green-700 text-green-800 font-semibold">
               Balance : {card.balance}
             </div>

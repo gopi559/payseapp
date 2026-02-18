@@ -18,6 +18,7 @@ import cardToCardService from './cardToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getAuthToken, deviceId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
+import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 
 const CardToCardCardList = () => {
   const navigate = useNavigate()
@@ -67,6 +68,57 @@ const CardToCardCardList = () => {
       toast.error(e.message || 'Failed to load cards')
     }
   }
+
+
+const fetchCardBalance = async (cardIndex) => {
+  try {
+    const card = cards[cardIndex]
+
+    const isInternalCard = !card.external_inst_name
+
+    const res = await fetch(
+      isInternalCard ? CUSTOMER_BALANCE : CARD_CHECK_BALANCE,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+          deviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
+        },
+        ...(isInternalCard
+          ? {}
+          : {
+              body: JSON.stringify({
+                card_number: card.card_number,
+              }),
+            }),
+      }
+    )
+
+    const json = await res.json()
+    if (!res.ok || json.code !== 1) {
+      throw new Error(json.message)
+    }
+
+    setCards((prev) =>
+      isInternalCard
+        ? prev.map((c) => ({
+            ...c,
+            balance: json.data.avail_bal,
+          }))
+        : prev.map((c, i) =>
+            i === cardIndex
+              ? { ...c, balance: json.data.avail_bal }
+              : c
+          )
+    )
+  } catch (e) {
+    toast.error(e.message || 'Failed to fetch balance')
+  }
+}
 
   /* ---------------- STEP 1 → CVV ---------------- */
   const handleContinue = () => {
@@ -202,11 +254,19 @@ const CardToCardCardList = () => {
           }}
           className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
         >
-          {cards.map((card) => (
-            <div key={card.id} className="snap-center shrink-0 w-full">
-              <BankCard card={card} />
-            </div>
-          ))}
+{cards.map((card, index) => (
+  <div key={card.id} className="snap-center shrink-0 w-full">
+    <BankCard
+      card={card}
+      onBalance={
+        activeIndex === index
+          ? () => fetchCardBalance(index)
+          : undefined
+      }
+    />
+  </div>
+))}
+
         </div>
 
         <AmountInput label="Amount" value={amount} onChange={setAmount} />

@@ -163,23 +163,9 @@ const ProfilePage = () => {
                 )}
               </div>
 
-              {!uploading && (
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-1 right-1 bg-brand-primary text-white p-2 rounded-full"
-                >
-                  <HiCamera />
-                </button>
-              )}
 
-              {!uploading && profileImage && (
-                <button
-                  onClick={handleRemoveImage}
-                  className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full"
-                >
-                  <HiXMark />
-                </button>
-              )}
+
+
 
               <input
                 ref={fileInputRef}
