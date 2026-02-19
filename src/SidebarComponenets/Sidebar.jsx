@@ -52,14 +52,17 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 
   const menuItems = [
     { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
-    { icon: <FaListAlt />, label: 'Transactions', route: '/customer/transactions', isComponent: true },
-    { icon: <HiExclamationTriangle />, label: 'Disputes', route: '/customer/disputes', isComponent: true },
-    { icon: <img src={voucherIcon} alt="Voucher" className="w-6 h-6 object-contain" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
+    { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
     { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
     { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
+    { icon: <img src={voucherIcon} alt="Voucher" className="w-6 h-6 object-contain" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
+
     { icon: <FaCreditCard />, label: 'Wallet to Card', route: '/customer/wallet-to-card', isComponent: true },
     { icon: <FaCreditCard />, label: 'Card to Card', route: '/customer/card-to-card', isComponent: true },
-    { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
+        { icon: <FaListAlt />, label: 'Transactions', route: '/customer/transactions', isComponent: true },
+
+        { icon: <HiExclamationTriangle />, label: 'Disputes', route: '/customer/disputes', isComponent: true },
+
     { icon: <CgProfile />, label: 'Profile', route: '/customer/profile', isComponent: true },
   ]
 

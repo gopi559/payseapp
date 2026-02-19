@@ -14,9 +14,10 @@ const ActionGrid = () => {
   // 1. Cash In, 2. Voucher, 3. Send, 4. Receive, 5. Pay Bill, 6. Scan, 7. Airtime, 8. Donate
   const actions = [
     { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
-    { icon: <img src={voucherIcon} alt="Voucher" className="w-24 h-24 sm:w-28 sm:h-28 object-contain" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
-    { icon: <MdOutlineArrowOutward />, label: 'Send', route: '/customer/send', isComponent: true },
+        { icon: <MdOutlineArrowOutward />, label: 'Send', route: '/customer/send', isComponent: true },
     { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
+
+    { icon: <img src={voucherIcon} alt="Voucher" className="w-24 h-24 sm:w-28 sm:h-28 object-contain" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
     { icon: <img src={payBillIcon} alt="Pay Bill" className="w-24 h-24 sm:w-28 sm:h-28 object-contain" />, label: 'Pay Bill', route: '/customer/send', isImage: true },
     // { icon: <FaQrcode />, label: 'Scan', route: '/customer/send', isComponent: true },
     { icon: <img src={airtimeIcon} alt="Airtime" className="w-27 h-27 sm:w-28 sm:h-28 object-contain" />, label: 'Airtime', route: '/customer/send', isImage: true },
@@ -30,7 +31,7 @@ const ActionGrid = () => {
 
 
 
-    { icon: <HiCube />, label: 'Donate', route: '/customer/send', isComponent: true },
+    // { icon: <HiCube />, label: 'Donate', route: '/customer/send', isComponent: true },
 
   ]
   

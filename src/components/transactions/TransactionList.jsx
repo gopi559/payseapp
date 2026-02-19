@@ -160,10 +160,10 @@ const TransactionList = () => {
 
   const headers = [
     // { key: 'id', label: 'ID' },
-    { key: 'txn_id', label: 'Txn ID' },
+    // { key: 'txn_id', label: 'Txn ID' },
     { key: 'rrn', label: 'RRN' },
     { key: 'txn_type', label: 'Txn Type' },
-    { key: 'txn_short_desc', label: 'Short Desc' },
+    // { key: 'txn_short_desc', label: 'Short Desc' },
     { key: 'txn_desc', label: 'Description' },
     {
       key: 'txn_time',
@@ -185,16 +185,16 @@ const TransactionList = () => {
     //   label: 'Debit User ID',
     //   content: (row) => getDebitFirst(row, 'user_id'),
     // },
-    {
-      key: 'debit_acct_number',
-      label: 'Debit Acct',
-      content: (row) => getDebitFirst(row, 'acct_number'),
-    },
-    {
-      key: 'debit_card_number',
-      label: 'Debit Card',
-      content: (row) => getDebitFirst(row, 'card_number'),
-    },
+    // {
+    //   key: 'debit_acct_number',
+    //   label: 'Debit Acct',
+    //   content: (row) => getDebitFirst(row, 'acct_number'),
+    // },
+    // {
+    //   key: 'debit_card_number',
+    //   label: 'Debit Card',
+    //   content: (row) => getDebitFirst(row, 'card_number'),
+    // },
     // {
     //   key: 'debit_currency_code',
     //   label: 'Debit Currency',
@@ -282,25 +282,69 @@ const TransactionList = () => {
               <label htmlFor="from-date" className="text-xs font-medium text-gray-600">
                 From Date
               </label>
-              <input
-                id="from-date"
-                type="date"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
-              />
+              <div className="relative">
+                <input
+                  id="from-date"
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Prevent typing but allow calendar picker to work
+                    // Allow Tab, Enter, Escape, Arrow keys (for calendar navigation), and modifier keys
+                    if (
+                      !['Tab', 'Enter', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) &&
+                      !e.ctrlKey &&
+                      !e.metaKey &&
+                      !e.altKey
+                    ) {
+                      e.preventDefault()
+                    }
+                  }}
+                  className="rounded-lg border border-gray-200 px-3 py-2 pr-10 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary w-full"
+                  style={{
+                    color: fromDate ? 'inherit' : 'transparent',
+                  }}
+                />
+                {!fromDate && (
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none select-none">
+                    DD-MM-YYYY
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex flex-col gap-1">
               <label htmlFor="to-date" className="text-xs font-medium text-gray-600">
                 To Date
               </label>
-              <input
-                id="to-date"
-                type="date"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
-              />
+              <div className="relative">
+                <input
+                  id="to-date"
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Prevent typing but allow calendar picker to work
+                    // Allow Tab, Enter, Escape, Arrow keys (for calendar navigation), and modifier keys
+                    if (
+                      !['Tab', 'Enter', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) &&
+                      !e.ctrlKey &&
+                      !e.metaKey &&
+                      !e.altKey
+                    ) {
+                      e.preventDefault()
+                    }
+                  }}
+                  className="rounded-lg border border-gray-200 px-3 py-2 pr-10 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary w-full"
+                  style={{
+                    color: toDate ? 'inherit' : 'transparent',
+                  }}
+                />
+                {!toDate && (
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none select-none">
+                    DD-MM-YYYY
+                  </span>
+                )}
+              </div>
             </div>
             <button
               type="button"

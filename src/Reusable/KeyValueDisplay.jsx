@@ -1,30 +1,25 @@
 import React from 'react'
 import { formatTableDateTime } from '../utils/formatDate'
 
-/**
- * Reusable key-value display for API/object data.
- * Lists all keys from `data` (except excludedKeys), with optional labels and custom formatters.
- */
 const KeyValueDisplay = ({
   data,
-  excludedKeys = [],
+  excludedKeys = ['id', 'txn_short_desc'],
+  nestedExcludedKeys = {
+    debit_details: ['user_id'],
+    credit_details: ['user_id'],
+  },
   labels = {},
   formatters = {},
   emptyValue = '—',
   className = '',
 }) => {
   if (!data || typeof data !== 'object') {
-    return (
-      <div className={`text-sm text-gray-600 ${className}`}>
-        {emptyValue}
-      </div>
-    )
+    return <div className={`text-sm text-gray-600 ${className}`}>{emptyValue}</div>
   }
 
   const formatSingleValue = (v) => {
     if (typeof v === 'boolean') return v ? 'Yes' : 'No'
     if (v === null || v === undefined || v === '') return emptyValue
-    // Format date strings consistently
     if (
       typeof v === 'string' &&
       (v.includes('T') || v.match(/^\d{4}-\d{2}-\d{2}/)) &&
@@ -32,18 +27,28 @@ const KeyValueDisplay = ({
     ) {
       return formatTableDateTime(v)
     }
-    if (typeof v === 'object') return null // handled below as block
+    if (typeof v === 'object') return null
     return String(v)
   }
 
-  const renderValue = (value) => {
-    if (typeof value === 'boolean') {
-      return value ? 'Yes' : 'No'
-    }
-    if (value === null || value === undefined || value === '') {
-      return emptyValue
-    }
-    // Format date strings consistently
+  const renderObject = (obj, exclude = []) =>
+    Object.entries(obj)
+      .filter(([k]) => !exclude.includes(k))
+      .map(([k, v]) => {
+        const formatted = formatSingleValue(v)
+        return (
+          <div key={k} className="flex flex-wrap justify-between gap-x-3 text-sm">
+            <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}:</span>
+            <span className="font-medium text-gray-800">
+              {formatted !== null ? formatted : JSON.stringify(v)}
+            </span>
+          </div>
+        )
+      })
+
+  const renderValue = (key, value) => {
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+    if (value === null || value === undefined || value === '') return emptyValue
     if (
       typeof value === 'string' &&
       (value.includes('T') || value.match(/^\d{4}-\d{2}-\d{2}/)) &&
@@ -51,69 +56,30 @@ const KeyValueDisplay = ({
     ) {
       return formatTableDateTime(value)
     }
-    // Array of objects: show as readable blocks (e.g. debit_details, credit_details)
-    if (
-      Array.isArray(value) &&
-      value.length > 0 &&
-      value.every((item) => item != null && typeof item === 'object' && !Array.isArray(item))
-    ) {
+    if (Array.isArray(value)) {
       return (
-        <div className="space-y-3 text-right">
+        <div className="space-y-3">
           {value.map((item, idx) => (
             <div
               key={idx}
-              className="rounded border border-gray-100 bg-gray-50/80 px-3 py-2 text-left"
+              className="rounded border border-gray-100 bg-gray-50/80 px-3 py-2 space-y-1"
             >
-              {Object.entries(item).map(([k, v]) => {
-                const formatted = formatSingleValue(v)
-                return (
-                  <div
-                    key={k}
-                    className="flex flex-wrap justify-between gap-x-3 gap-y-0.5 py-1 text-sm"
-                  >
-                    <span className="text-gray-500 capitalize">
-                      {k.replace(/_/g, ' ')}:
-                    </span>
-                    <span className="font-medium text-gray-800">
-                      {formatted !== null ? formatted : JSON.stringify(v)}
-                    </span>
-                  </div>
-                )
-              })}
+              {renderObject(item, nestedExcludedKeys[key] || [])}
             </div>
           ))}
         </div>
       )
     }
-    // Single object (not array): show as key-value lines
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    if (typeof value === 'object') {
       return (
-        <div className="rounded border border-gray-100 bg-gray-50/80 px-3 py-2 text-left space-y-1">
-          {Object.entries(value).map(([k, v]) => {
-            const formatted = formatSingleValue(v)
-            return (
-              <div
-                key={k}
-                className="flex flex-wrap justify-between gap-x-3 text-sm"
-              >
-                <span className="text-gray-500 capitalize">
-                  {k.replace(/_/g, ' ')}:
-                </span>
-                <span className="font-medium text-gray-800">
-                  {formatted !== null ? formatted : JSON.stringify(v)}
-                </span>
-              </div>
-            )
-          })}
+        <div className="rounded border border-gray-100 bg-gray-50/80 px-3 py-2 space-y-1">
+          {renderObject(value)}
         </div>
       )
     }
     return String(value)
   }
 
-  // Filter entries: only exclude keys that are explicitly in excludedKeys array
-  // NOTE: This means ALL other fields in the data object will be displayed, including "stan"
-  // if it exists in the transaction data. To hide "stan", pass excludedKeys={['stan']}
   const entries = Object.entries(data).filter(
     ([key]) => !excludedKeys.includes(key)
   )
@@ -121,29 +87,28 @@ const KeyValueDisplay = ({
   return (
     <div className={`w-full min-w-0 ${className}`}>
       {entries.map(([key, value]) => {
-        // Use custom label from labels prop, or fallback to the key name itself
-        // NOTE: If "stan" exists in data but not in labels, it will display as "stan" (or "Stan" after capitalization)
         const label = labels[key] ?? key
         const displayValue =
           typeof formatters[key] === 'function'
             ? formatters[key](value)
-            : renderValue(value)
+            : renderValue(key, value)
         const isReactNode =
           typeof displayValue === 'object' &&
           displayValue !== null &&
           React.isValidElement(displayValue)
+
         return (
           <div
             key={key}
-            className="grid grid-cols-[minmax(140px,auto)_1fr] gap-4 items-center py-3 border-b border-gray-200 last:border-0 min-w-0"
+            className="grid grid-cols-[minmax(140px,auto)_1fr] gap-4 items-center py-3 border-b border-gray-200 last:border-0"
           >
-            <span className="text-sm text-gray-600 shrink-0">{label}</span>
+            <span className="text-sm text-gray-600">{label}</span>
             {isReactNode ? (
-              <div className="text-sm font-medium text-gray-800 min-w-0">
+              <div className="text-sm font-medium text-gray-800">
                 {displayValue}
               </div>
             ) : (
-              <span className="text-sm font-medium text-gray-800 text-right break-words min-w-0 whitespace-pre-wrap">
+              <span className="text-sm font-medium text-gray-800 text-right break-words">
                 {displayValue}
               </span>
             )}
@@ -155,6 +120,3 @@ const KeyValueDisplay = ({
 }
 
 export default KeyValueDisplay
-
-
-
