@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import Button from './Button'
+import { HiExclamationTriangle } from 'react-icons/hi2'
 
 const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
   const [cvv, setCvv] = useState('')
@@ -31,12 +32,15 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
 <div className="relative ml-0 md:ml-72">
         <div className="w-full max-w-[420px] bg-white rounded-3xl p-6 shadow-xl">
           
-          <h2 className="text-lg font-semibold mb-1">
-            Card Security Details
-          </h2>
+          <div className="flex items-center gap-3 mb-1">
+            <HiExclamationTriangle className="w-6 h-6 text-green-500" />
+            <h2 className="text-lg font-semibold">
+              Card Security Details
+            </h2>
+          </div>
 
           <p className="text-sm text-gray-500 mb-4">
-            Enter CVV and expiry date
+            Enter CVV And Expiry Date
           </p>
 
           <div className="grid grid-cols-2 gap-3 mb-6">

@@ -291,12 +291,12 @@ const CardsPage = () => {
       <div className="px-4 py-6">
         {/* <h1 className="text-2xl font-bold text-brand-dark mb-6">My Cards</h1> */}
 
-        {/* Wallet summary card: green background, white text, Available balance + wallet ID */}
+        {/* Wallet summary card: green background, white text, Available Balance + wallet ID */}
         {/* <div className="bg-gradient-to-br from-brand-primary to-brand-action rounded-xl p-6 text-white mb-6 shadow-lg"> */}
-          {/* Top section: Available balance (label + amount) and credit card icon */}
+          {/* Top section: Available Balance (label + amount) and credit card icon */}
           {/* <div className="flex justify-between items-start mb-4">
             <div>
-              <p className="text-sm opacity-90 mb-1">Available balance</p>
+              <p className="text-sm opacity-90 mb-1">Available Balance</p>
               <p className="text-3xl font-bold">{formatAmount(balance)}</p>
             </div>
             <span className="text-3xl">💳</span>

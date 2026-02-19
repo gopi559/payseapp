@@ -119,7 +119,7 @@ const VoucherPage = () => {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-800">Voucher (Cash Code)</h2>
-              <p className="text-sm text-gray-500">View and create cash codes</p>
+              <p className="text-sm text-gray-500">View And Create Cash Codes</p>
             </div>
           </div>
           <Button type="button" onClick={() => navigate('/customer/voucher/create')}>

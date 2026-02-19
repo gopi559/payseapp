@@ -36,7 +36,7 @@ const ReceivePage = () => {
   const handleValidateBeneficiary = async () => {
     const trimmed = mobile.trim()
     if (!trimmed || trimmed === '+93') {
-      setRequestError('Please enter beneficiary mobile number')
+      setRequestError('Please Enter Beneficiary Mobile Number')
       return
     }
     // Ensure +93 prefix is included
@@ -315,7 +315,7 @@ const ReceivePage = () => {
           )}
           <div className="space-y-4">
             <MobileInput
-              label="Beneficiary mobile number"
+              label="Beneficiary Mobile Number"
               value={mobile}
               onChange={(e) => {
                 setMobile(e.target.value)

@@ -15,7 +15,7 @@ const WalletToCardMethod = () => {
           </h1>
 
           <p className="text-base text-gray-600 mb-8">
-            Select how you want to withdraw money from your wallet
+            Select How You Want To Withdraw Money From Your Wallet
           </p>
 
           <button

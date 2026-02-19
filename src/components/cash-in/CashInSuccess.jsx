@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const CashInSuccess = () => {
   const navigate = useNavigate()
@@ -31,7 +32,8 @@ const CashInSuccess = () => {
   if (!details) return null
 
   const txnId = details.txn_id ?? '—'
-  const from = details.from ?? '—'
+  const formattedFromCardNumber = details.from_card_number ? formatCardNumber(details.from_card_number) : '—'
+  const fromCardholderName = details.from_card_name || '—'
   const amount = details.txn_amount
     ? `₹${Number(details.txn_amount).toFixed(2)}`
     : '₹0.00'
@@ -87,11 +89,14 @@ const CashInSuccess = () => {
             </span>
           </div>
 
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between items-start text-sm">
             <span className="text-gray-600">From:</span>
-            <span className="font-medium text-gray-900">
-              {from}
-            </span>
+            <div className="text-right">
+              <div className="font-medium text-gray-900 font-mono">{formattedFromCardNumber}</div>
+              {fromCardholderName && fromCardholderName !== '—' && (
+                <div className="text-xs text-gray-600 mt-0.5">{fromCardholderName}</div>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-between text-sm">

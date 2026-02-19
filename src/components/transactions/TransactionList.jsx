@@ -269,7 +269,7 @@ const TransactionList = () => {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-800">Transactions</h2>
-              <p className="text-sm text-gray-500">View transaction list</p>
+              <p className="text-sm text-gray-500">View Transaction List</p>
             </div>
           </div>
         </div>

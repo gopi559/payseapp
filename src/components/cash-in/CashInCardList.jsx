@@ -16,6 +16,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 
 import { generateStan } from '../../utils/generateStan'
+import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
@@ -195,8 +196,9 @@ const handleConfirmOtp = async (otp) => {
         channel_type: 'WEB',
         status: 1,
 
-        card_number: selectedCard.card_number,
-        card_name: selectedCard.card_name,
+        // from (source card)
+        from_card_number: selectedCard.card_number,
+        from_card_name: selectedCard.cardholder_name || selectedCard.card_name,
 
         to: 'Wallet',
       })

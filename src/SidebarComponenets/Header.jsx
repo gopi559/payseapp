@@ -118,7 +118,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
 
         {/* CENTER – AVAILABLE BALANCE */}
         <div className="hidden md:flex items-center gap-3">
-          <span className="text-sm opacity-90">Available balance</span>
+          <span className="text-sm opacity-90">Available Balance</span>
 
           <span className="text-xl font-bold">
             {formatAmount(balance)}

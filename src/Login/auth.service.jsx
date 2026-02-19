@@ -68,14 +68,6 @@ verifyOtp: async (mobile, otp) => {
 
     const regInfo = res?.data?.reg_info || {}
 
-    // Build profile image URL directly from login response
-    let profileImage = null
-    if (res?.data?.img_url) {
-      profileImage = res.data.img_url
-    } else if (res?.data?.img_id) {
-      profileImage = `${import.meta.env.VITE_API_BASE_URL}/login/profile/image/${res.data.img_id}`
-    }
-
     Store.dispatch(
       login({
         user: {
@@ -90,8 +82,12 @@ verifyOtp: async (mobile, otp) => {
       })
     )
 
-    if (profileImage) {
-      Store.dispatch(setProfileImage(profileImage))
+    // Store profile image ID if available (components will fetch blob URL)
+    if (res?.data?.img_id) {
+      Store.dispatch(setProfileImage({ id: res.data.img_id, url: null }))
+    } else if (res?.data?.img_url) {
+      // If direct URL is provided, use it
+      Store.dispatch(setProfileImage({ id: null, url: res.data.img_url }))
     }
 
     if (regInfo?.user_ref) {

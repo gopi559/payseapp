@@ -26,12 +26,22 @@ const authSlice = createSlice({
     },
 
     setProfileImage: (state, action) => {
+      // Revoke old blob URL if it exists
       if (state.profileImage && state.profileImage.startsWith('blob:')) {
         URL.revokeObjectURL(state.profileImage)
       }
 
-      state.profileImage = action.payload?.url ?? null
-      state.profileImageId = action.payload?.id ?? null
+      // Handle both object format { id, url } and string format (backward compatibility)
+      if (typeof action.payload === 'string') {
+        state.profileImage = action.payload
+        state.profileImageId = null
+      } else if (action.payload && typeof action.payload === 'object') {
+        state.profileImage = action.payload.url ?? null
+        state.profileImageId = action.payload.id ?? null
+      } else {
+        state.profileImage = null
+        state.profileImageId = null
+      }
     },
 
     login: (state, action) => {

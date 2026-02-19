@@ -16,7 +16,7 @@ const CashInMethod = () => {
             Choose Your Method
           </h1>
           <p className="text-base text-gray-600 mb-8">
-            Select how you want to add money to your wallet
+            Select How You Want To Add Money To Your Wallet
           </p>
 
           {/* Card Payment */}
@@ -37,7 +37,7 @@ const CashInMethod = () => {
                 </h2>
 
                 <p className="text-base text-gray-700 mt-2">
-                  Add money using your debit or credit card
+                  Add Money Using Your Debit Or Credit Card
                 </p>
 
                 <div className="inline-flex items-center mt-4 px-4 py-1.5 text-sm rounded-full bg-white/70 text-gray-700">

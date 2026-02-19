@@ -37,7 +37,7 @@ const SendStart = () => {
   /* ---------------- Validate Beneficiary ---------------- */
   const handleValidate = async () => {
     if (!mobile || mobile === '+93') {
-      toast.error('Enter beneficiary mobile number')
+      toast.error('Enter Beneficiary Mobile Number')
       return
     }
 
@@ -78,7 +78,7 @@ const SendStart = () => {
         <h1 className="text-xl font-semibold mb-4">Send Money</h1>
 
         <MobileInput
-          label="Beneficiary mobile number"
+          label="Beneficiary Mobile Number"
           value={mobile}
           onChange={(e) => {
             setMobile(e.target.value)
