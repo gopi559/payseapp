@@ -40,7 +40,7 @@ const OtpPopup = ({
         <h2 className="text-lg font-semibold mb-2">Enter OTP</h2>
 
         <p className="text-sm text-gray-500 mb-4">
-          Enter the {length}-digit OTP sent to your registered mobile number
+          Enter The {length}-Digit OTP Sent To Your Registered Mobile Number
         </p>
 
         <div className="flex justify-between gap-3 mb-6">

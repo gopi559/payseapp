@@ -7,7 +7,6 @@ import BankCard from '../../Reusable/BankCard'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
 
-import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
 
@@ -34,10 +33,9 @@ const sourceCard = sourceCards[activeSourceIndex]
 
   const [amount, setAmount] = useState('')
 
-  // null | 'CVV' | 'CONFIRM' | 'OTP'
+// null | 'CONFIRM' | 'OTP'
   const [step, setStep] = useState(null)
 
-  const [cvvData, setCvvData] = useState(null)
   const [loading, setLoading] = useState(false)
 
   // TODO: replace with real mobile from profile/auth state
@@ -174,25 +172,22 @@ setSourceCards((prev) =>
 
 
   /* ---------------- CONTINUE → CVV ---------------- */
-  const handleContinue = () => {
-    if (!amount || Number(amount) <= 0) {
-      toast.error('Enter valid amount')
-      return
-    }
-
-    if (activeDestIndex === null) {
-      toast.error('Select destination card')
-      return
-    }
-
-    setStep('CVV')
+const handleContinue = () => {
+  if (!amount || Number(amount) <= 0) {
+    toast.error('Enter valid amount')
+    return
   }
 
-  /* ---------------- CVV → CONFIRM ---------------- */
-  const handleCvvConfirm = ({ cvv }) => {
-    setCvvData({ cvv })
-    setStep('CONFIRM')
+  if (activeDestIndex === null) {
+    toast.error('Select destination card')
+    return
   }
+
+  // directly go to confirmation
+  setStep('CONFIRM')
+}
+
+
 
   /* ---------------- CONFIRM → SEND OTP ---------------- */
   const handleSendOtp = async () => {
@@ -301,11 +296,10 @@ const handleConfirmOtp = async () => {
 
 
 
-  const resetFlow = () => {
-    setStep(null)
-    setCvvData(null)
-    setLoading(false)
-  }
+const resetFlow = () => {
+  setStep(null)
+  setLoading(false)
+}
 
   const dest = destCards[activeDestIndex]
 
@@ -406,13 +400,7 @@ const handleConfirmOtp = async () => {
         </Button>
       </div>
 
-      {/* CVV */}
-      <CvvPopup
-        open={step === 'CVV'}
-        loading={loading}
-        onClose={resetFlow}
-        onConfirm={handleCvvConfirm}
-      />
+
 
       {/* CONFIRM */}
       <ConfirmTransactionPopup
