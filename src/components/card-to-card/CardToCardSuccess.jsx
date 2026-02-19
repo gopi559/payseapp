@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const CardToCardSuccess = () => {
   const navigate = useNavigate()
@@ -30,8 +31,11 @@ const CardToCardSuccess = () => {
   if (!details) return null
 
   const txnId = details.txn_id ?? '—'
-  const from = `${details.from_card_name ?? '—'} •••• ${details.from_card?.slice(-4) ?? ''}`
-  const to = `Card •••• ${details.to_card?.slice(-4) ?? ''}`
+  const formattedFromCardNumber = details.from_card ? formatCardNumber(details.from_card) : '—'
+  const fromCardholderName = details.from_card_name || '—'
+  
+  const formattedToCardNumber = details.to_card ? formatCardNumber(details.to_card) : '—'
+  const toCardholderName = details.to_card_name || null
 
   const amount = details.txn_amount
     ? `₹${Number(details.txn_amount).toFixed(2)}`
@@ -86,14 +90,24 @@ const CardToCardSuccess = () => {
             <span className="font-medium text-gray-900">{txnId}</span>
           </div>
 
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between items-start text-sm">
             <span className="text-gray-600">From:</span>
-            <span className="font-medium text-gray-900">{from}</span>
+            <div className="text-right">
+              <div className="font-medium text-gray-900 font-mono">{formattedFromCardNumber}</div>
+              {fromCardholderName && fromCardholderName !== '—' && (
+                <div className="text-xs text-gray-600 mt-0.5">{fromCardholderName}</div>
+              )}
+            </div>
           </div>
 
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between items-start text-sm">
             <span className="text-gray-600">To:</span>
-            <span className="font-medium text-gray-900">{to}</span>
+            <div className="text-right">
+              <div className="font-medium text-gray-900 font-mono">{formattedToCardNumber}</div>
+              {toCardholderName && (
+                <div className="text-xs text-gray-600 mt-0.5">{toCardholderName}</div>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-green-200">

@@ -17,6 +17,7 @@ import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getAuthToken, deviceId } from '../../services/api'
 
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
+import { formatCardNumber } from '../../utils/formatCardNumber'
 
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
@@ -418,7 +419,14 @@ const handleConfirmOtp = async () => {
         open={step === 'CONFIRM'}
         card={sourceCard}
         amount={amount}
-        to={`${dest?.cardholder_name} •••• ${dest?.masked_card?.slice(-4)}`}
+        to={dest ? (
+          <div>
+            <p className="text-green-600 font-medium font-mono">{formatCardNumber(dest.card_number || dest.masked_card)}</p>
+            {dest.cardholder_name && (
+              <p className="text-green-600 text-xs mt-1">{dest.cardholder_name}</p>
+            )}
+          </div>
+        ) : null}
         description="Withdraw to card"
         loading={loading}
         onSendOtp={handleSendOtp}

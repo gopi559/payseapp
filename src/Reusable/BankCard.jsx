@@ -2,9 +2,14 @@ import React from 'react'
 import Chip from '../assets/Chip.svg'
 import Wifi from '../assets/wifi.svg'
 import PayseyLogoWhite from '../assets/PayseyPaymentLogowhite.png'
+import { formatCardNumber } from '../utils/formatCardNumber'
 
 const BankCard = ({ card, onBalance }) => {
   const isMyPayseCard = !card.external_inst_name
+  
+  // Format card number: use card_number if available, otherwise use masked_card
+  const cardNumberToFormat = card.card_number || card.masked_card || ''
+  const formattedCardNumber = formatCardNumber(cardNumberToFormat)
 
   return (
     <div
@@ -50,23 +55,24 @@ const BankCard = ({ card, onBalance }) => {
           </div>
 
           <div className="text-lg font-mono tracking-[0.22em] text-gray-900">
-            {card.masked_card}
+            {formattedCardNumber}
           </div>
         </div>
 
-        {/* Card holder + Balance (SAME LINE) */}
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="text-sm text-gray-700 mb-1">
-              Card holder name
-            </div>
-
-            <div className="text-sm font-semibold text-gray-900 uppercase">
-              {card.cardholder_name || card.name_on_card}
-            </div>
+        {/* Card holder name (BELOW card number) */}
+        <div className="mb-4">
+          <div className="text-sm text-gray-700 mb-1">
+            Card holder name
           </div>
 
-{card.balance !== undefined ? (
+          <div className="text-sm font-semibold text-gray-900 uppercase">
+            {card.cardholder_name || card.name_on_card}
+          </div>
+        </div>
+
+        {/* Balance */}
+        <div className="flex justify-end">
+          {card.balance !== undefined ? (
             <div className="px-4 py-1.5 rounded-full text-sm border border-green-700 text-green-800 font-semibold">
               Balance : {card.balance}
             </div>

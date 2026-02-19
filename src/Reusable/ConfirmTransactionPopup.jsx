@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import Button from './Button'
 import { HiExclamationTriangle } from 'react-icons/hi2'
+import { formatCardNumber } from '../utils/formatCardNumber'
 
 const ConfirmTransactionPopup = ({
   open,
@@ -19,9 +20,9 @@ const ConfirmTransactionPopup = ({
 
   if (!open) return null
 
-  const fromLabel = card
-    ? `${card.cardholder_name} •••• ${card.card_number.slice(-4)}`
-    : 'Wallet Balance'
+  // Format "From" section: card number on one line, cardholder name below
+  const fromCardNumber = card?.card_number ? formatCardNumber(card.card_number) : null
+  const fromCardholderName = card?.cardholder_name || card?.name_on_card
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center">
@@ -37,12 +38,25 @@ const ConfirmTransactionPopup = ({
         <div className="space-y-4 text-sm">
           <div>
             <p className="text-gray-500">From</p>
-            <p className="text-green-600 font-medium">{fromLabel}</p>
+            {fromCardNumber ? (
+              <div>
+                <p className="text-green-600 font-medium font-mono">{fromCardNumber}</p>
+                {fromCardholderName && (
+                  <p className="text-green-600 text-xs mt-1">{fromCardholderName}</p>
+                )}
+              </div>
+            ) : (
+              <p className="text-green-600 font-medium">Wallet Balance</p>
+            )}
           </div>
 
           <div>
             <p className="text-gray-500">To</p>
-            <p className="text-green-600 font-medium">{to}</p>
+            {typeof to === 'string' ? (
+              <p className="text-green-600 font-medium">{to}</p>
+            ) : (
+              <div className="text-green-600 font-medium">{to}</div>
+            )}
           </div>
 
           <div className="flex justify-between pt-2">

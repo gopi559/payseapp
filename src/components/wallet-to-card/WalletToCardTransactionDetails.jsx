@@ -7,6 +7,7 @@ import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } fro
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import { formatCardNumber } from '../../utils/formatCardNumber'
 
 
 function escapeHtml(str) {
@@ -196,7 +197,7 @@ const WalletToCardTransactionDetails = () => {
 
   // Card data
   const cardNumber = details?.card_number ?? ''
-  const maskedCard = cardNumber ? `${cardNumber.slice(0, 4)} **** **** ${cardNumber.slice(-4)}` : '—'
+  const formattedCardNumber = formatCardNumber(cardNumber)
   const cardName = details?.card_name ?? '—'
   const walletNumber = details?.wallet_number ?? '—'
 
@@ -206,7 +207,7 @@ const WalletToCardTransactionDetails = () => {
       senderName,
       senderMobile,
       senderAccountNumber,
-      maskedCard,
+      formattedCardNumber,
       cardName
     )
   }
@@ -371,7 +372,7 @@ const WalletToCardTransactionDetails = () => {
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{maskedCard}</p>
+                <p className="text-sm font-medium text-gray-800 font-mono">{formattedCardNumber}</p>
               </div>
             </div>
             

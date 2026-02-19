@@ -7,7 +7,6 @@ import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
 import BankCard from '../../Reusable/BankCard'
 import AmountInput from '../../Reusable/AmountInput'
-import Input from '../../Reusable/Input'
 import Button from '../../Reusable/Button'
 
 import CvvPopup from '../../Reusable/CvvPopup'
@@ -19,16 +18,21 @@ import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getAuthToken, deviceId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
+import { formatCardNumber } from '../../utils/formatCardNumber'
+
+const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
 const CardToCardCardList = () => {
   const navigate = useNavigate()
-  const scrollRef = useRef(null)
+  const sourceScrollRef = useRef(null)
+  const destScrollRef = useRef(null)
 
-  const [cards, setCards] = useState([])
-  const [activeIndex, setActiveIndex] = useState(0)
+  const [sourceCards, setSourceCards] = useState([])
+  const [activeSourceIndex, setActiveSourceIndex] = useState(0)
+  const [destCards, setDestCards] = useState([])
+  const [activeDestIndex, setActiveDestIndex] = useState(null)
 
   const [amount, setAmount] = useState('')
-  const [toCard, setToCard] = useState('')
 
   // null | 'CVV' | 'CONFIRM' | 'OTP'
   const [step, setStep] = useState(null)
@@ -38,12 +42,16 @@ const CardToCardCardList = () => {
   const [txnMeta, setTxnMeta] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  const sourceCard = sourceCards[activeSourceIndex]
+  const destCard = destCards[activeDestIndex]
+
   /* ---------------- FETCH CARDS ---------------- */
   useEffect(() => {
-    fetchCards()
+    fetchSourceCards()
+    fetchDestinationCards()
   }, [])
 
-  const fetchCards = async () => {
+  const fetchSourceCards = async () => {
     try {
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
@@ -63,22 +71,15 @@ const CardToCardCardList = () => {
         throw new Error(data.message)
       }
 
-      setCards(data.data || [])
+      setSourceCards(data.data || [])
     } catch (e) {
-      toast.error(e.message || 'Failed to load cards')
+      toast.error(e.message || 'Failed to load source cards')
     }
   }
 
-
-const fetchCardBalance = async (cardIndex) => {
-  try {
-    const card = cards[cardIndex]
-
-    const isInternalCard = !card.external_inst_name
-
-    const res = await fetch(
-      isInternalCard ? CUSTOMER_BALANCE : CARD_CHECK_BALANCE,
-      {
+  const fetchDestinationCards = async () => {
+    try {
+      const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -88,37 +89,120 @@ const fetchCardBalance = async (cardIndex) => {
             device_id: deviceId,
           }),
         },
-        ...(isInternalCard
-          ? {}
-          : {
-              body: JSON.stringify({
-                card_number: card.card_number,
-              }),
-            }),
+        body: JSON.stringify({ beneficiary_type: 1 }),
+      })
+
+      const data = await res.json()
+      if (!res.ok || data.code !== 1) {
+        throw new Error(data.message)
       }
-    )
 
-    const json = await res.json()
-    if (!res.ok || json.code !== 1) {
-      throw new Error(json.message)
+      setDestCards(data.data || [])
+    } catch (e) {
+      toast.error(e.message || 'Failed to load destination cards')
     }
-
-    setCards((prev) =>
-      isInternalCard
-        ? prev.map((c) => ({
-            ...c,
-            balance: json.data.avail_bal,
-          }))
-        : prev.map((c, i) =>
-            i === cardIndex
-              ? { ...c, balance: json.data.avail_bal }
-              : c
-          )
-    )
-  } catch (e) {
-    toast.error(e.message || 'Failed to fetch balance')
   }
-}
+
+
+  const fetchSourceCardBalance = async (cardIndex) => {
+    try {
+      const card = sourceCards[cardIndex]
+
+      const isInternalCard = !card.external_inst_name
+
+      const res = await fetch(
+        isInternalCard ? CUSTOMER_BALANCE : CARD_CHECK_BALANCE,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getAuthToken()}`,
+            deviceInfo: JSON.stringify({
+              device_type: 'WEB',
+              device_id: deviceId,
+            }),
+          },
+          ...(isInternalCard
+            ? {}
+            : {
+                body: JSON.stringify({
+                  card_number: card.card_number,
+                }),
+              }),
+        }
+      )
+
+      const json = await res.json()
+      if (!res.ok || json.code !== 1) {
+        throw new Error(json.message)
+      }
+
+      setSourceCards((prev) =>
+        isInternalCard
+          ? prev.map((c) => ({
+              ...c,
+              balance: json.data.avail_bal,
+            }))
+          : prev.map((c, i) =>
+              i === cardIndex
+                ? { ...c, balance: json.data.avail_bal }
+                : c
+            )
+      )
+    } catch (e) {
+      toast.error(e.message || 'Failed to fetch source card balance')
+    }
+  }
+
+  const fetchDestCardBalance = async (cardIndex) => {
+    try {
+      const card = destCards[cardIndex]
+
+      const isInternalCard = !card.external_inst_name
+
+      const res = await fetch(
+        isInternalCard ? CUSTOMER_BALANCE : CARD_CHECK_BALANCE,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${getAuthToken()}`,
+            deviceInfo: JSON.stringify({
+              device_type: 'WEB',
+              device_id: deviceId,
+            }),
+          },
+          ...(isInternalCard
+            ? {}
+            : {
+                body: JSON.stringify({
+                  card_number: card.card_number,
+                }),
+              }),
+        }
+      )
+
+      const json = await res.json()
+      if (!res.ok || json.code !== 1) {
+        throw new Error(json.message)
+      }
+
+      setDestCards((prev) =>
+        isInternalCard
+          ? prev.map((c) => ({
+              ...c,
+              balance: json.data.avail_bal,
+            }))
+          : prev.map((c, i) =>
+              i === cardIndex
+                ? { ...c, balance: json.data.avail_bal }
+                : c
+            )
+      )
+    } catch (e) {
+      toast.error(e.message || 'Failed to fetch destination card balance')
+    }
+  }
 
   /* ---------------- STEP 1 → CVV ---------------- */
   const handleContinue = () => {
@@ -127,18 +211,19 @@ const fetchCardBalance = async (cardIndex) => {
       return
     }
 
-    if (!toCard || toCard.length !== 16) {
-      toast.error('Enter valid destination card')
+    if (activeDestIndex === null) {
+      toast.error('Select destination card')
       return
     }
 
-    const fromCard = cards[activeIndex]?.card_number
+    const fromCard = sourceCard?.card_number
+    const toCard = destCard?.card_number
     if (fromCard === toCard) {
       toast.error('From and To card cannot be same')
       return
     }
 
-    setSelectedCard(cards[activeIndex])
+    setSelectedCard(sourceCard)
     setStep('CVV')
   }
 
@@ -158,7 +243,7 @@ const fetchCardBalance = async (cardIndex) => {
 
       const { data } = await cardToCardService.sendOtp({
         from_card: selectedCard.card_number,
-        to_card: toCard,
+        to_card: destCard.card_number,
         cvv: cvvData.cvv,
         expiry_date: cvvData.expiry,
         txn_amount: amount,
@@ -190,7 +275,7 @@ const fetchCardBalance = async (cardIndex) => {
     try {
       const { data } = await cardToCardService.confirmCardToCard({
         from_card: selectedCard.card_number,
-        to_card: toCard,
+        to_card: destCard.card_number,
         txn_amount: amount,
         cvv: cvvData.cvv,
         expiry_date: cvvData.expiry,
@@ -216,10 +301,11 @@ const fetchCardBalance = async (cardIndex) => {
 
           // from
           from_card: selectedCard.card_number,
-          from_card_name: selectedCard.card_name,
+          from_card_name: selectedCard.cardholder_name || selectedCard.card_name,
 
           // to
-          to_card: toCard,
+          to_card: destCard.card_number,
+          to_card_name: destCard.cardholder_name || destCard.card_name || null,
         })
       )
 
@@ -244,44 +330,96 @@ const fetchCardBalance = async (cardIndex) => {
     <PageContainer>
       <div className="px-4 py-4 max-w-md mx-auto">
 
-        {/* Card carousel */}
-        <div
-          ref={scrollRef}
-          onScroll={() => {
-            const c = scrollRef.current
-            if (!c) return
-            setActiveIndex(Math.round(c.scrollLeft / c.offsetWidth))
-          }}
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
-        >
-{cards.map((card, index) => (
-  <div key={card.id} className="snap-center shrink-0 w-full">
-    <BankCard
-      card={card}
-      onBalance={
-        activeIndex === index
-          ? () => fetchCardBalance(index)
-          : undefined
-      }
-    />
-  </div>
-))}
-
-        </div>
+        {/* Source Card carousel */}
+        {sourceCards.length > 0 && (
+          <>
+            <div className="text-sm font-medium mb-2">Source Card</div>
+            <div
+              ref={sourceScrollRef}
+              onScroll={() => {
+                const c = sourceScrollRef.current
+                if (!c) return
+                setActiveSourceIndex(Math.round(c.scrollLeft / c.offsetWidth))
+              }}
+              className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
+            >
+              {sourceCards.map((card, index) => (
+                <div
+                  key={card.id}
+                  className={`snap-center shrink-0 w-full ${
+                    activeSourceIndex === index
+                      ? 'ring-2 ring-green-500 rounded-xl'
+                      : ''
+                  }`}
+                  onClick={() => setActiveSourceIndex(index)}
+                >
+                  <BankCard
+                    card={card}
+                    onBalance={
+                      activeSourceIndex === index
+                        ? () => fetchSourceCardBalance(index)
+                        : undefined
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <AmountInput label="Amount" value={amount} onChange={setAmount} />
 
-        <Input
-          label="Destination Card"
-          value={toCard}
-          onChange={(e) => setToCard(e.target.value.replace(/\D/g, ''))}
-          maxLength={16}
-          inputMode="numeric"
-          placeholder="1234 5678 9012 3456"
-        />
+        <div className="grid grid-cols-5 gap-2 mt-3">
+          {QUICK_AMOUNTS.map((a) => (
+            <button
+              key={a}
+              onClick={() => setAmount(String(a))}
+              className="border rounded-full py-1 text-sm"
+            >
+              {a}
+            </button>
+          ))}
+        </div>
+
+        {/* Destination Card carousel */}
+        <div className="mt-8 text-sm font-medium">Select Destination Card</div>
+        <div
+          ref={destScrollRef}
+          onScroll={() => {
+            const c = destScrollRef.current
+            if (!c) return
+            setActiveDestIndex(Math.round(c.scrollLeft / c.offsetWidth))
+          }}
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
+        >
+          {destCards.map((card, index) => (
+            <div
+              key={card.id}
+              onClick={() => setActiveDestIndex(index)}
+              className={`snap-center shrink-0 w-full cursor-pointer ${
+                activeDestIndex === index
+                  ? 'ring-2 ring-green-500 rounded-xl'
+                  : ''
+              }`}
+            >
+              <BankCard
+                card={card}
+                onBalance={
+                  activeDestIndex === index
+                    ? () => fetchDestCardBalance(index)
+                    : undefined
+                }
+              />
+            </div>
+          ))}
+        </div>
 
         <div className="mt-6">
-          <Button fullWidth onClick={handleContinue}>
+          <Button
+            fullWidth
+            onClick={handleContinue}
+            disabled={!amount || activeDestIndex === null}
+          >
             Continue
           </Button>
         </div>
@@ -296,16 +434,27 @@ const fetchCardBalance = async (cardIndex) => {
       />
 
       {/* CONFIRM */}
-<ConfirmTransactionPopup
-  open={step === 'CONFIRM'}
-  card={selectedCard}
-  amount={amount}
-  to={`Card •••• ${toCard.slice(-4)}`}
-  description="Card to Card transfer"
-  loading={loading}
-  onSendOtp={handleSendOtp}
-  onCancel={resetFlow}
-/>
+      <ConfirmTransactionPopup
+        open={step === 'CONFIRM'}
+        card={selectedCard}
+        amount={amount}
+        to={
+          destCard ? (
+            <div>
+              <p className="text-green-600 font-medium font-mono">
+                {formatCardNumber(destCard.card_number || destCard.masked_card)}
+              </p>
+              {destCard.cardholder_name && (
+                <p className="text-green-600 text-xs mt-1">{destCard.cardholder_name}</p>
+              )}
+            </div>
+          ) : null
+        }
+        description="Card to Card transfer"
+        loading={loading}
+        onSendOtp={handleSendOtp}
+        onCancel={resetFlow}
+      />
 
 
       {/* OTP */}

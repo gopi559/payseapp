@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
+import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const WalletToCardSuccess = () => {
   const navigate = useNavigate()
@@ -23,19 +24,17 @@ const WalletToCardSuccess = () => {
     txn_id,
     wallet_number,
     card_number,
+    card_name,
     txn_amount,
     txn_time,
   } = details
 
   const txnId = txn_id ?? '—'
 
-  const from = wallet_number
-    ? `Wallet •••• ${wallet_number.slice(-4)}`
-    : '—'
+  const from = 'Wallet'
 
-  const to = card_number
-    ? `Card •••• ${card_number.slice(-4)}`
-    : '—'
+  const formattedCardNumber = card_number ? formatCardNumber(card_number) : '—'
+  const cardholderName = card_name || '—'
 
   const amount = txn_amount
     ? `₹${Number(txn_amount).toFixed(2)}`
@@ -88,9 +87,14 @@ const WalletToCardSuccess = () => {
             <span className="font-medium text-gray-900">{from}</span>
           </div>
 
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between items-start text-sm">
             <span className="text-gray-600">To:</span>
-            <span className="font-medium text-gray-900">{to}</span>
+            <div className="text-right">
+              <div className="font-medium text-gray-900 font-mono">{formattedCardNumber}</div>
+              {cardholderName && cardholderName !== '—' && (
+                <div className="text-xs text-gray-600 mt-0.5">{cardholderName}</div>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-green-200">
