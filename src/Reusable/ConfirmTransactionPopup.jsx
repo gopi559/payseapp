@@ -9,6 +9,7 @@ const ConfirmTransactionPopup = ({
   amount,
   to,
   description,
+  mobile,
   loading,
   onSendOtp,
   onCancel,
@@ -58,6 +59,18 @@ const ConfirmTransactionPopup = ({
               <div className="text-green-600 font-medium">{to}</div>
             )}
           </div>
+
+
+<div className="flex justify-between">
+  <span className="text-gray-600">Mobile</span>
+  <span className="text-green-600 font-medium font-mono">
+    {mobile?.replace(/^\+93\s?/, '')}
+  </span>
+</div>
+
+
+
+
 
           <div className="flex justify-between pt-2">
             <span className="text-gray-600">Amount</span>

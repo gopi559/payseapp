@@ -44,9 +44,16 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
       <path d="M0 40 Q120 0 240 40 T480 40 L480 80 L0 80 Z" />
     </svg>
     {/* Badge */}
-    <span className="absolute top-3 left-4 bg-white text-brand-dark text-xs px-3 py-1 rounded-full font-semibold z-20">
-      {card.card_status_name || 'Personalized'}
-    </span>
+<span
+  className={`absolute top-3 left-4 text-xs px-3 py-1 rounded-full font-semibold z-20 ${
+    ['Block', 'Blocked', 'Lost', 'Stolen', 'Lost/Stolen'].includes(card.card_status_name)
+      ? 'bg-red-600 text-white'
+      : 'bg-white text-brand-dark'
+  }`}
+>
+  {card.card_status_name || 'Personalized'}
+</span>
+
     {/* Logo */}
 <img
   src={PayseyLogoWhite}

@@ -1,3 +1,5 @@
+// src/pages/Send/SendStart.jsx
+
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -30,11 +32,8 @@ const SendStart = () => {
   const [amount, setAmount] = useState('')
   const [remarks, setRemarks] = useState('')
   const [loading, setLoading] = useState(false)
-
-  // null | 'CONFIRM' | 'OTP'
   const [step, setStep] = useState(null)
 
-  /* ---------------- Validate Beneficiary ---------------- */
   const handleValidate = async () => {
     if (!mobile || mobile === '+93') {
       toast.error('Enter Beneficiary Mobile Number')
@@ -54,7 +53,6 @@ const SendStart = () => {
     }
   }
 
-  /* ---------------- Continue ---------------- */
   const handleContinue = () => {
     if (!beneficiary) return toast.error('Validate beneficiary first')
     if (!amount || Number(amount) <= 0) return toast.error('Enter valid amount')
@@ -73,35 +71,35 @@ const SendStart = () => {
 
   return (
     <PageContainer>
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+        <h1 className="text-xl font-semibold">Send Money</h1>
 
-        <h1 className="text-xl font-semibold mb-4">Send Money</h1>
+        <div className="space-y-4">
+          <MobileInput
+            label="Beneficiary Mobile Number"
+            value={mobile}
+            onChange={(e) => {
+              setMobile(e.target.value)
+              setBeneficiary(null)
+            }}
+          />
 
-        <MobileInput
-          label="Beneficiary Mobile Number"
-          value={mobile}
-          onChange={(e) => {
-            setMobile(e.target.value)
-            setBeneficiary(null)
-          }}
-        />
-
-        {!beneficiary && (
-          <Button
-            type="button"
-            fullWidth
-            onClick={handleValidate}
-            disabled={loading}
-            className="mt-4"
-          >
-            {loading ? 'Validating...' : 'Validate Beneficiary'}
-          </Button>
-        )}
+          {!beneficiary && (
+            <Button
+              type="button"
+              fullWidth
+              onClick={handleValidate}
+              disabled={loading}
+            >
+              {loading ? 'Validating...' : 'Validate Beneficiary'}
+            </Button>
+          )}
+        </div>
 
         {beneficiary && (
-          <>
-            <div className="mt-4 text-sm bg-gray-50 p-3 rounded">
-              Beneficiary: <strong>{beneficiaryName}</strong>
+          <div className="space-y-3">
+            <div className="text-sm bg-gray-50 p-0 rounded">
+              Beneficiary Name: <strong>{beneficiaryName}</strong>
             </div>
 
             <AmountInput
@@ -116,7 +114,7 @@ const SendStart = () => {
               onChange={(e) => setRemarks(e.target.value)}
             />
 
-            <div className="mt-6 flex gap-2">
+            <div className="pt-2 flex gap-2">
               <Button
                 type="button"
                 fullWidth
@@ -137,15 +135,15 @@ const SendStart = () => {
                 Back
               </Button>
             </div>
-          </>
+          </div>
         )}
       </div>
 
-      {/* ---------------- CONFIRM POPUP ---------------- */}
       <ConfirmTransactionPopup
         open={step === 'CONFIRM'}
         amount={amount}
         to={beneficiaryName}
+         mobile={mobile} 
         description="Send Money"
         loading={loading}
         onSendOtp={async () => {
@@ -166,48 +164,46 @@ const SendStart = () => {
         onCancel={() => setStep(null)}
       />
 
-      {/* ---------------- OTP POPUP ---------------- */}
-<OtpPopup
-  open={step === 'OTP'}
-  loading={loading}
-  length={6}   // ✅ SEND MONEY = 6 DIGIT OTP
-  onConfirm={async (otp) => {
-    setLoading(true)
-    try {
-      await sendService.verifyTransactionOtp(
-        'MOBILE',
-        senderMobile,
-        otp // now 6 digits
-      )
+      <OtpPopup
+        open={step === 'OTP'}
+        loading={loading}
+        length={6}
+        onConfirm={async (otp) => {
+          setLoading(true)
+          try {
+            await sendService.verifyTransactionOtp(
+              'MOBILE',
+              senderMobile,
+              otp
+            )
 
-      const { data } = await sendService.sendMoneyTransaction(
-        beneficiary.user_id,
-        amount,
-        remarks
-      )
+            const { data } = await sendService.sendMoneyTransaction(
+              beneficiary.user_id,
+              amount,
+              remarks
+            )
 
-      sessionStorage.setItem(
-        'sendSuccess',
-        JSON.stringify({
-          ...data,
-          beneficiary_name: beneficiaryName,
-          beneficiary_mobile: beneficiary.reg_mobile,
-          amount,
-          remarks,
-        })
-      )
+            sessionStorage.setItem(
+              'sendSuccess',
+              JSON.stringify({
+                ...data,
+                beneficiary_name: beneficiaryName,
+                beneficiary_mobile: beneficiary.reg_mobile,
+                amount,
+                remarks,
+              })
+            )
 
-      setStep(null)
-      navigate('/customer/send/success')
-    } catch (e) {
-      toast.error(e.message || 'Transaction failed')
-    } finally {
-      setLoading(false)
-    }
-  }}
-  onCancel={() => setStep(null)}
-/>
-
+            setStep(null)
+            navigate('/customer/send/success')
+          } catch (e) {
+            toast.error(e.message || 'Transaction failed')
+          } finally {
+            setLoading(false)
+          }
+        }}
+        onCancel={() => setStep(null)}
+      />
     </PageContainer>
   )
 }

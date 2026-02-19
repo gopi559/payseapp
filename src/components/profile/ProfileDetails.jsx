@@ -36,7 +36,7 @@ const ProfileDetails = () => {
             <DetailRow label="User type" value={regInfo?.user_type_name} />
             <DetailRow label="Auth status" value={regInfo?.auth_status} />
             <DetailRow label="Status" value={regInfo?.status != null ? String(regInfo.status) : undefined} />
-            <DetailRow label="Wallet / User ref" value={walletId || regInfo?.user_ref} />
+            <DetailRow label="Account Number" value={walletId || regInfo?.user_ref} />
           </div>
         </div>
 
@@ -53,7 +53,14 @@ const ProfileDetails = () => {
               <DetailRow label="Emergency mobile" value={userKyc.emergency_mobnum} />
               <DetailRow label="Marital status" value={userKyc.marital_status} />
               <DetailRow label="Gender" value={userKyc.gender === 1 ? 'Male' : userKyc.gender === 2 ? 'Female' : userKyc.gender} />
-              <DetailRow label="DOB" value={userKyc.dob} />
+<DetailRow
+  label="DOB"
+  value={
+    userKyc.dob
+      ? `${String(new Date(userKyc.dob).getDate()).padStart(2, '0')}-${String(new Date(userKyc.dob).getMonth() + 1).padStart(2, '0')}-${new Date(userKyc.dob).getFullYear()}`
+      : '—'
+  }
+/>
               <DetailRow label="Auth status" value={userKyc.auth_status} />
             </div>
           </div>
