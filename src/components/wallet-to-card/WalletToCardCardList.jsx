@@ -115,8 +115,15 @@ setSourceCards((prev) =>
             device_id: deviceId,
           }),
         },
-        body: JSON.stringify({ beneficiary_type: 4 }),
-      })
+body: JSON.stringify({
+  user_id: 98,      
+  is_temp: 0,
+  no_of_data: 10,
+  page: 1,
+}),
+
+
+})
 
       const json = await res.json()
       if (!res.ok || json.code !== 1) {

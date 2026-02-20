@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { IoHome } from 'react-icons/io5'
-import { MdOutlineArrowOutward } from 'react-icons/md'
-import { GoArrowDownLeft } from 'react-icons/go'
 import { FaCreditCard } from 'react-icons/fa'
 import { CiLogout } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
@@ -15,7 +13,12 @@ import walletToCardIcon from '../assets/PayseyCustomerPortalWalletToCard.svg'
 import cardToCardIcon from '../assets/PayseyCustomerPortalCardToCard.svg'
 import transactionIcon from '../assets/PayseyCustomerPortalTransaction.svg'
 import disputeIcon from '../assets/PayseyCustomerPortalDispute.svg'
+import requestMoneyIcon from '../assets/RequestMoney.svg'
+import sendIcon from '../assets/Send.svg'
+import payseyCardsIcon from '../assets/PayseyCards.svg'
+import otherCardsIcon from '../assets/OtherCards.svg'
 import THEME_COLORS from '../theme/colors'
+import { IoChevronDown } from 'react-icons/io5'
 
 const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   const [activeLink, setActiveLink] = useState('')
@@ -66,8 +69,18 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       route: '/customer/cash-in',
       isImage: true,
     },
-    { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
-    { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
+    {
+      icon: <img src={sendIcon} className="w-7 h-7 object-contain" alt="Send Money" />,
+      label: 'Send Money',
+      route: '/customer/send',
+      isImage: true,
+    },
+    {
+      icon: <img src={requestMoneyIcon} className="w-7 h-7 object-contain" alt="Request Money" />,
+      label: 'Request Money',
+      route: '/customer/Receive',
+      isImage: true,
+    },
     {
       icon: <img src={voucherIcon} className="w-7 h-7 object-contain" alt="Voucher" />,
       label: 'Voucher',
@@ -133,9 +146,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       </div>
 
       <nav
-        className={`flex-1 overflow-y-auto overflow-x-auto sidebar-scroll space-y-2 ${
-          isCollapsed ? 'px-2 py-3' : 'px-3 py-4'
-        }`}
+        className={`flex-1 overflow-y-auto overflow-x-auto sidebar-scroll space-y-2 ${isCollapsed ? 'px-2 py-3' : 'px-3 py-4'
+          }`}
         style={{
           backgroundImage: `linear-gradient(to bottom, ${sidebarColors.navGradientStart}, ${sidebarColors.navGradientEnd})`,
         }}
@@ -156,16 +168,16 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 
           const menuButtonStyle = isActive
             ? {
-                ...baseMenuButtonStyle,
-                backgroundColor: sidebarColors.activeBackground,
-                color: sidebarColors.activeText,
-              }
+              ...baseMenuButtonStyle,
+              backgroundColor: sidebarColors.activeBackground,
+              color: sidebarColors.activeText,
+            }
             : {
-                ...baseMenuButtonStyle,
-                backgroundColor: isHovered
-                  ? sidebarColors.inactiveHoverBackground
-                  : THEME_COLORS.common.transparent,
-              }
+              ...baseMenuButtonStyle,
+              backgroundColor: isHovered
+                ? sidebarColors.inactiveHoverBackground
+                : THEME_COLORS.common.transparent,
+            }
 
           return (
             <button
@@ -174,9 +186,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
               type="button"
               onMouseEnter={() => setHoveredMenuRoute(item.route)}
               onMouseLeave={() => setHoveredMenuRoute('')}
-              className={`w-full flex items-center gap-3 px-4 h-12 min-h-[48px] rounded-xl text-left transition-all duration-150 ${
-                isCollapsed ? 'justify-center px-2' : ''
-              }`}
+              className={`w-full flex items-center gap-3 px-4 h-12 min-h-[48px] rounded-xl text-left transition-all duration-150 ${isCollapsed ? 'justify-center px-2' : ''
+                }`}
               style={menuButtonStyle}
             >
               {isActive && (
@@ -193,9 +204,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                 />
               )}
               <span
-                className={`flex-none text-2xl ${isCollapsed ? 'text-2xl' : ''} ${
-                  item.isComponent || item.isImage ? 'flex items-center justify-center' : ''
-                }`}
+                className={`flex-none text-2xl ${isCollapsed ? 'text-2xl' : ''} ${item.isComponent || item.isImage ? 'flex items-center justify-center' : ''
+                  }`}
               >
                 {item.isImage ? (
                   <span className="flex items-center justify-center">{item.icon}</span>
@@ -223,39 +233,38 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
             }}
             onMouseEnter={() => setHoveredMenuRoute('/customer/cards-group')}
             onMouseLeave={() => setHoveredMenuRoute('')}
-            className={`w-full flex items-center gap-3 px-4 h-12 min-h-[48px] rounded-xl text-left transition-all duration-150 ${
-              isCollapsed ? 'justify-center px-2' : ''
-            }`}
+            className={`w-full flex items-center gap-3 px-4 h-12 min-h-[48px] rounded-xl text-left transition-all duration-150 ${isCollapsed ? 'justify-center px-2' : ''
+              }`}
             style={
               location.pathname.startsWith('/customer/cards') || location.pathname.startsWith('/customer/other-cards')
                 ? {
-                    ...baseMenuButtonStyle,
-                    backgroundColor: sidebarColors.activeBackground,
-                    color: sidebarColors.activeText,
-                  }
+                  ...baseMenuButtonStyle,
+                  backgroundColor: sidebarColors.activeBackground,
+                  color: sidebarColors.activeText,
+                }
                 : {
-                    ...baseMenuButtonStyle,
-                    backgroundColor:
-                      hoveredMenuRoute === '/customer/cards-group'
-                        ? sidebarColors.inactiveHoverBackground
-                        : THEME_COLORS.common.transparent,
-                  }
+                  ...baseMenuButtonStyle,
+                  backgroundColor:
+                    hoveredMenuRoute === '/customer/cards-group'
+                      ? sidebarColors.inactiveHoverBackground
+                      : THEME_COLORS.common.transparent,
+                }
             }
           >
             {(location.pathname.startsWith('/customer/cards') ||
               location.pathname.startsWith('/customer/other-cards')) && (
-              <span
-                style={{
-                  position: 'absolute',
-                  left: '-4px',
-                  top: '8px',
-                  bottom: '8px',
-                  width: '6px',
-                  borderRadius: '0 4px 4px 0',
-                  backgroundColor: sidebarColors.activeIndicator,
-                }}
-              />
-            )}
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: '-4px',
+                    top: '8px',
+                    bottom: '8px',
+                    width: '6px',
+                    borderRadius: '0 4px 4px 0',
+                    backgroundColor: sidebarColors.activeIndicator,
+                  }}
+                />
+              )}
             <span className="flex-none text-xl flex items-center justify-center">
               <FaCreditCard />
             </span>
@@ -263,9 +272,12 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
               <>
                 <span className="flex-1 truncate text-sm font-medium">Cards</span>
                 <span
-                  className={`transition-transform ${cardsOpen ? 'rotate-180' : ''}`}
+                  className={`flex items-center justify-center transition-transform duration-200 ${cardsOpen ? 'rotate-180' : 'rotate-0'
+                    }`}
                   style={{ color: sidebarColors.chevron }}
-                >v</span>
+                >
+                  <IoChevronDown size={15} />
+                </span>
               </>
             )}
           </button>
@@ -280,25 +292,26 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                 }}
                 onMouseEnter={() => setHoveredSubRoute('/customer/cards')}
                 onMouseLeave={() => setHoveredSubRoute('')}
-                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-sm"
+                className="w-full flex items-center gap-3 px-3 h-12 min-h-[48px] rounded-xl text-left text-sm font-medium transition-all duration-150"
                 style={
                   location.pathname === '/customer/cards' ||
-                  location.pathname.startsWith('/customer/cards/') ||
-                  location.pathname === '/customer/card-request'
+                    location.pathname.startsWith('/customer/cards/') ||
+                    location.pathname === '/customer/card-request'
                     ? {
-                        backgroundColor: sidebarColors.activeBackground,
-                        color: sidebarColors.activeText,
-                      }
+                      backgroundColor: sidebarColors.activeBackground,
+                      color: sidebarColors.activeText,
+                    }
                     : {
-                        color: sidebarColors.submenuInactiveText,
-                        backgroundColor:
-                          hoveredSubRoute === '/customer/cards'
-                            ? sidebarColors.submenuHoverBackground
-                            : THEME_COLORS.common.transparent,
-                      }
+                      color: sidebarColors.submenuInactiveText,
+                      backgroundColor:
+                        hoveredSubRoute === '/customer/cards'
+                          ? sidebarColors.submenuHoverBackground
+                          : THEME_COLORS.common.transparent,
+                    }
                 }
               >
-                Paysepe Card
+                <img src={payseyCardsIcon} className="w-6 h-6 object-contain" alt="Paysey Card" />
+                <span className="flex-1 truncate text-sm font-medium" style={{ color: 'inherit' }}>Paysepe Card</span>
               </button>
               <button
                 type="button"
@@ -308,23 +321,24 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                 }}
                 onMouseEnter={() => setHoveredSubRoute('/customer/other-cards')}
                 onMouseLeave={() => setHoveredSubRoute('')}
-                className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-sm"
+                className="w-full flex items-center gap-3 px-3 h-12 min-h-[48px] rounded-xl text-left text-sm font-medium transition-all duration-150"
                 style={
                   location.pathname.startsWith('/customer/other-cards')
                     ? {
-                        backgroundColor: sidebarColors.activeBackground,
-                        color: sidebarColors.activeText,
-                      }
+                      backgroundColor: sidebarColors.activeBackground,
+                      color: sidebarColors.activeText,
+                    }
                     : {
-                        color: sidebarColors.submenuInactiveText,
-                        backgroundColor:
-                          hoveredSubRoute === '/customer/other-cards'
-                            ? sidebarColors.submenuHoverBackground
-                            : THEME_COLORS.common.transparent,
-                      }
+                      color: sidebarColors.submenuInactiveText,
+                      backgroundColor:
+                        hoveredSubRoute === '/customer/other-cards'
+                          ? sidebarColors.submenuHoverBackground
+                          : THEME_COLORS.common.transparent,
+                    }
                 }
               >
-                Other Card
+                <img src={otherCardsIcon} className="w-6 h-6 object-contain" alt="Other Card" />
+                <span className="flex-1 truncate text-sm font-medium" style={{ color: 'inherit' }}>Other Card</span>
               </button>
             </div>
           )}
@@ -343,9 +357,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           type="button"
           onMouseEnter={() => setIsLogoutHovered(true)}
           onMouseLeave={() => setIsLogoutHovered(false)}
-          className={`flex items-center gap-3 px-3 py-2 h-11 rounded-xl text-sm font-medium active:scale-[0.98] transition-all duration-150 ${
-            isCollapsed ? 'w-full justify-center' : 'w-[70%] mx-auto'
-          }`}
+          className={`flex items-center gap-3 px-3 py-2 h-11 rounded-xl text-sm font-medium active:scale-[0.98] transition-all duration-150 ${isCollapsed ? 'w-full justify-center' : 'w-[70%] mx-auto'
+            }`}
           style={{
             backgroundColor: isLogoutHovered
               ? sidebarColors.logoutHoverBackground
@@ -414,4 +427,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 }
 
 export default Sidebar
+
+
+
 

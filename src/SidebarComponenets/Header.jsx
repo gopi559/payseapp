@@ -7,6 +7,7 @@ import authService from '../Login/auth.service.jsx'
 import profileService from '../components/profile/profile.service'
 import { setProfileImage } from '../Redux/store.jsx'
 import THEME_COLORS from '../theme/colors'
+import AfganCurrency from '../assets/afgan_currency.svg'
 
 const Header = ({ onMenuClick, onToggleSidebar }) => {
   const navigate = useNavigate()
@@ -124,21 +125,30 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
-          <span className="text-sm opacity-90">Available Balance</span>
+<div className="hidden md:flex items-center gap-4">
+  <div className="flex flex-col items-end leading-tight">
+    <span className="text-xs opacity-80">Available Balance</span>
 
-          <span className="text-xl font-bold">{formatAmount(balance)}</span>
+    <div className="flex items-center gap-2 text-xl font-bold">
+      <img
+        src={AfganCurrency}
+        alt="Currency"
+        className="h-5 w-5"
+      />
+      <span>{formatAmount(balance)}</span>
+    </div>
+  </div>
 
-          <button
-            onClick={handleBalanceRefresh}
-            disabled={isRefreshing}
-            className="p-1 rounded-full disabled:opacity-50"
-            style={{ backgroundColor: headerColors.overlaySoft }}
-            title="Refresh balance"
-          >
-            <MdRefresh size={20} className={isRefreshing ? 'animate-spin' : ''} />
-          </button>
-        </div>
+  <button
+    onClick={handleBalanceRefresh}
+    disabled={isRefreshing}
+    className="p-1.5 rounded-full disabled:opacity-50"
+    style={{ backgroundColor: headerColors.overlaySoft }}
+    title="Refresh balance"
+  >
+    <MdRefresh size={20} className={isRefreshing ? 'animate-spin' : ''} />
+  </button>
+</div>
 
         <div className="relative shrink-0" ref={dropdownRef}>
           <button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+﻿import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
@@ -419,9 +419,8 @@ const SendTransactionDetails = () => {
           </Button>
         </div>
       </div>
-    </PageContainer>
+  </PageContainer>
   )
 }
 
 export default SendTransactionDetails
-

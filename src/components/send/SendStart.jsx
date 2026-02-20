@@ -1,5 +1,3 @@
-// src/pages/Send/SendStart.jsx
-
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -12,6 +10,7 @@ import Input from '../../Reusable/Input'
 import Button from '../../Reusable/Button'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
+import THEME_COLORS from '../../theme/colors'
 
 import { sendService } from './send.service'
 
@@ -33,6 +32,7 @@ const SendStart = () => {
   const [remarks, setRemarks] = useState('')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(null)
+  const contentCard = THEME_COLORS.contentCard
 
   const handleValidate = async () => {
     if (!mobile || mobile === '+93') {
@@ -72,7 +72,7 @@ const SendStart = () => {
   return (
     <PageContainer>
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
-        <h1 className="text-xl font-semibold">Send Money</h1>
+        <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>Send Money</h1>
 
         <div className="space-y-4">
           <MobileInput
@@ -98,7 +98,7 @@ const SendStart = () => {
 
         {beneficiary && (
           <div className="space-y-3">
-            <div className="text-sm bg-gray-50 p-0 rounded">
+            <div className="text-sm p-3 rounded" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}`, color: contentCard.subtitle }}>
               Beneficiary Name: <strong>{beneficiaryName}</strong>
             </div>
 

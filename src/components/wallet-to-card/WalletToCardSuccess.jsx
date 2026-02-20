@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
-
+import AfganCurrency from '../../assets/afgan_currency.svg'
 const WalletToCardSuccess = () => {
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
@@ -36,9 +36,9 @@ const WalletToCardSuccess = () => {
   const formattedCardNumber = card_number ? formatCardNumber(card_number) : '—'
   const cardholderName = card_name || '—'
 
-  const amount = txn_amount
-    ? `₹${Number(txn_amount).toFixed(2)}`
-    : '₹0.00'
+const amount = txn_amount
+  ? Number(txn_amount).toFixed(2)
+  : '0.00'
 
   const dateTime = txn_time
     ? new Date(txn_time).toLocaleString('en-IN', {
@@ -97,10 +97,18 @@ const WalletToCardSuccess = () => {
             </div>
           </div>
 
-          <div className="flex justify-between items-center pt-2 border-t border-green-200">
-            <span className="text-lg font-semibold text-gray-800">Amount:</span>
-            <span className="text-2xl font-bold text-gray-900">{amount}</span>
-          </div>
+<div className="flex justify-between items-center pt-2 border-t border-green-200">
+  <span className="text-lg font-semibold text-gray-800">Amount:</span>
+
+  <div className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+    <img
+      src={AfganCurrency}
+      alt="Currency"
+      className="h-6 w-6"
+    />
+    <span>{amount}</span>
+  </div>
+</div>
         </div>
 
         <div className="mt-6 w-full">

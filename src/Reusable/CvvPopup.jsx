@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import Button from './Button'
 import { HiExclamationTriangle } from 'react-icons/hi2'
+import THEME_COLORS from '../theme/colors'
 
 const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
   const [cvv, setCvv] = useState('')
   const [expiry, setExpiry] = useState('')
+  const popupColors = THEME_COLORS.popup
 
   useEffect(() => {
     if (open) {
@@ -22,24 +24,27 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
 
   const handleContinue = () => {
     if (cvv.length !== 3 || expiry.length < 4) return
-
     onConfirm({ cvv, expiry })
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
-      {/* RIGHT SHIFT WRAPPER */}
-<div className="relative ml-0 md:ml-72">
-        <div className="w-full max-w-[420px] bg-white rounded-3xl p-6 shadow-xl">
-          
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ backgroundColor: popupColors.backdrop }}
+    >
+      <div className="relative ml-0 md:ml-72">
+        <div
+          className="w-full max-w-[420px] rounded-3xl p-6"
+          style={{ backgroundColor: popupColors.panelBackground, border: `1px solid ${popupColors.panelBorder}` }}
+        >
           <div className="flex items-center gap-3 mb-1">
-            <HiExclamationTriangle className="w-6 h-6 text-green-500" />
-            <h2 className="text-lg font-semibold">
+            <HiExclamationTriangle className="w-6 h-6" style={{ color: popupColors.cvv.icon }} />
+            <h2 className="text-lg font-semibold" style={{ color: popupColors.title }}>
               Card Security Details
             </h2>
           </div>
 
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm mb-4" style={{ color: popupColors.subtitle }}>
             Enter CVV And Expiry Date
           </p>
 
@@ -50,21 +55,14 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
               maxLength={4}
               autoFocus
               value={cvv}
-              onChange={(e) =>
-                setCvv(e.target.value.replace(/\D/g, ''))
-              }
+              onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
               placeholder="CVV"
-              className="
-                bg-blue-50
-                border
-                rounded-xl
-                px-4
-                py-3
-                text-lg
-                focus:outline-none
-                focus:ring-2
-                focus:ring-green-500
-              "
+              className="border rounded-xl px-4 py-3 text-lg focus:outline-none"
+              style={{
+                backgroundColor: popupColors.inputBackground,
+                borderColor: popupColors.inputBorder,
+                color: popupColors.title,
+              }}
             />
 
             <input
@@ -78,17 +76,12 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
                 setExpiry(v)
               }}
               placeholder="MM/YY"
-              className="
-                bg-blue-50
-                border
-                rounded-xl
-                px-4
-                py-3
-                text-lg
-                focus:outline-none
-                focus:ring-2
-                focus:ring-green-500
-              "
+              className="border rounded-xl px-4 py-3 text-lg focus:outline-none"
+              style={{
+                backgroundColor: popupColors.inputBackground,
+                borderColor: popupColors.inputBorder,
+                color: popupColors.title,
+              }}
             />
           </div>
 
@@ -97,16 +90,16 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
             disabled={cvv.length < 3 || expiry.length < 4 || loading}
             onClick={handleContinue}
           >
-            {loading ? 'Processing…' : 'Continue'}
+            {loading ? 'Processing...' : 'Continue'}
           </Button>
 
           <button
-            className="w-full mt-4 text-gray-500 text-sm"
+            className="w-full mt-4 text-sm"
+            style={{ color: popupColors.subtitle }}
             onClick={onClose}
           >
             Cancel
           </button>
-
         </div>
       </div>
     </div>

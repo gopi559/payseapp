@@ -1,5 +1,6 @@
-import React from 'react'
+﻿import React from 'react'
 import { formatTableDateTime } from '../utils/formatDate'
+import THEME_COLORS from '../theme/colors'
 
 const KeyValueDisplay = ({
   data,
@@ -13,8 +14,10 @@ const KeyValueDisplay = ({
   emptyValue = '—',
   className = '',
 }) => {
+  const contentCard = THEME_COLORS.contentCard
+
   if (!data || typeof data !== 'object') {
-    return <div className={`text-sm text-gray-600 ${className}`}>{emptyValue}</div>
+    return <div className={`text-sm ${className}`} style={{ color: contentCard.subtitle }}>{emptyValue}</div>
   }
 
   const formatSingleValue = (v) => {
@@ -38,8 +41,8 @@ const KeyValueDisplay = ({
         const formatted = formatSingleValue(v)
         return (
           <div key={k} className="flex flex-wrap justify-between gap-x-3 text-sm">
-            <span className="text-gray-500 capitalize">{k.replace(/_/g, ' ')}:</span>
-            <span className="font-medium text-gray-800">
+            <span style={{ color: contentCard.subtitle }} className="capitalize">{k.replace(/_/g, ' ')}:</span>
+            <span className="font-medium" style={{ color: contentCard.title }}>
               {formatted !== null ? formatted : JSON.stringify(v)}
             </span>
           </div>
@@ -62,7 +65,8 @@ const KeyValueDisplay = ({
           {value.map((item, idx) => (
             <div
               key={idx}
-              className="rounded border border-gray-100 bg-gray-50/80 px-3 py-2 space-y-1"
+              className="rounded border px-3 py-2 space-y-1"
+              style={{ borderColor: contentCard.divider, backgroundColor: contentCard.accentBackground }}
             >
               {renderObject(item, nestedExcludedKeys[key] || [])}
             </div>
@@ -72,7 +76,7 @@ const KeyValueDisplay = ({
     }
     if (typeof value === 'object') {
       return (
-        <div className="rounded border border-gray-100 bg-gray-50/80 px-3 py-2 space-y-1">
+        <div className="rounded border px-3 py-2 space-y-1" style={{ borderColor: contentCard.divider, backgroundColor: contentCard.accentBackground }}>
           {renderObject(value)}
         </div>
       )
@@ -80,9 +84,7 @@ const KeyValueDisplay = ({
     return String(value)
   }
 
-  const entries = Object.entries(data).filter(
-    ([key]) => !excludedKeys.includes(key)
-  )
+  const entries = Object.entries(data).filter(([key]) => !excludedKeys.includes(key))
 
   return (
     <div className={`w-full min-w-0 ${className}`}>
@@ -100,15 +102,16 @@ const KeyValueDisplay = ({
         return (
           <div
             key={key}
-            className="grid grid-cols-[minmax(140px,auto)_1fr] gap-4 items-center py-3 border-b border-gray-200 last:border-0"
+            className="grid grid-cols-[minmax(140px,auto)_1fr] gap-4 items-center py-3 border-b last:border-0"
+            style={{ borderColor: contentCard.divider }}
           >
-            <span className="text-sm text-gray-600">{label}</span>
+            <span className="text-sm" style={{ color: contentCard.subtitle }}>{label}</span>
             {isReactNode ? (
-              <div className="text-sm font-medium text-gray-800">
+              <div className="text-sm font-medium" style={{ color: contentCard.title }}>
                 {displayValue}
               </div>
             ) : (
-              <span className="text-sm font-medium text-gray-800 text-right break-words">
+              <span className="text-sm font-medium text-right break-words" style={{ color: contentCard.title }}>
                 {displayValue}
               </span>
             )}

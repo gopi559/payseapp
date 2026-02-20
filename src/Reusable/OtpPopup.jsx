@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import Button from './Button'
+import THEME_COLORS from '../theme/colors'
 
 const OtpPopup = ({
   open,
   onConfirm,
   onCancel,
   loading,
-  length = 4, // ✅ default 4 digits
+  length = 4,
 }) => {
   const [otp, setOtp] = useState(Array(length).fill(''))
+  const popupColors = THEME_COLORS.popup
 
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden'
-      setOtp(Array(length).fill('')) // reset on open
+      setOtp(Array(length).fill(''))
     }
     return () => (document.body.style.overflow = '')
   }, [open, length])
@@ -35,11 +37,17 @@ const OtpPopup = ({
   const otpValue = otp.join('')
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
-      <div className="w-full max-w-[420px] bg-white rounded-3xl p-6 shadow-xl ml-0 md:ml-72">
-        <h2 className="text-lg font-semibold mb-2">Enter OTP</h2>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ backgroundColor: popupColors.backdrop }}
+    >
+      <div
+        className="w-full max-w-[420px] rounded-3xl p-6 ml-0 md:ml-72"
+        style={{ backgroundColor: popupColors.panelBackground, border: `1px solid ${popupColors.panelBorder}` }}
+      >
+        <h2 className="text-lg font-semibold mb-2" style={{ color: popupColors.title }}>Enter OTP</h2>
 
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-sm mb-4" style={{ color: popupColors.subtitle }}>
           Enter The {length}-Digit OTP Sent To Your Registered Mobile Number
         </p>
 
@@ -53,7 +61,12 @@ const OtpPopup = ({
               maxLength={1}
               value={digit}
               onChange={(e) => handleChange(e.target.value, index)}
-              className="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl border rounded-xl focus:outline-none"
+              style={{
+                backgroundColor: popupColors.inputBackground,
+                borderColor: popupColors.otp.cellBorder,
+                color: popupColors.title,
+              }}
             />
           ))}
         </div>
@@ -67,7 +80,8 @@ const OtpPopup = ({
         </Button>
 
         <button
-          className="w-full mt-4 text-gray-500 text-sm"
+          className="w-full mt-4 text-sm"
+          style={{ color: popupColors.subtitle }}
           onClick={onCancel}
         >
           Cancel

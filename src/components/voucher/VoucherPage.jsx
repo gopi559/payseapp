@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { HiTicket, HiEye } from 'react-icons/hi2'
@@ -7,6 +7,7 @@ import DataTable from '../../Reusable/Table'
 import Button from '../../Reusable/Button'
 import voucherService from './voucher.service.jsx'
 import { formatTableDateTime } from '../../utils/formatDate'
+import THEME_COLORS from '../../theme/colors'
 
 const VoucherPage = () => {
   const navigate = useNavigate()
@@ -14,6 +15,7 @@ const VoucherPage = () => {
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const contentCard = THEME_COLORS.contentCard
 
   const fetchList = async () => {
     setLoading(true)
@@ -41,8 +43,7 @@ const VoucherPage = () => {
   }
 
   const totalItems = data.length
-  
-  // Only show these specific columns
+
   const allowedKeys = [
     'Cashcode',
     'Channel',
@@ -59,34 +60,31 @@ const VoucherPage = () => {
 
   const headers = [
     ...allowedKeys.map((key) => {
-      const label = key === 'CreatedAt' 
-        ? 'Created At' 
+      const label = key === 'CreatedAt'
+        ? 'Created At'
         : key.replace(/([A-Z])/g, ' $1').trim()
-      
+
       if (key === 'CreatedAt' || key.includes('At')) {
-        return { 
-          key, 
-          label, 
-          content: (row) => formatTableDateTime(row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()]) 
+        return {
+          key,
+          label,
+          content: (row) => formatTableDateTime(row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()]),
         }
       }
       if (key === 'Amount') {
-        return { 
-          key, 
-          label, 
+        return {
+          key,
+          label,
           content: (row) => {
-            const amount = row[key] || row[key.toLowerCase()] || row['amount']
+            const amount = row[key] || row[key.toLowerCase()] || row.amount
             return amount != null ? `₹${Number(amount).toFixed(2)}` : '—'
-          }
+          },
         }
       }
-      return { 
-        key, 
-        label, 
-        content: (row) => {
-          // Try different key formats (original, lowercase, snake_case)
-          return row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()] || '—'
-        }
+      return {
+        key,
+        label,
+        content: (row) => row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()] || '—',
       }
     }),
     {
@@ -99,7 +97,8 @@ const VoucherPage = () => {
             e.stopPropagation()
             navigate('/customer/voucher/view', { state: { row } })
           }}
-          className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 inline-flex items-center gap-1"
+          className="p-2 rounded-lg inline-flex items-center gap-1"
+          style={{ color: contentCard.subtitle }}
           aria-label="View"
         >
           <HiEye className="w-5 h-5" />
@@ -114,12 +113,12 @@ const VoucherPage = () => {
       <div className="px-4 pt-4 pb-2 w-full flex-shrink-0">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="bg-green-100 p-2 rounded-lg">
-              <HiTicket className="w-6 h-6 text-green-600" />
+            <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
+              <HiTicket className="w-6 h-6" style={{ color: contentCard.iconColor }} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">Voucher (Cash Code)</h2>
-              <p className="text-sm text-gray-500">View And Create Cash Codes</p>
+              <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>Voucher (Cash Code)</h2>
+              <p className="text-sm" style={{ color: contentCard.subtitle }}>View And Create Cash Codes</p>
             </div>
           </div>
           <Button type="button" onClick={() => navigate('/customer/voucher/create')}>
@@ -129,7 +128,10 @@ const VoucherPage = () => {
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col px-4 pb-4 overflow-hidden">
-        <div className="w-full h-full bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-0 overflow-hidden">
+        <div
+          className="w-full h-full rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-0 overflow-hidden"
+          style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+        >
           <div className="flex-1 min-h-0 flex flex-col">
             <DataTable
               data={data}
@@ -153,5 +155,3 @@ const VoucherPage = () => {
 }
 
 export default VoucherPage
-
-

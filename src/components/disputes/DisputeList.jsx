@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import DataTable from '../../Reusable/Table'
 import transactionService from '../transactions/transaction.service.jsx'
 import { formatTableDateTime } from '../../utils/formatDate'
+import THEME_COLORS from '../../theme/colors'
 
 const DisputeList = () => {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const contentCard = THEME_COLORS.contentCard
 
   const fetchList = async () => {
     setLoading(true)
@@ -41,7 +43,6 @@ const DisputeList = () => {
   const totalItems = data.length
 
   const headers = [
-    // { key: 'id', label: 'ID' },
     { key: 'transaction_id', label: 'Transaction ID' },
     { key: 'user_id', label: 'User ID' },
     { key: 'dispute_type_id', label: 'Dispute Type ID' },
@@ -50,7 +51,6 @@ const DisputeList = () => {
     { key: 'assigned_to', label: 'Assigned To' },
     {
       key: 'created_at',
-      
       label: 'Created At',
       content: (row) => formatTableDateTime(row.created_at),
     },
@@ -61,19 +61,22 @@ const DisputeList = () => {
       <div className="px-4 pt-4 pb-2 w-full flex-shrink-0">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="bg-amber-100 p-2 rounded-lg">
-              <HiExclamationTriangle className="w-6 h-6 text-amber-600" />
+            <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
+              <HiExclamationTriangle className="w-6 h-6" style={{ color: contentCard.iconColor }} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">Disputes</h2>
-              <p className="text-sm text-gray-500">View all raised disputes</p>
+              <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>Disputes</h2>
+              <p className="text-sm" style={{ color: contentCard.subtitle }}>View all raised disputes</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col px-4 pb-4 overflow-hidden">
-        <div className="w-full h-full bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-0 overflow-hidden">
+        <div
+          className="w-full h-full rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-0 overflow-hidden"
+          style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+        >
           <div className="flex-1 min-h-0 flex flex-col">
             <DataTable
               data={data}
@@ -97,5 +100,3 @@ const DisputeList = () => {
 }
 
 export default DisputeList
-
-

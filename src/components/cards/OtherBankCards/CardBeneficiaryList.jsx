@@ -45,6 +45,7 @@ const CardBeneficiaryList = () => {
         body: JSON.stringify({
           page: 1,
           no_of_data: FETCH_PAGE_SIZE,
+           "user_id":98,
           is_temp: 0,
         }),
       })

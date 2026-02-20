@@ -1,9 +1,10 @@
-import React from 'react'
+﻿import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import KeyValueDisplay from '../../Reusable/KeyValueDisplay'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import THEME_COLORS from '../../theme/colors'
 
 const LABELS = {
   id: 'ID',
@@ -30,8 +31,7 @@ const formatPdfValue = (key, value) => {
   return String(value)
 }
 
-const keyToLabel = (k) =>
-  k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+const keyToLabel = (k) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 
 const formatDetailsArrayForPdf = (arr) => {
   if (!Array.isArray(arr) || arr.length === 0) return escapeHtml('—')
@@ -44,21 +44,15 @@ const formatDetailsArrayForPdf = (arr) => {
         const val = v == null || v === '' ? '—' : String(v)
         return `
           <tr>
-            <td style="padding:4px 8px;color:#6b7280;font-size:12px;">
-              ${escapeHtml(keyToLabel(k))}
-            </td>
-            <td style="padding:4px 8px;font-weight:500;">
-              ${escapeHtml(val)}
-            </td>
+            <td style="padding:4px 8px;color:#6b7280;font-size:12px;">${escapeHtml(keyToLabel(k))}</td>
+            <td style="padding:4px 8px;font-weight:500;">${escapeHtml(val)}</td>
           </tr>`
       })
       .join('')
 
     return `
       <div style="margin-bottom:10px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <tbody>${rows}</tbody>
-        </table>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;"><tbody>${rows}</tbody></table>
       </div>`
   })
 
@@ -72,14 +66,11 @@ const downloadTransactionPdf = (row) => {
     return
   }
 
-  const entries = Object.entries(row).filter(([key]) =>
-    Object.prototype.hasOwnProperty.call(LABELS, key)
-  )
+  const entries = Object.entries(row).filter(([key]) => Object.prototype.hasOwnProperty.call(LABELS, key))
 
   const rows = entries
     .map(([key, value]) => {
       const label = LABELS[key] ?? key
-
       const isDetailsArray =
         (key === 'debit_details' || key === 'credit_details') &&
         Array.isArray(value) &&
@@ -90,9 +81,7 @@ const downloadTransactionPdf = (row) => {
         ? formatDetailsArrayForPdf(value)
         : (() => {
             const formatted = formatPdfValue(key, value)
-            return formatted !== null
-              ? escapeHtml(formatted)
-              : escapeHtml(JSON.stringify(value, null, 2))
+            return formatted !== null ? escapeHtml(formatted) : escapeHtml(JSON.stringify(value, null, 2))
           })()
 
       const cellContent = isDetailsArray
@@ -101,12 +90,8 @@ const downloadTransactionPdf = (row) => {
 
       return `
         <tr>
-          <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;vertical-align:top;">
-            ${escapeHtml(label)}
-          </td>
-          <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;vertical-align:top;">
-            ${cellContent}
-          </td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;vertical-align:top;">${escapeHtml(label)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;vertical-align:top;">${cellContent}</td>
         </tr>`
     })
     .join('')
@@ -117,45 +102,19 @@ const downloadTransactionPdf = (row) => {
     <head>
       <title>Transaction ${escapeHtml(String(row.txn_id ?? row.id ?? ''))}</title>
       <style>
-        body {
-          font-family: system-ui, sans-serif;
-          padding: 24px;
-          color: #111;
-        }
-        .header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          border-bottom: 2px solid #e5e7eb;
-          padding-bottom: 12px;
-          margin-bottom: 20px;
-        }
-        .logo {
-          height: 40px;
-        }
-        h1 {
-          font-size: 20px;
-          margin: 0;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
+        body { font-family: system-ui, sans-serif; padding: 24px; color: #111; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 20px; }
+        .logo { height: 40px; }
+        h1 { font-size: 20px; margin: 0; }
+        table { width: 100%; border-collapse: collapse; }
       </style>
     </head>
     <body>
-
       <div class="header">
         <h1>Transaction Details</h1>
         <img src="${PAYSEY_LOGO_URL}" class="logo" alt="PayseyPay Logo" />
       </div>
-
-      <table>
-        <tbody>
-          ${rows}
-        </tbody>
-      </table>
-
+      <table><tbody>${rows}</tbody></table>
     </body>
     </html>
   `)
@@ -168,28 +127,21 @@ const downloadTransactionPdf = (row) => {
 
 function escapeHtml(str) {
   const s = String(str ?? '')
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 const ViewTransactionList = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const row = location.state?.row ?? null
+  const contentCard = THEME_COLORS.contentCard
 
   if (!row) {
     return (
       <PageContainer>
-        <div className="px-4 py-6 bg-gray-50 min-h-full">
-          <p className="text-gray-600">No data available</p>
-          <Button
-            className="mt-4"
-            variant="outline"
-            onClick={() => navigate('/customer/transactions')}
-          >
+        <div className="px-4 py-6 min-h-full">
+          <p style={{ color: contentCard.subtitle }}>No data available</p>
+          <Button className="mt-4" variant="outline" onClick={() => navigate('/customer/transactions')}>
             Back
           </Button>
         </div>
@@ -198,42 +150,30 @@ const ViewTransactionList = () => {
   }
 
   const formatters = {
-    status: (v) =>
-      v === 1 ? 'Success' : v === 0 ? 'Failed' : String(v ?? '—'),
+    status: (v) => (v === 1 ? 'Success' : v === 0 ? 'Failed' : String(v ?? '—')),
   }
 
   return (
     <PageContainer>
-      <div className="bg-gray-50 min-h-full px-4 py-6 overflow-x-hidden flex flex-col">
+      <div className="min-h-full px-4 py-6 overflow-x-hidden flex flex-col">
         <div className="w-full max-w-2xl mx-auto">
           <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-            <h2 className="text-xl font-bold text-gray-800">
-              View Transaction
-            </h2>
+            <h2 className="text-xl font-bold" style={{ color: contentCard.title }}>View Transaction</h2>
             <div className="flex gap-2 shrink-0">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => downloadTransactionPdf(row)}
-              >
+              <Button type="button" variant="outline" onClick={() => downloadTransactionPdf(row)}>
                 Download PDF
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate('/customer/transactions')}
-              >
+              <Button type="button" variant="outline" onClick={() => navigate('/customer/transactions')}>
                 Back
               </Button>
             </div>
           </div>
 
-          <div className="border border-gray-200 w-full rounded-lg shadow-sm bg-white p-6 overflow-hidden">
-            <KeyValueDisplay
-              data={row}
-              labels={LABELS}
-              formatters={formatters}
-            />
+          <div
+            className="w-full rounded-lg shadow-sm p-6 overflow-hidden"
+            style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+          >
+            <KeyValueDisplay data={row} labels={LABELS} formatters={formatters} />
           </div>
         </div>
       </div>

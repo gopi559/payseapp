@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
-
+import AfganCurrency from '../../assets/afgan_currency.svg'
 const CashInSuccess = () => {
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
@@ -34,10 +34,9 @@ const CashInSuccess = () => {
   const txnId = details.txn_id ?? '—'
   const formattedFromCardNumber = details.from_card_number ? formatCardNumber(details.from_card_number) : '—'
   const fromCardholderName = details.from_card_name || '—'
-  const amount = details.txn_amount
-    ? `₹${Number(details.txn_amount).toFixed(2)}`
-    : '₹0.00'
-
+const amount = details.txn_amount
+  ? Number(details.txn_amount).toFixed(2)
+  : '0.00'
   const dateTime = details.txn_time
     ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString('en-IN', {
         day: '2-digit',
@@ -106,14 +105,20 @@ const CashInSuccess = () => {
             </span>
           </div>
 
-          <div className="flex justify-between items-center pt-2 border-t border-green-200">
-            <span className="text-lg font-semibold text-gray-800">
-              Amount:
-            </span>
-            <span className="text-2xl font-bold text-gray-900">
-              {amount}
-            </span>
-          </div>
+<div className="flex justify-between items-center pt-2 border-t border-green-200">
+  <span className="text-lg font-semibold text-gray-800">
+    Amount:
+  </span>
+
+  <div className="flex items-center gap-2 text-2xl font-bold text-gray-900">
+    <img
+      src={AfganCurrency}
+      alt="Currency"
+      className="h-6 w-6"
+    />
+    <span>{amount}</span>
+  </div>
+</div>
         </div>
 
         {/* View More */}

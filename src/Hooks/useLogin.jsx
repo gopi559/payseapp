@@ -98,12 +98,7 @@ const useLogin = () => {
       );
 
       if (data?.img_id) {
-        dispatch(
-          setProfileImage({
-            id: data.img_id,
-            url: null,
-          })
-        );
+        dispatch(setProfileImage({ id: data.img_id, url: null }));
       }
 
       navigate(userType === 1 ? "/customer/home" : "/corporate/dashboard");

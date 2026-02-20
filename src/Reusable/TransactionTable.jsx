@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { formatTableDateTime } from '../utils/formatDate'
+import THEME_COLORS from '../theme/colors'
 
 const formatCellDate = (dateString) => {
   return formatTableDateTime(dateString)
@@ -23,6 +24,7 @@ const DataTable = ({
   const [searchQuery, setSearchQuery] = useState('')
   const [pageSize, setPageSize] = useState(propPageSize)
   const [quickJumpPage, setQuickJumpPage] = useState('')
+  const tableColors = THEME_COLORS.table
 
   const effectivePageSize = propPageSize !== undefined && propPageSize !== null ? propPageSize : pageSize
 
@@ -79,27 +81,30 @@ const DataTable = ({
           placeholder={searchPlaceholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-xs w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+          className="max-w-xs w-full rounded-lg border px-3 py-2 text-sm"
+          style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }}
         />
       </div>
 
       {loading ? (
-        <p className="text-gray-500 text-center py-8">Loading...</p>
+        <p className="text-center py-8" style={{ color: tableColors.text }}>Loading...</p>
       ) : filteredData.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">{emptyMessage}</p>
+        <p className="text-center py-8" style={{ color: tableColors.text }}>{emptyMessage}</p>
       ) : (
         <>
-          {/* Fixed-height table box: only this area scrolls; scrollbar inside, below header */}
           <div
-            className={`rounded-t-lg border border-gray-100 overflow-hidden ${fillHeight ? 'flex-1 min-h-0' : ''} ${!fillHeight ? 'border-b-0' : ''}`}
-            style={fillHeight ? undefined : { height: tableMaxHeight, maxHeight: tableMaxHeight, minHeight: 0 }}
+            className={`rounded-t-lg border overflow-hidden ${fillHeight ? 'flex-1 min-h-0' : ''} ${!fillHeight ? 'border-b-0' : ''}`}
+            style={{
+              borderColor: tableColors.border,
+              ...(fillHeight ? undefined : { height: tableMaxHeight, maxHeight: tableMaxHeight, minHeight: 0 }),
+            }}
           >
-            <div className="overflow-auto overflow-x-auto overflow-y-auto h-full w-full min-h-0 table-scroll">
+            <div className="overflow-auto h-full w-full min-h-0 table-scroll">
               <table className="w-full min-w-max text-sm text-left border-collapse">
-                <thead className="sticky top-0 z-10 bg-gray-50 border-b border-gray-200 text-gray-600 font-medium shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
+                <thead className="sticky top-0 z-10 font-medium" style={{ backgroundColor: tableColors.headerBackground, borderBottom: `1px solid ${tableColors.border}`, color: tableColors.text }}>
                   <tr>
                     {headers.map((h) => (
-                      <th key={h.key} className="p-3 bg-gray-50 whitespace-nowrap">
+                      <th key={h.key} className="p-3 whitespace-nowrap" style={{ backgroundColor: tableColors.headerBackground }}>
                         {h.label}
                       </th>
                     ))}
@@ -107,14 +112,14 @@ const DataTable = ({
                 </thead>
                 <tbody>
                   {displayData.map((row, idx) => (
-                    <tr key={row.id ?? idx} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                    <tr key={row.id ?? idx} style={{ borderBottom: `1px solid ${tableColors.border}`, backgroundColor: tableColors.rowBackground }}>
                       {headers.map((h) => (
-                        <td key={h.key} className="p-3 text-gray-800">
+                        <td key={h.key} className="p-3" style={{ color: tableColors.text }}>
                           {h.content
                             ? h.content(row)
                             : h.key && (h.key.includes('date') || h.key.includes('_on'))
                               ? formatCellDate(row[h.key])
-                              : (row[h.key] ?? '—')}
+                              : (row[h.key] ?? '-')}
                         </td>
                       ))}
                     </tr>
@@ -124,97 +129,51 @@ const DataTable = ({
             </div>
           </div>
 
-          {/* Compact pagination: small height, same row */}
-          <div className="flex flex-nowrap items-center justify-between gap-2 py-1.5 px-2 border border-gray-100 border-t-gray-200 rounded-b-lg shrink-0 min-h-[36px] bg-gray-50 overflow-x-auto">
-              <span className="text-xs font-medium text-gray-700 whitespace-nowrap">{totalLabel}</span>
+          <div className="flex flex-nowrap items-center justify-between gap-2 py-1.5 px-2 border rounded-b-lg shrink-0 min-h-[36px] overflow-x-auto" style={{ borderColor: tableColors.border, backgroundColor: tableColors.headerBackground }}>
+            <span className="text-xs font-medium whitespace-nowrap" style={{ color: tableColors.text }}>{totalLabel}</span>
 
-              <div className="flex items-center gap-0.5 flex-shrink-0">
-                <button
-                  type="button"
-                  disabled={currentPage <= 1 || !onPageChange}
-                  onClick={() => onPageChange && handlePageChange(currentPage - 1, effectivePageSize)}
-                  className="min-w-[26px] h-6 rounded border border-gray-300 text-xs font-medium text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                  aria-label="Previous page"
-                >
-                  ‹
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => {
-                    if (totalPages <= 7) return true
-                    if (p === 1 || p === totalPages) return true
-                    if (Math.abs(p - currentPage) <= 1) return true
-                    return false
-                  })
-                  .reduce((acc, p, i, arr) => {
-                    const prev = arr[i - 1]
-                    if (prev != null && p - prev > 1) acc.push('ellipsis')
-                    acc.push(p)
-                    return acc
-                  }, [])
-                  .map((item, idx) =>
-                    item === 'ellipsis' ? (
-                      <span key={`e-${idx}`} className="px-0.5 text-gray-400 text-xs">
-                        …
-                      </span>
-                    ) : (
-                      <button
-                        key={item}
-                        type="button"
-                        onClick={() => onPageChange && handlePageChange(item, effectivePageSize)}
-                        className={`min-w-[26px] h-6 rounded border text-xs font-medium ${
-                          item === currentPage
-                            ? 'border-blue-500 bg-blue-50 text-blue-600'
-                            : 'border-gray-300 text-gray-600 hover:bg-gray-100'
-                        }`}
-                      >
-                        {item}
-                      </button>
-                    )
-                  )}
-                <button
-                  type="button"
-                  disabled={currentPage >= totalPages || !onPageChange}
-                  onClick={() => onPageChange && handlePageChange(currentPage + 1, effectivePageSize)}
-                  className="min-w-[26px] h-6 rounded border border-gray-300 text-xs font-medium text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                  aria-label="Next page"
-                >
-                  ›
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
-                <select
-                  value={effectivePageSize}
-                  onChange={(e) => onPageChange && handlePageSizeChange(e)}
-                  className="rounded border border-gray-300 px-1.5 py-1 text-xs bg-white text-gray-700 focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
-                  aria-label="Rows per page"
-                >
-                  {pageSizeOptions.map((size) => (
-                    <option key={size} value={size}>
-                      {size} / page
-                    </option>
-                  ))}
-                </select>
-                <form onSubmit={handleQuickJump} className="flex items-center gap-1">
-                  <span className="text-xs text-gray-600">Go to</span>
-                  <input
-                    type="number"
-                    min={1}
-                    max={totalPages}
-                    placeholder={String(currentPage)}
-                    value={quickJumpPage}
-                    onChange={(e) => setQuickJumpPage(e.target.value)}
-                    className="w-9 rounded border border-gray-300 px-1 py-1 text-xs text-center focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
-                  />
-                  <button
-                    type="submit"
-                    className="rounded border border-gray-300 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100"
-                  >
-                    Page
-                  </button>
-                </form>
-              </div>
+            <div className="flex items-center gap-0.5 flex-shrink-0">
+              <button type="button" disabled={currentPage <= 1 || !onPageChange} onClick={() => onPageChange && handlePageChange(currentPage - 1, effectivePageSize)} className="min-w-[26px] h-6 rounded border text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }} aria-label="Previous page">{'<'}</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => {
+                  if (totalPages <= 7) return true
+                  if (p === 1 || p === totalPages) return true
+                  if (Math.abs(p - currentPage) <= 1) return true
+                  return false
+                })
+                .reduce((acc, p, i, arr) => {
+                  const prev = arr[i - 1]
+                  if (prev != null && p - prev > 1) acc.push('ellipsis')
+                  acc.push(p)
+                  return acc
+                }, [])
+                .map((item, idx) =>
+                  item === 'ellipsis' ? (
+                    <span key={`e-${idx}`} className="px-0.5 text-xs" style={{ color: tableColors.text }}>...</span>
+                  ) : (
+                    <button key={item} type="button" onClick={() => onPageChange && handlePageChange(item, effectivePageSize)} className="min-w-[26px] h-6 rounded border text-xs font-medium" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: item === currentPage ? tableColors.rowHover : tableColors.rowBackground }}>
+                      {item}
+                    </button>
+                  )
+                )}
+              <button type="button" disabled={currentPage >= totalPages || !onPageChange} onClick={() => onPageChange && handlePageChange(currentPage + 1, effectivePageSize)} className="min-w-[26px] h-6 rounded border text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }} aria-label="Next page">{'>'}</button>
             </div>
+
+            <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
+              <select value={effectivePageSize} onChange={(e) => onPageChange && handlePageSizeChange(e)} className="rounded border px-1.5 py-1 text-xs" style={{ borderColor: tableColors.border, backgroundColor: tableColors.rowBackground, color: tableColors.text }} aria-label="Rows per page">
+                {pageSizeOptions.map((size) => (
+                  <option key={size} value={size}>{size} / page</option>
+                ))}
+              </select>
+              <form onSubmit={handleQuickJump} className="flex items-center gap-1">
+                <span className="text-xs" style={{ color: tableColors.text }}>Go to</span>
+                <input type="number" min={1} max={totalPages} placeholder={String(currentPage)} value={quickJumpPage} onChange={(e) => setQuickJumpPage(e.target.value)} className="w-9 rounded border px-1 py-1 text-xs text-center" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }} />
+                <button type="submit" className="rounded border px-2 py-1 text-xs font-medium" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }}>
+                  Page
+                </button>
+              </form>
+            </div>
+          </div>
         </>
       )}
     </div>

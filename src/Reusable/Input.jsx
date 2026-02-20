@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import THEME_COLORS from '../theme/colors'
 
 const Input = ({
   label,
@@ -11,10 +12,13 @@ const Input = ({
   className = '',
   ...props
 }) => {
+  const [isFocused, setIsFocused] = useState(false)
+  const inputColors = THEME_COLORS.input
+
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-xs font-medium text-gray-600 mb-1.5">
+        <label className="block text-xs font-medium mb-1.5" style={{ color: inputColors.text }}>
           {label}
         </label>
       )}
@@ -24,22 +28,32 @@ const Input = ({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        className={`
-          w-full px-3 py-2 rounded-md border text-sm
-          ${error ? 'border-red-400' : 'border-gray-300'}
-          focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary
-          disabled:bg-gray-50 disabled:cursor-not-allowed disabled:border-gray-200
-          bg-white transition-colors
-          ${className}
-        `}
+        onFocus={(e) => {
+          setIsFocused(true)
+          props.onFocus?.(e)
+        }}
+        onBlur={(e) => {
+          setIsFocused(false)
+          props.onBlur?.(e)
+        }}
+        className={`w-full px-3 py-2 rounded-md border text-sm transition-colors disabled:cursor-not-allowed placeholder-[var(--input-placeholder)] ${className}`}
+        style={{
+          color: inputColors.text,
+          backgroundColor: inputColors.background,
+          borderColor: isFocused ? inputColors.focusBorder : inputColors.border,
+          outline: isFocused ? `1px solid ${inputColors.focusBorder}` : 'none',
+          '--input-placeholder': inputColors.placeholder,
+          opacity: disabled ? 0.7 : 1,
+        }}
         {...props}
       />
       {error && (
-        <p className="mt-1 text-sm text-red-500">{error}</p>
+        <p className="mt-1 text-sm" style={{ color: inputColors.text }}>
+          {error}
+        </p>
       )}
     </div>
   )
 }
 
 export default Input
-

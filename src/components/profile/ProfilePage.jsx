@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react'
+﻿import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'react-toastify'
 import { CiLogout } from 'react-icons/ci'
-import { HiCamera, HiXMark } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import authService from '../../Login/auth.service.jsx'
 import profileService from './profile.service'
 import { setProfileImage } from '../../Redux/store.jsx'
+import THEME_COLORS from '../../theme/colors'
 
 const ProfilePage = () => {
   const navigate = useNavigate()
@@ -22,6 +22,7 @@ const ProfilePage = () => {
   const fileInputRef = useRef(null)
   const [uploading, setUploading] = useState(false)
   const [localPreview, setLocalPreview] = useState(null)
+  const contentCard = THEME_COLORS.contentCard
 
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
@@ -34,7 +35,6 @@ const ProfilePage = () => {
   const userRef = regInfo?.user_ref || walletId
   const userId = regInfo?.user_id ?? regInfo?.id ?? null
 
-  /* ================= FETCH IMAGE (POST → BLOB) ================= */
   useEffect(() => {
     if (!profileImage && profileImageId) {
       profileService
@@ -51,7 +51,6 @@ const ProfilePage = () => {
     }
   }, [profileImage, profileImageId, dispatch])
 
-  /* ================= IMAGE SELECT ================= */
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -73,7 +72,6 @@ const ProfilePage = () => {
     handleImageUpload(file)
   }
 
-  /* ================= UPLOAD ================= */
   const handleImageUpload = async (file) => {
     if (!userId) {
       toast.error('User ID not found')
@@ -111,24 +109,6 @@ const ProfilePage = () => {
     }
   }
 
-  /* ================= REMOVE ================= */
-  const handleRemoveImage = async () => {
-    if (!profileImageId) return
-
-    if (!window.confirm('Remove profile picture?')) return
-
-    setUploading(true)
-    try {
-      await profileService.removeImage({ image_id: profileImageId })
-      dispatch(setProfileImage({ id: null, url: null }))
-      toast.success('Profile picture removed')
-    } catch (err) {
-      toast.error(err?.message || 'Failed to remove image')
-    } finally {
-      setUploading(false)
-    }
-  }
-
   const handleLogout = () => {
     authService.logout()
     navigate('/')
@@ -137,35 +117,27 @@ const ProfilePage = () => {
   return (
     <PageContainer>
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <h1 className="text-xl font-semibold mb-6">Profile</h1>
+        <h1 className="text-xl font-semibold mb-6" style={{ color: contentCard.title }}>Profile</h1>
 
-        <div className="bg-white border rounded-lg p-6 mb-6">
+        <div
+          className="border rounded-lg p-6 mb-6"
+          style={{ backgroundColor: contentCard.background, borderColor: contentCard.border }}
+        >
           <div className="flex flex-col items-center">
             <div className="relative mb-4">
               <div
                 onClick={() => !uploading && fileInputRef.current?.click()}
-                className="w-28 h-28 rounded-full overflow-hidden border flex items-center justify-center cursor-pointer hover:shadow"
+                className="w-28 h-28 rounded-full overflow-hidden border flex items-center justify-center cursor-pointer"
+                style={{ borderColor: contentCard.border, backgroundColor: contentCard.accentBackground }}
               >
                 {profileImage ? (
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
                 ) : localPreview ? (
-                  <img
-                    src={localPreview}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={localPreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-5xl">👤</span>
                 )}
               </div>
-
-
-
-
 
               <input
                 ref={fileInputRef}
@@ -176,33 +148,33 @@ const ProfilePage = () => {
               />
             </div>
 
-            <h2 className="text-lg font-semibold">{displayName}</h2>
+            <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>{displayName}</h2>
             {regInfo?.mobile && (
-              <p className="text-sm text-gray-600">{regInfo.mobile}</p>
+              <p className="text-sm" style={{ color: contentCard.subtitle }}>{regInfo.mobile}</p>
             )}
           </div>
 
-          <div className="mt-6 space-y-2 border-t pt-4">
+          <div className="mt-6 space-y-2 border-t pt-4" style={{ borderColor: contentCard.divider }}>
             <div className="flex justify-between text-sm">
-              <span>User ref</span>
-              <span className="font-mono">{userRef || '—'}</span>
+              <span style={{ color: contentCard.subtitle }}>User Ref</span>
+              <span className="font-mono" style={{ color: contentCard.title }}>{userRef || '—'}</span>
             </div>
             {regInfo?.user_type_name && (
               <div className="flex justify-between text-sm">
-                <span>Account type</span>
-                <span>{regInfo.user_type_name}</span>
+                <span style={{ color: contentCard.subtitle }}>Account Type</span>
+                <span style={{ color: contentCard.title }}>{regInfo.user_type_name}</span>
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white border rounded-lg p-4 mb-6">
-          <button
-            onClick={() => navigate('/customer/profile/details')}
-            className="w-full flex justify-between items-center"
-          >
-            <span>Profile Details</span>
-            <span>›</span>
+        <div
+          className="border rounded-lg p-4 mb-6"
+          style={{ backgroundColor: contentCard.background, borderColor: contentCard.border }}
+        >
+          <button onClick={() => navigate('/customer/profile/details')} className="w-full flex justify-between items-center">
+            <span style={{ color: contentCard.title }}>Profile Details</span>
+            <span style={{ color: contentCard.subtitle }}>›</span>
           </button>
         </div>
 
