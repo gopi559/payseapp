@@ -1,3 +1,5 @@
+// src/components/BankCard.jsx
+
 import React from 'react'
 import Chip from '../assets/Chip.svg'
 import Wifi from '../assets/wifi.svg'
@@ -46,11 +48,11 @@ const BankCard = ({ card, onBalance }) => {
           {card.balance !== undefined ? (
             <div className="text-right">
               <div className="text-xs text-white/80">Balance</div>
-              <div className="flex items-center justify-end gap-1 text-lg font-semibold">
+              <div className="flex items-center justify-end gap-2 text-lg font-semibold">
                 <img
                   src={AfganCurrency}
                   alt="Currency"
-                  className="h-4 w-4"
+                  className="h-5 w-5"
                 />
                 <span>{card.balance}</span>
               </div>
@@ -58,7 +60,7 @@ const BankCard = ({ card, onBalance }) => {
           ) : (
             <button
               onClick={onBalance}
-              className="text-sm text-white/90 hover:text-white"
+              className="text-sm font-semibold text-white underline underline-offset-4 hover:text-white/90"
             >
               Balance
             </button>

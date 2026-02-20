@@ -10,9 +10,19 @@ import { BsCashCoin } from 'react-icons/bs'
 import { CgProfile } from 'react-icons/cg'
 import { CiLogout } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
-import voucherIcon from '../assets/PayseyPOSCashCode.svg'
 import logoImage from '../assets/PayseyPaylogoGreen.png'
 import authService from '../Login/auth.service.jsx'
+
+
+
+import cashInIcon from '../assets/PayseyCustomerPortalCashIn.svg'
+import voucherIcon from '../assets/PayseyCustomerPortalVoucher.svg'
+import walletToCardIcon from '../assets/PayseyCustomerPortalWalletToCard.svg'
+import cardToCardIcon from '../assets/PayseyCustomerPortalCardToCard.svg'
+import transactionIcon from '../assets/PayseyCustomerPortalTransaction.svg'
+import disputeIcon from '../assets/PayseyCustomerPortalDispute.svg'
+
+
 
 const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   const [activeLink, setActiveLink] = useState('')
@@ -50,21 +60,54 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     }
   }, [location.pathname])
 
-  const menuItems = [
-    { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
-    { icon: <BsCashCoin />, label: 'Cash In', route: '/customer/cash-in', isComponent: true },
-    { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
-    { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
-    { icon: <img src={voucherIcon} alt="Voucher" className="w-6 h-6 object-contain" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
+const menuItems = [
+  { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
 
-    { icon: <FaCreditCard />, label: 'Wallet to Card', route: '/customer/wallet-to-card', isComponent: true },
-    { icon: <FaCreditCard />, label: 'Card to Card', route: '/customer/card-to-card', isComponent: true },
-        { icon: <FaListAlt />, label: 'Transactions', route: '/customer/transactions', isComponent: true },
+  // UPDATED
+  {
+    icon: <img src={cashInIcon} className="w-7 h-7 object-contain" />,
+    label: 'Cash In',
+    route: '/customer/cash-in',
+    isImage: true,
+  },
 
-        { icon: <HiExclamationTriangle />, label: 'Disputes', route: '/customer/disputes', isComponent: true },
+  // KEEP AS IS
+  { icon: <MdOutlineArrowOutward />, label: 'Send Money', route: '/customer/send', isComponent: true },
+  { icon: <GoArrowDownLeft />, label: 'Receive', route: '/customer/receive', isComponent: true },
 
-    { icon: <CgProfile />, label: 'Profile', route: '/customer/profile', isComponent: true },
-  ]
+  // UPDATED
+  {
+    icon: <img src={voucherIcon} className="w-7 h-7 object-contain" />,
+    label: 'Voucher',
+    route: '/customer/voucher',
+    isImage: true,
+  },
+  {
+    icon: <img src={walletToCardIcon} className="w-7 h-7 object-contain" />,
+    label: 'Wallet to Card',
+    route: '/customer/wallet-to-card',
+    isImage: true,
+  },
+  {
+    icon: <img src={cardToCardIcon} className="w-7 h-7 object-contain" />,
+    label: 'Card to Card',
+    route: '/customer/card-to-card',
+    isImage: true,
+  },
+  {
+    icon: <img src={transactionIcon} className="w-7 h-7 object-contain" />,
+    label: 'Transactions',
+    route: '/customer/transactions',
+    isImage: true,
+  },
+  {
+    icon: <img src={disputeIcon} className="w-7 h-7 object-contain" />,
+    label: 'Disputes',
+    route: '/customer/disputes',
+    isImage: true,
+  },
+]
+
 
   // Inline JSX (not a nested component) so <nav> is never remounted — scroll position is preserved on route change
   const sidebarContentEl = (

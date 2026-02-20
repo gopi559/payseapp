@@ -6,9 +6,8 @@ import Button from '../../../Reusable/Button'
 import { getAuthToken, deviceId } from '../../../services/api'
 import { BENIFICIARY_LIST } from '../../../utils/constant'
 import OtherCardPreview from './OtherCardPreview'
-
+import { formatTableDateTime } from '../../../utils/formatDate'
 const FETCH_PAGE_SIZE = 500
-
 const MetaRow = ({ label, value }) => (
   <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
     <span className="text-[13px] text-gray-500 w-32 shrink-0">
@@ -166,7 +165,14 @@ const CardBeneficiaryList = () => {
                       label="Status"
                       value={selectedCard.status === 1 ? 'Active' : 'Inactive'}
                     />
-                    <MetaRow label="Created on" value={selectedCard.created_on} />
+<MetaRow
+  label="Created on"
+  value={
+    selectedCard.created_on
+      ? formatTableDateTime(selectedCard.created_on)
+      : '—'
+  }
+/>
                     {/* <MetaRow label="Last modified" value={selectedCard.updated_on} /> */}
 
                     <div className="pt-4 mt-4 border-t flex gap-3">
