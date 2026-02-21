@@ -50,11 +50,11 @@ const VoucherPage = () => {
     'Amount',
     'ReceiverName',
     'ReceiverMobile',
-    'ReceiverIDNumber',
-    'ReceiverFatherName',
-    'ProvinceName',
-    'DistrictName',
-    'VillageName',
+    // 'ReceiverIDNumber',
+    // 'ReceiverFatherName',
+    // 'ProvinceName',
+    // 'DistrictName',
+    // 'VillageName',
     'CreatedAt',
   ]
 

@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+﻿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
@@ -6,47 +6,122 @@ import Button from '../../Reusable/Button'
 import MobileInput from '../../Reusable/MobileInput'
 import voucherService from './voucher.service.jsx'
 import THEME_COLORS from '../../theme/colors'
+import {
+  NATIONALITY_LIST,
+  PROVINCE_LIST,
+  DISTRICT_LIST,
+  VILLAGE_LIST,
+  ID_TYPE_LIST,
+} from '../../utils/constant.jsx'
+import { fetchWithBasicAuth } from '../../services/basicAuth.service.js'
 
 const VoucherCreate = () => {
   const navigate = useNavigate()
+  const contentCard = THEME_COLORS.contentCard
+
+  const [lists, setLists] = useState({
+    nationalities: [],
+    provinces: [],
+    districts: [],
+    villages: [],
+    idTypes: [],
+  })
+
   const [form, setForm] = useState({
     amount: '',
     receiver_name: '',
+    receiver_father_name: '',
     receiver_mobile: '+93',
-    receiver_id_type: 1,
+    nationality_id: '',
+    province_id: '',
+    district_id: '',
+    village_id: '',
+    receiver_id_type: '',
     receiver_id_number: '',
   })
+
   const [submitting, setSubmitting] = useState(false)
-  const [createdResult, setCreatedResult] = useState(null)
-  const contentCard = THEME_COLORS.contentCard
+
+  useEffect(() => {
+    Promise.all([
+      fetchWithBasicAuth(NATIONALITY_LIST),
+      fetchWithBasicAuth(PROVINCE_LIST),
+      fetchWithBasicAuth(ID_TYPE_LIST),
+    ])
+      .then(([nationalities, provinces, idTypes]) =>
+        setLists((p) => ({ ...p, nationalities, provinces, idTypes }))
+      )
+      .catch((e) => toast.error(e.message))
+  }, [])
+
+  useEffect(() => {
+    if (!form.province_id) {
+      setLists((p) => ({ ...p, districts: [], villages: [] }))
+      setForm((f) => ({ ...f, district_id: '', village_id: '' }))
+      return
+    }
+    fetchWithBasicAuth(DISTRICT_LIST, { province_id: Number(form.province_id) })
+      .then((districts) => {
+        setLists((p) => ({ ...p, districts, villages: [] }))
+        setForm((f) => ({ ...f, district_id: '', village_id: '' }))
+      })
+      .catch((e) => toast.error(e.message))
+  }, [form.province_id])
+
+  useEffect(() => {
+    if (!form.district_id) {
+      setLists((p) => ({ ...p, villages: [] }))
+      setForm((f) => ({ ...f, village_id: '' }))
+      return
+    }
+    fetchWithBasicAuth(VILLAGE_LIST, { district_id: Number(form.district_id) })
+      .then((villages) => setLists((p) => ({ ...p, villages })))
+      .catch((e) => toast.error(e.message))
+  }, [form.district_id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const finalMobile = form.receiver_mobile?.startsWith('+93')
-      ? form.receiver_mobile
-      : `+93${(form.receiver_mobile || '').replace(/^\+?\d+/, '').replace(/\D/g, '')}`
+    const mobileDigits = form.receiver_mobile.replace(/\D/g, '').replace(/^93/, '')
 
-    if (!form.amount?.trim() || !form.receiver_name?.trim() || !finalMobile?.trim() || finalMobile === '+93' || !form.receiver_id_number?.trim()) {
+    if (
+      !form.amount ||
+      !form.receiver_name ||
+      !form.receiver_mobile ||
+      !form.receiver_id_number ||
+      !form.receiver_id_type
+    ) {
       toast.error('Please fill all required fields')
       return
     }
+
+    if (mobileDigits.length !== 9) {
+      toast.error('Receiver mobile must be exactly 9 digits')
+      return
+    }
+
+    const payload = {
+      amount: String(form.amount),
+      receiver_name: form.receiver_name,
+      receiver_father_name: form.receiver_father_name,
+      receiver_mobile: form.receiver_mobile.replace('+', ''),
+      receiver_id_type: Number(form.receiver_id_type),
+      receiver_id_number: form.receiver_id_number,
+      nationality_id: form.nationality_id ? Number(form.nationality_id) : undefined,
+      province_id: form.province_id ? Number(form.province_id) : undefined,
+      district_id: form.district_id ? Number(form.district_id) : undefined,
+      village_id: form.village_id ? Number(form.village_id) : undefined,
+    }
+
     setSubmitting(true)
-    setCreatedResult(null)
     try {
-      const result = await voucherService.createCashcode({ ...form, receiver_mobile: finalMobile })
-      setCreatedResult(result?.data ?? null)
-      toast.success(result?.message || 'Cash code created successfully')
-    } catch (err) {
-      console.error(err)
-      toast.error(err?.message || 'Failed to create cash code')
+      await voucherService.createCashcode(payload)
+      toast.success('Cash code created successfully')
+      navigate('/customer/voucher')
+    } catch (e) {
+      toast.error(e.message)
     } finally {
       setSubmitting(false)
     }
-  }
-
-  const resetForm = () => {
-    setForm({ amount: '', receiver_name: '', receiver_mobile: '+93', receiver_id_type: 1, receiver_id_number: '' })
-    setCreatedResult(null)
   }
 
   const inputStyle = {
@@ -57,98 +132,82 @@ const VoucherCreate = () => {
 
   return (
     <PageContainer>
-      <div className="min-h-full px-4 py-6 overflow-x-hidden flex flex-col">
-        <div className="w-full max-w-lg mx-auto">
-          <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-            <h2 className="text-xl font-bold" style={{ color: contentCard.title }}>Create Cash Code</h2>
-            <div className="flex gap-2 shrink-0">
-              <Button type="button" variant="outline" onClick={() => navigate('/customer/voucher')}>
-                Back
-              </Button>
-            </div>
-          </div>
+      <div className="max-w-lg mx-auto p-4">
+        <Button variant="outline" onClick={() => navigate('/customer/voucher')}>
+          Back
+        </Button>
 
-          {createdResult ? (
-            <div className="w-full rounded-lg shadow-sm p-6" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}>
-              <h3 className="text-lg font-semibold mb-4" style={{ color: contentCard.title }}>Cash Code Created</h3>
-              <div className="rounded-lg p-4 space-y-2 mb-4" style={{ border: `1px solid ${contentCard.divider}`, backgroundColor: contentCard.accentBackground }}>
-                <p><span className="font-medium" style={{ color: contentCard.subtitle }}>Cash Code:</span> <span className="font-mono font-bold text-lg" style={{ color: contentCard.title }}>{createdResult.cashcode}</span></p>
-                <p><span className="font-medium" style={{ color: contentCard.subtitle }}>Temp PIN:</span> <span className="font-mono font-bold" style={{ color: contentCard.title }}>{createdResult.temp_pin}</span></p>
-                <p><span className="font-medium" style={{ color: contentCard.subtitle }}>Status:</span> <span style={{ color: contentCard.title }}>{createdResult.status}</span></p>
-              </div>
-              <p className="text-sm mb-4" style={{ color: contentCard.subtitle }}>Share the cash code and PIN with the receiver.</p>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => navigate('/customer/voucher')}>Back to List</Button>
-                <Button type="button" onClick={resetForm}>Create Another</Button>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full rounded-lg shadow-sm p-6" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: contentCard.subtitle }}>Amount *</label>
-                  <input
-                    type="text"
-                    value={form.amount}
-                    onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                    placeholder="e.g. 10.00"
-                    className="w-full rounded-lg border px-3 py-2 text-sm"
-                    style={inputStyle}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: contentCard.subtitle }}>Receiver Name *</label>
-                  <input
-                    type="text"
-                    value={form.receiver_name}
-                    onChange={(e) => setForm((f) => ({ ...f, receiver_name: e.target.value }))}
-                    placeholder="Receiver full name"
-                    className="w-full rounded-lg border px-3 py-2 text-sm"
-                    style={inputStyle}
-                    required
-                  />
-                </div>
-                <div>
-                  <MobileInput
-                    label="Receiver Mobile *"
-                    value={form.receiver_mobile}
-                    onChange={(e) => setForm((f) => ({ ...f, receiver_mobile: e.target.value }))}
-                    placeholder="e.g. 998877665"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: contentCard.subtitle }}>Receiver ID Type</label>
-                  <input
-                    type="number"
-                    value={form.receiver_id_type}
-                    onChange={(e) => setForm((f) => ({ ...f, receiver_id_type: Number(e.target.value) || 1 }))}
-                    min={1}
-                    className="w-full rounded-lg border px-3 py-2 text-sm"
-                    style={inputStyle}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: contentCard.subtitle }}>Receiver ID Number *</label>
-                  <input
-                    type="text"
-                    value={form.receiver_id_number}
-                    onChange={(e) => setForm((f) => ({ ...f, receiver_id_number: e.target.value }))}
-                    placeholder="ID number"
-                    className="w-full rounded-lg border px-3 py-2 text-sm"
-                    style={inputStyle}
-                    required
-                  />
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={() => navigate('/customer/voucher')}>Cancel</Button>
-                  <Button type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create'}</Button>
-                </div>
-              </form>
-            </div>
-          )}
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-3 mt-4">
+          <input className="w-full border p-2" style={inputStyle} placeholder="Amount"
+            value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} />
+
+          <input className="w-full border p-2" style={inputStyle} placeholder="Receiver Name"
+            value={form.receiver_name} onChange={(e) => setForm({ ...form, receiver_name: e.target.value })} />
+
+          <input className="w-full border p-2" style={inputStyle} placeholder="Father Name"
+            value={form.receiver_father_name} onChange={(e) => setForm({ ...form, receiver_father_name: e.target.value })} />
+
+          <MobileInput
+            label="Receiver Mobile"
+            value={form.receiver_mobile}
+            onChange={(e) => setForm({ ...form, receiver_mobile: e.target.value })}
+          />
+
+          <select className="w-full border p-2" style={inputStyle}
+            value={form.nationality_id}
+            onChange={(e) => setForm({ ...form, nationality_id: e.target.value })}>
+            <option value="">Select Nationality</option>
+            {lists.nationalities.map((n) => (
+              <option key={n.id} value={n.id}>{n.nationality_name}</option>
+            ))}
+          </select>
+
+          <select className="w-full border p-2" style={inputStyle}
+            value={form.province_id}
+            onChange={(e) => setForm({ ...form, province_id: e.target.value })}>
+            <option value="">Select Province</option>
+            {lists.provinces.map((p) => (
+              <option key={p.id} value={p.id}>{p.province_name}</option>
+            ))}
+          </select>
+
+          <select className="w-full border p-2" style={inputStyle}
+            value={form.district_id}
+            disabled={!lists.districts.length}
+            onChange={(e) => setForm({ ...form, district_id: e.target.value })}>
+            <option value="">Select District</option>
+            {lists.districts.map((d) => (
+              <option key={d.id} value={d.id}>{d.type_name}</option>
+            ))}
+          </select>
+
+          <select className="w-full border p-2" style={inputStyle}
+            value={form.village_id}
+            disabled={!lists.villages.length}
+            onChange={(e) => setForm({ ...form, village_id: e.target.value })}>
+            <option value="">Select Village</option>
+            {lists.villages.map((v) => (
+              <option key={v.id} value={v.id}>{v.type_name}</option>
+            ))}
+          </select>
+
+          <select className="w-full border p-2" style={inputStyle}
+            value={form.receiver_id_type}
+            onChange={(e) => setForm({ ...form, receiver_id_type: e.target.value })}>
+            <option value="">Select ID Type</option>
+            {lists.idTypes.map((i) => (
+              <option key={i.id} value={i.id}>{i.type_name}</option>
+            ))}
+          </select>
+
+          <input className="w-full border p-2" style={inputStyle} placeholder="ID Number"
+            value={form.receiver_id_number}
+            onChange={(e) => setForm({ ...form, receiver_id_number: e.target.value })} />
+
+          <Button type="submit" disabled={submitting}>
+            {submitting ? 'Creating…' : 'Create Voucher'}
+          </Button>
+        </form>
       </div>
     </PageContainer>
   )

@@ -115,3 +115,12 @@ export const PAY_REQUEST_MONEY = `${MAIN_API_URL}/transaction_web/customer/txn_p
 export const DECLINE_REQUEST_MONEY = `${MAIN_API_URL}/transaction_web/customer/txn_decline_reqmoney`;
 // Payload: {"money_reqid":153,"remarks":"Request Money"}
 // Response: {"api":"/transaction_web/customer/txn_decline_reqmoney","code":1,"message":"","status":"Success"}
+
+
+
+
+export const VILLAGE_LIST = `${MAIN_API_URL}/village/list`;
+export const NATIONALITY_LIST = `${MAIN_API_URL}/nationality/list`;
+export const ID_TYPE_LIST = `${MAIN_API_URL}/id_type/list`;
+export const PROVINCE_LIST = `${MAIN_API_URL}/province/list`;
+export const DISTRICT_LIST = `${MAIN_API_URL}/district/list`;

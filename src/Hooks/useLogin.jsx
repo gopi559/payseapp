@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setToken, setUserType } from "../Redux/AuthToken";
 import { login, setProfileImage } from "../Redux/store";
 import { CHECK_MOBILE, GENERATE_OTP, VERIFY_OTP } from "../utils/constant";
-import { callApi } from "../services/api";
+import { fetchWithBasicAuth } from "../services/basicAuth.service.js";
 
 const useLogin = () => {
   const [errors, setErrors] = useState({});
@@ -16,6 +16,8 @@ const useLogin = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const sendOtpInFlightRef = useRef(false);
+  const verifyOtpInFlightRef = useRef(false);
 
   const validateMobile = (mobile) => {
     const digitsOnly = (mobile || "").replace(/\D/g, "");
@@ -30,10 +32,8 @@ const useLogin = () => {
   const checkMobile = async (mobile) => {
     if (!validateMobile(mobile)) return { success: false };
     try {
-      const res = await callApi(CHECK_MOBILE, { mobile });
-      const ok = res?.code === 1 || String(res?.status).toUpperCase() === "SUCCESS";
-      if (!ok) return { success: false, error: res?.message };
-      if (!res?.data?.exists) return { success: false, error: "Customer not found" };
+      const data = await fetchWithBasicAuth(CHECK_MOBILE, { mobile });
+      if (!data?.exists) return { success: false, error: "Customer not found" };
       return { success: true };
     } catch (err) {
       return { success: false, error: err?.message };
@@ -42,20 +42,21 @@ const useLogin = () => {
 
   const sendOtp = async (mobile) => {
     if (!validateMobile(mobile)) return { success: false };
+    if (sendOtpInFlightRef.current) return { success: false, error: "Request already in progress" };
+    sendOtpInFlightRef.current = true;
     try {
-      const check = await callApi(CHECK_MOBILE, { mobile });
-      const ok = check?.code === 1 || String(check?.status).toUpperCase() === "SUCCESS";
-      if (!ok || !check?.data?.exists) {
-        return { success: false, error: check?.message || "Customer not found" };
+      const checkData = await fetchWithBasicAuth(CHECK_MOBILE, { mobile });
+      if (!checkData?.exists) {
+        return { success: false, error: "Customer not found" };
       }
 
-      const otpRes = await callApi(GENERATE_OTP, { mobile });
-      const otpOk = otpRes?.code === 1 || String(otpRes?.status).toUpperCase() === "SUCCESS";
-      if (!otpOk) return { success: false, error: otpRes?.message };
+      await fetchWithBasicAuth(GENERATE_OTP, { mobile });
 
       return { success: true };
     } catch (err) {
       return { success: false, error: err?.message };
+    } finally {
+      sendOtpInFlightRef.current = false;
     }
   };
 
@@ -69,17 +70,11 @@ const useLogin = () => {
 
     setErrors({});
     setErrorMessage("");
+    if (verifyOtpInFlightRef.current) return { success: false, error: "Request already in progress" };
+    verifyOtpInFlightRef.current = true;
 
     try {
-      const res = await callApi(VERIFY_OTP, { mobile, otp });
-      const ok = res?.code === 1 || String(res?.status).toUpperCase() === "SUCCESS";
-      if (!ok) {
-        setErrorMessage(res?.message || "Invalid OTP");
-        setShowModal(true);
-        return { success: false };
-      }
-
-      const data = res?.data || {};
+      const data = (await fetchWithBasicAuth(VERIFY_OTP, { mobile, otp })) || {};
       const token = data?.token ?? null;
       const regInfo = data?.reg_info ?? {};
       const userType = regInfo?.user_type ?? 1;
@@ -107,6 +102,8 @@ const useLogin = () => {
       setErrorMessage(err?.message || "Something went wrong");
       setShowModal(true);
       return { success: false };
+    } finally {
+      verifyOtpInFlightRef.current = false;
     }
   };
 

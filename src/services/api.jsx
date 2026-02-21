@@ -1,8 +1,6 @@
 import Store from '../Redux/store.jsx'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://backend.api-innovitegra.in'
-const BASIC_AUTH_USERNAME = import.meta.env.VITE_BASIC_AUTH_USERNAME || 'webadmin'
-const BASIC_AUTH_PASSWORD = import.meta.env.VITE_BASIC_AUTH_PASSWORD || '4970FAB298E271E430010235E9C88EA5E467DEEF'
 
 const INVALID_TOKEN_VALUES = new Set(['', 'null', 'undefined', 'nan'])
 
@@ -109,21 +107,12 @@ export const getAuthToken = () => {
   return null
 }
 
-const getBasicAuthHeader = () => {
-  const username = String(BASIC_AUTH_USERNAME || '').trim()
-  const password = String(BASIC_AUTH_PASSWORD || '')
-  if (!username || !password) return null
-  return `Basic ${btoa(`${username}:${password}`)}`
-}
-
 const buildHeaders = ({ extraHeaders } = {}) => {
   const token = getAuthToken()
-  const basic = getBasicAuthHeader()
 
   const headers = { 'Content-Type': 'application/json' }
 
   if (token) headers.Authorization = `Bearer ${token}`
-  else if (basic) headers.Authorization = basic
 
   return { ...headers, ...(extraHeaders || {}) }
 }

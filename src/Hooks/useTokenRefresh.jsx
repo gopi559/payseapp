@@ -18,7 +18,14 @@ const useTokenRefresh = () => {
         'Content-Type': 'application/json',
         ...(options.headers || {}),
       }
-      if (authToken) headers.Authorization = `Bearer ${authToken}`
+      const existingAuthHeader = Object.keys(headers).find(
+        (key) => key.toLowerCase() === 'authorization'
+      )
+      const isLoginApi = /\/login\/(check-mobile|generate-otp|verify-otp)$/i.test(String(url))
+
+      if (!existingAuthHeader && authToken && !isLoginApi) {
+        headers.Authorization = `Bearer ${authToken}`
+      }
       if (deviceId) headers.DeviceID = deviceId
       return fetch(url, { ...options, headers })
     },

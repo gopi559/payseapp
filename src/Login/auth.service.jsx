@@ -2,6 +2,7 @@ import Store from "../Redux/store.jsx";
 import { login, logout, setWalletId, setBalance, setProfileImage } from "../Redux/store.jsx";
 import { clearUserDataAuth } from "../Redux/AuthToken.jsx";
 import { callApi, clearAuthRuntime } from "../services/api.jsx";
+import { fetchWithBasicAuth } from "../services/basicAuth.service.js";
 import {
   CHECK_MOBILE,
   GENERATE_OTP,
@@ -30,26 +31,22 @@ const authService = {
     try {
       cacheCurrentLocation({ timeoutMs: 5000 }).catch(() => {});
 
-      const check = await callApi(CHECK_MOBILE, {
+      const checkData = await fetchWithBasicAuth(CHECK_MOBILE, {
         mobile,
+
+
+
+        
         entity: "mobile",
       });
 
-      if (!(check?.code === 1 || String(check?.status).toUpperCase() === "SUCCESS")) {
-        return { success: false, error: check?.message };
-      }
-
-      if (!check?.data?.exists) {
+      if (!checkData?.exists) {
         return { success: false, error: "Customer not found" };
       }
 
-      const otpRes = await callApi(GENERATE_OTP, { mobile });
+      const otpData = await fetchWithBasicAuth(GENERATE_OTP, { mobile });
 
-      if (!(otpRes?.code === 1 || String(otpRes?.status).toUpperCase() === "SUCCESS")) {
-        return { success: false, error: otpRes?.message };
-      }
-
-      return { success: true, data: otpRes?.data };
+      return { success: true, data: otpData };
     } catch (error) {
       return { success: false, error: error?.message };
     }
@@ -59,32 +56,27 @@ const authService = {
     try {
       cacheCurrentLocation({ timeoutMs: 5000 }).catch(() => {});
 
-      const res = await callApi(VERIFY_OTP, { mobile, otp });
-
-      if (!(res?.code === 1 || String(res?.status).toUpperCase() === "SUCCESS")) {
-        return { success: false, error: res?.message };
-      }
-
-      const regInfo = res?.data?.reg_info || {};
+      const data = (await fetchWithBasicAuth(VERIFY_OTP, { mobile, otp })) || {};
+      const regInfo = data?.reg_info || {};
 
       Store.dispatch(
         login({
           user: {
             reg_info: regInfo,
-            user_kyc: res?.data?.user_kyc || null,
-            mfa_id: res?.data?.mfa_id,
-            session_expiry_timeout: res?.data?.session_expiry_timeout,
-            session_expiry_unit: res?.data?.session_expiry_unit,
-            user_inactivity_timeout: res?.data?.user_inactivity_timeout,
+            user_kyc: data?.user_kyc || null,
+            mfa_id: data?.mfa_id,
+            session_expiry_timeout: data?.session_expiry_timeout,
+            session_expiry_unit: data?.session_expiry_unit,
+            user_inactivity_timeout: data?.user_inactivity_timeout,
           },
-          token: res?.data?.token || null,
+          token: data?.token || null,
         })
       );
 
-      if (res?.data?.img_id) {
-        Store.dispatch(setProfileImage({ id: res.data.img_id, url: null }));
-      } else if (res?.data?.img_url) {
-        Store.dispatch(setProfileImage({ id: null, url: res.data.img_url }));
+      if (data?.img_id) {
+        Store.dispatch(setProfileImage({ id: data.img_id, url: null }));
+      } else if (data?.img_url) {
+        Store.dispatch(setProfileImage({ id: null, url: data.img_url }));
       }
 
       if (regInfo?.user_ref) {
@@ -93,7 +85,7 @@ const authService = {
 
       await fetchCustomerBalance();
 
-      return { success: true, data: res?.data };
+      return { success: true, data };
     } catch (error) {
       return { success: false, error: error?.message };
     }

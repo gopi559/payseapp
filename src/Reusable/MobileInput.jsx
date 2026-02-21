@@ -13,10 +13,11 @@ const MobileInput = ({
   ...props
 }) => {
   const inputColors = THEME_COLORS.input
+  const maxDigits = 9
 
   const handleChange = (e) => {
     const inputValue = e.target.value
-    const digitsOnly = inputValue.replace(/\D/g, '')
+    const digitsOnly = inputValue.replace(/\D/g, '').slice(0, maxDigits)
 
     if (onChange) {
       const fullValue = prefix + digitsOnly
@@ -33,9 +34,9 @@ const MobileInput = ({
   let displayValue = ''
   if (value) {
     if (value.startsWith(prefix)) {
-      displayValue = value.slice(prefix.length)
+      displayValue = value.slice(prefix.length).replace(/\D/g, '').slice(0, maxDigits)
     } else {
-      displayValue = value.replace(/^\+\d+/, '').replace(/\D/g, '')
+      displayValue = value.replace(/^\+\d+/, '').replace(/\D/g, '').slice(0, maxDigits)
     }
   }
 
@@ -63,7 +64,7 @@ const MobileInput = ({
             color: inputColors.text,
             opacity: disabled ? 0.7 : 1,
           }}
-          maxLength={12}
+          maxLength={maxDigits}
           {...props}
         />
       </div>
