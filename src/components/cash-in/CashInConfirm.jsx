@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
@@ -108,7 +108,7 @@ const CashInConfirm = () => {
 
  const maskedCard = cashInData.card_number
  ? `${cashInData.card_number.slice(0, 4)} **** **** ${cashInData.card_number.slice(-4)}`
- : 'â€”'
+ : '—'
 
  return (
  <PageContainer>
@@ -129,7 +129,7 @@ const CashInConfirm = () => {
  items={[
  { label: 'Card', value: maskedCard },
  { label: 'Card Name', value: cashInData.card_name || 'N/A' },
- { label: 'Amount', value: `â‚¹${parseFloat(cashInData.txn_amount).toFixed(2)}` },
+ { label: 'Amount', value: `${parseFloat(cashInData.txn_amount).toFixed(2)}` },
  ]}
  total={parseFloat(cashInData.txn_amount)}
  />
@@ -184,5 +184,6 @@ const CashInConfirm = () => {
 }
 
 export default CashInConfirm
+
 
 

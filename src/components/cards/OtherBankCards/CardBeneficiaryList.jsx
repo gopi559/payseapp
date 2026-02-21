@@ -7,6 +7,7 @@ import { getAuthToken, deviceId } from '../../../services/api'
 import { BENIFICIARY_LIST } from '../../../utils/constant'
 import OtherCardPreview from './OtherCardPreview'
 import { formatTableDateTime } from '../../../utils/formatDate'
+import THEME_COLORS from '../../../theme/colors'
 const FETCH_PAGE_SIZE = 500
 const MetaRow = ({ label, value }) => (
   <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
@@ -22,6 +23,7 @@ const MetaRow = ({ label, value }) => (
 
 const CardBeneficiaryList = () => {
   const navigate = useNavigate()
+  const contentCard = THEME_COLORS.contentCard
 
   const [cards, setCards] = useState([])
   const [selectedCard, setSelectedCard] = useState(null)
@@ -81,7 +83,7 @@ const CardBeneficiaryList = () => {
 
   return (
     <PageContainer>
-      <div className="px-4 py-6 bg-gray-50 min-h-screen">
+      <div className="px-4 py-6">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
             {error}
@@ -93,13 +95,16 @@ const CardBeneficiaryList = () => {
         ) : (
           <div className="flex flex-col xl:flex-row gap-6">
             {/* LEFT */}
-            <div className="flex-1 bg-white rounded-lg shadow-sm p-4 h-[80vh] flex flex-col">
+            <div
+              className="flex-1 rounded-lg shadow-sm p-4 h-[80vh] flex flex-col"
+              style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <HiCreditCard className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
+                    <HiCreditCard className="w-5 h-5" style={{ color: contentCard.iconColor }} />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800">
+                  <h3 className="text-lg font-semibold" style={{ color: contentCard.title }}>
                     Card Beneficiaries
                   </h3>
                 </div>
@@ -108,13 +113,18 @@ const CardBeneficiaryList = () => {
                   placeholder="Search card"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm max-w-xs"
+                  className="rounded-lg px-3 py-2 text-sm max-w-xs"
+                  style={{
+                    border: `1px solid ${contentCard.border}`,
+                    backgroundColor: THEME_COLORS.common.white,
+                    color: contentCard.title,
+                  }}
                 />
               </div>
 
-              <div className="flex-1 overflow-y-auto rounded-lg border border-gray-100">
+              <div className="flex-1 overflow-y-auto rounded-lg" style={{ border: `1px solid ${contentCard.border}` }}>
                 <table className="w-full text-sm">
-                  <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+                  <thead className="sticky top-0 border-b" style={{ backgroundColor: contentCard.accentBackground, borderColor: contentCard.border }}>
                     <tr>
                       <th className="p-2 w-10"></th>
                       <th className="p-2">Card</th>
@@ -135,6 +145,7 @@ const CardBeneficiaryList = () => {
                               ? 'bg-brand-surfaceLight'
                               : 'hover:bg-gray-50'
                           }`}
+                          style={{ borderColor: contentCard.border }}
                         >
                           <td className="p-2">
                             <input type="radio" checked={isSelected} readOnly />
@@ -157,7 +168,10 @@ const CardBeneficiaryList = () => {
                 <>
                   <OtherCardPreview card={selectedCard} fullWidth />
 
-<div className="bg-white rounded-xl shadow-md border border-blue-100 px-4 py-3">
+<div
+  className="rounded-xl shadow-md px-4 py-3"
+  style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+>
                     <MetaRow label="Bank" value={selectedCard.external_inst_name} />
                     <MetaRow label="Card number" value={selectedCard.masked_card} />
                     <MetaRow label="Cardholder" value={selectedCard.cardholder_name} />
@@ -210,8 +224,11 @@ const CardBeneficiaryList = () => {
                   </div>
                 </>
               ) : (
-                <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
-                  <p className="text-gray-500">Select a card to see preview.</p>
+                <div
+                  className="rounded-xl shadow-sm p-8 text-center"
+                  style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+                >
+                  <p style={{ color: contentCard.subtitle }}>Select a card to see preview.</p>
                 </div>
               )}
             </div>

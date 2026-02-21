@@ -6,6 +6,7 @@ import Button from '../../../Reusable/Button'
 import { getAuthToken, deviceId } from '../../../services/api'
 import { BENIFICIARY_LIST } from '../../../utils/constant'
 import OtherCardPreview from './OtherCardPreview'
+import THEME_COLORS from '../../../theme/colors'
 
 const NUM_DATA = 20
 
@@ -23,6 +24,7 @@ const MetaRow = ({ label, value }) => (
 
 const OtherCardsPage = () => {
   const navigate = useNavigate()
+  const contentCard = THEME_COLORS.contentCard
 
   const [cards, setCards] = useState([])
   const [selectedCard, setSelectedCard] = useState(null)
@@ -94,7 +96,7 @@ const OtherCardsPage = () => {
 
   return (
     <PageContainer>
-      <div className="px-4 py-6 bg-gray-50 min-h-screen">
+      <div className="px-4 py-6">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
             {error}
@@ -108,13 +110,16 @@ const OtherCardsPage = () => {
         ) : (
           <div className="flex flex-col xl:flex-row gap-4 lg:gap-6 w-full min-w-0">
             {/* LEFT TABLE */}
-            <div className="flex-1 min-w-0 flex flex-col gap-3 bg-white rounded-lg shadow-sm p-3 h-[80vh]">
+            <div
+              className="flex-1 min-w-0 flex flex-col gap-3 rounded-lg shadow-sm p-3 h-[80vh]"
+              style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+            >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <HiCreditCard className="w-5 h-5 text-blue-600" />
+                  <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
+                    <HiCreditCard className="w-5 h-5" style={{ color: contentCard.iconColor }} />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800">
+                  <h3 className="text-lg font-semibold" style={{ color: contentCard.title }}>
                     Card Beneficiaries
                   </h3>
                 </div>
@@ -124,14 +129,19 @@ const OtherCardsPage = () => {
                   placeholder="Search card"
                   value={cardSearchQuery}
                   onChange={(e) => setCardSearchQuery(e.target.value)}
-                  className="max-w-xs rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                  className="max-w-xs rounded-lg px-3 py-2 text-sm"
+                  style={{
+                    border: `1px solid ${contentCard.border}`,
+                    backgroundColor: THEME_COLORS.common.white,
+                    color: contentCard.title,
+                  }}
                 />
               </div>
 
               <div className="flex-1 overflow-hidden rounded-lg">
                 <div className="overflow-y-auto h-full">
                   <table className="w-full text-sm">
-                    <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+                    <thead className="sticky top-0 border-b" style={{ backgroundColor: contentCard.accentBackground, borderColor: contentCard.border }}>
                       <tr>
                         <th className="p-2 w-10"></th>
                         <th className="p-2">Card</th>
@@ -150,6 +160,7 @@ const OtherCardsPage = () => {
                                 ? 'bg-brand-surfaceLight'
                                 : 'hover:bg-gray-50'
                             }`}
+                            style={{ borderColor: contentCard.border }}
                           >
                             <td className="p-2">
                               <input
@@ -189,7 +200,10 @@ const OtherCardsPage = () => {
                 <>
                   <OtherCardPreview card={selectedCard} fullWidth />
 
-                  <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-4">
+                  <div
+                    className="rounded-2xl shadow-xl p-4"
+                    style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+                  >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                       <MetaRow label="Bank" value="Other Bank" />
                       <MetaRow label="Card number" value={selectedCard.masked_card} />
@@ -233,8 +247,11 @@ const OtherCardsPage = () => {
                   </div>
                 </>
               ) : (
-                <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
-                  <p className="text-gray-500">
+                <div
+                  className="rounded-xl shadow-sm p-8 text-center"
+                  style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+                >
+                  <p style={{ color: contentCard.subtitle }}>
                     Select a card to see preview and actions.
                   </p>
                 </div>

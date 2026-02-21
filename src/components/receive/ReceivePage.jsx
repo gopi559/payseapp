@@ -164,7 +164,7 @@ const ReceivePage = () => {
  { key: 'recv_cust_id', label: 'Recv Cust ID', content: (row) => row.recv_cust_id ?? '-' },
  { key: 'req_cust_mobile', label: 'Req Cust Mobile', content: (row) => <span className="font-mono text-xs">{row.req_cust_mobile || '-'}</span> },
  { key: 'recv_cust_mobile', label: 'Recv Cust Mobile', content: (row) => <span className="font-mono text-xs">{row.recv_cust_mobile || '-'}</span> },
- { key: 'amount', label: 'Amount', content: (row) => `Rs ${Number(row.amount || 0).toFixed(2)}` },
+ { key: 'amount', label: 'Amount', content: (row) => Number(row.amount || 0).toFixed(2) },
  { key: 'currency_id', label: 'Currency ID', content: (row) => row.currency_id ?? '-' },
  { key: 'remarks', label: 'Remarks', content: (row) => row.remarks || '-' },
  { key: 'txn_rrn', label: 'RRN', content: (row) => <span className="font-mono text-xs">{row.txn_rrn || '-'}</span> },

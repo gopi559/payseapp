@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
@@ -54,7 +54,7 @@ const downloadTransactionPdf = (
     { label: 'Transaction Type', value: details?.txn_type ?? 'WALLET_TO_CARD' },
     { label: 'Description', value: details?.txn_desc ?? 'Wallet To Card' },
     { label: 'Date & Time', value: formatDateTime(details?.txn_time) },
-    { label: 'Amount', value: `₹${Number(details?.txn_amount ?? 0).toFixed(2)}` },
+    { label: 'Amount', value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
     { label: 'Channel', value: details?.channel_type ?? 'WEB' },
     { label: 'Status', value: details?.status === 1 ? 'Success' : 'SUCCESS' },
     { label: 'Remarks', value: details?.remarks ?? '—' },
@@ -241,7 +241,7 @@ const WalletToCardTransactionDetails = () => {
               <span className="text-3xl text-brand-secondary">✓</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">Transaction Completed</h2>
-            <p className="text-3xl font-bold mb-4">₹{amount}</p>
+            <p className="text-3xl font-bold mb-4">{amount}</p>
             <div className="bg-white/20 rounded-lg px-4 py-2">
               <span className="text-sm font-medium">Money Sent</span>
             </div>
@@ -298,7 +298,7 @@ const WalletToCardTransactionDetails = () => {
               <FaMoneyBillWave className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">Amount</p>
-                <p className="text-sm font-medium text-gray-800">₹{amount}</p>
+                <p className="text-sm font-medium text-gray-800">{amount}</p>
               </div>
             </div>
             
@@ -420,6 +420,8 @@ const WalletToCardTransactionDetails = () => {
 }
 
 export default WalletToCardTransactionDetails
+
+
 
 
 

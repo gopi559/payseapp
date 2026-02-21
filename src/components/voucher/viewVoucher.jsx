@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
@@ -59,7 +59,7 @@ const ViewVoucher = () => {
 
   const formatters = {
     CreatedAt: (v) => formatTableDateTime(v),
-    Amount: (v) => `₹${Number(v).toFixed(2)}`,
+    Amount: (v) => `${Number(v).toFixed(2)}`,
   }
 
   return (
@@ -95,3 +95,4 @@ const ViewVoucher = () => {
 }
 
 export default ViewVoucher
+

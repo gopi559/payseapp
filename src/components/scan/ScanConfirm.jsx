@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import PageContainer from '../../Reusable/PageContainer'
@@ -44,7 +44,7 @@ const ScanConfirm = () => {
           <ConfirmCard
             items={[
               { label: 'Merchant', value: 'QR Merchant' },
-              { label: 'Amount', value: `₹${parseFloat(amount).toFixed(2)}` },
+              { label: 'Amount', value: `${parseFloat(amount).toFixed(2)}` },
             ]}
             total={parseFloat(amount)}
           />
@@ -102,3 +102,5 @@ const ScanConfirm = () => {
 }
 
 export default ScanConfirm
+
+

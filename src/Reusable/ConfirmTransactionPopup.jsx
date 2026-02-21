@@ -81,7 +81,7 @@ const ConfirmTransactionPopup = ({
           <div className="flex justify-between pt-2">
             <span style={{ color: confirmColors.label }}>Amount</span>
             <span className="font-semibold" style={{ color: confirmColors.value }}>
-              Rs {Number(amount).toFixed(2)}
+              {Number(amount).toFixed(2)}
             </span>
           </div>
 

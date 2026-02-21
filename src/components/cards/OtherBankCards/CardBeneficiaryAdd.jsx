@@ -6,9 +6,11 @@ import PageContainer from "../../../Reusable/PageContainer";
 import Button from "../../../Reusable/Button";
 import { getAuthToken, deviceId } from "../../../services/api";
 import { BENIFICIARY_ADD } from "../../../utils/constant";
+import THEME_COLORS from "../../../theme/colors";
 
 const CardBeneficiaryAdd = () => {
   const navigate = useNavigate();
+  const contentCard = THEME_COLORS.contentCard;
   const [cardNumber, setCardNumber] = useState("");
   const [cardholderName, setCardholderName] = useState("");
   const [stan, setStan] = useState("");
@@ -69,15 +71,15 @@ const CardBeneficiaryAdd = () => {
 
   return (
     <PageContainer>
-      <div className="bg-gray-50 min-h-full px-4 py-6 overflow-x-hidden">
+      <div className="min-h-full px-4 py-6 overflow-x-hidden">
         <div className="flex items-center justify-between gap-3 mb-6">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-100 p-2 rounded-lg">
-              <HiCreditCard className="w-6 h-6 text-blue-600" />
+            <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
+              <HiCreditCard className="w-6 h-6" style={{ color: contentCard.iconColor }} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-800">Add Card Beneficiary</h2>
-              <p className="text-sm text-gray-500">Add an other bank card as beneficiary</p>
+              <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>Add Card Beneficiary</h2>
+              <p className="text-sm" style={{ color: contentCard.subtitle }}>Add an other bank card as beneficiary</p>
             </div>
           </div>
           <Button type="button" variant="outline" size="sm" onClick={() => navigate("/customer/other-cards")}>
@@ -85,7 +87,10 @@ const CardBeneficiaryAdd = () => {
           </Button>
         </div>
 
-        <div className="max-w-2xl border border-gray-200 bg-white p-6 rounded-lg shadow-sm overflow-hidden">
+        <div
+          className="max-w-2xl p-6 rounded-lg shadow-sm overflow-hidden"
+          style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+        >
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full min-w-0">
               <div className="min-w-0">

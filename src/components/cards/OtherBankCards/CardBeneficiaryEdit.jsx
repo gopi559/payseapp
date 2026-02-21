@@ -6,9 +6,11 @@ import PageContainer from "../../../Reusable/PageContainer";
 import Button from "../../../Reusable/Button";
 import { getAuthToken, deviceId } from "../../../services/api";
 import { BENIFICIARY_EDIT } from "../../../utils/constant";
+import THEME_COLORS from "../../../theme/colors";
 
 const CardBeneficiaryEdit = () => {
   const navigate = useNavigate();
+  const contentCard = THEME_COLORS.contentCard;
   const { id } = useParams();
   const location = useLocation();
   const row = location.state?.row ?? null;
@@ -73,8 +75,8 @@ const CardBeneficiaryEdit = () => {
   if (!id) {
     return (
       <PageContainer>
-        <div className="px-4 py-6 bg-gray-50 min-h-full">
-          <p className="text-gray-600">Invalid beneficiary.</p>
+        <div className="px-4 py-6 min-h-full">
+          <p style={{ color: contentCard.subtitle }}>Invalid beneficiary.</p>
           <Button className="mt-4" variant="outline" onClick={() => navigate("/customer/other-cards")}>
             Back
           </Button>
@@ -85,16 +87,16 @@ const CardBeneficiaryEdit = () => {
 
   return (
     <PageContainer>
-      <div className="bg-gray-50 min-h-full px-4 py-6 overflow-x-hidden flex flex-col items-center justify-center">
+      <div className="min-h-full px-4 py-6 overflow-x-hidden flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl">
           <div className="flex items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-100 p-2 rounded-lg">
-                <HiCreditCard className="w-6 h-6 text-blue-600" />
+              <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
+                <HiCreditCard className="w-6 h-6" style={{ color: contentCard.iconColor }} />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-800">Edit Card Beneficiary</h2>
-                <p className="text-sm text-gray-500">
+                <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>Edit Card Beneficiary</h2>
+                <p className="text-sm" style={{ color: contentCard.subtitle }}>
                   {row?.masked_card ? `Card: ${row.masked_card}` : "Update beneficiary details"}
                 </p>
               </div>
@@ -104,7 +106,10 @@ const CardBeneficiaryEdit = () => {
             </Button>
           </div>
 
-          <div className="border border-gray-200 bg-white p-6 rounded-lg shadow-sm overflow-hidden">
+          <div
+            className="p-6 rounded-lg shadow-sm overflow-hidden"
+            style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+          >
           {row?.masked_card && (
             <p className="text-sm text-gray-600 mb-4">
               Beneficiary: {row.masked_card}

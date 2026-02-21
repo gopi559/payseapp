@@ -7,6 +7,7 @@ import Button from "../../../Reusable/Button";
 import { getAuthToken, deviceId } from "../../../services/api";
 import { BENIFICIARY_DELETE } from "../../../utils/constant";
 import { formatTableDateTime } from "../../../utils/formatDate";
+import THEME_COLORS from "../../../theme/colors";
 
 const KeyValueRow = ({ label, value }) => (
   <div className="grid grid-cols-[minmax(140px,auto)_1fr] gap-4 items-center py-3 border-b border-gray-200 last:border-0 min-w-0">
@@ -17,6 +18,7 @@ const KeyValueRow = ({ label, value }) => (
 
 const CardBeneficiaryDelete = () => {
   const navigate = useNavigate();
+  const contentCard = THEME_COLORS.contentCard;
   const { id } = useParams();
   const location = useLocation();
   const row = location.state?.row ?? null;
@@ -65,8 +67,8 @@ const CardBeneficiaryDelete = () => {
   if (!id) {
     return (
       <PageContainer>
-        <div className="px-4 py-6 bg-gray-50 min-h-full">
-          <p className="text-gray-600">Invalid beneficiary.</p>
+        <div className="px-4 py-6 min-h-full">
+          <p style={{ color: contentCard.subtitle }}>Invalid beneficiary.</p>
           <Button className="mt-4" variant="outline" onClick={() => navigate("/customer/other-cards")}>
             Back
           </Button>
@@ -77,17 +79,20 @@ const CardBeneficiaryDelete = () => {
 
   return (
     <PageContainer>
-      <div className="bg-gray-50 min-h-full px-4 py-6 overflow-x-hidden flex flex-col items-center justify-center">
+      <div className="min-h-full px-4 py-6 overflow-x-hidden flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl">
           <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Remove Card Beneficiary</h2>
+            <h2 className="text-xl font-bold" style={{ color: contentCard.title }}>Remove Card Beneficiary</h2>
             <Button type="button" variant="outline" onClick={() => navigate("/customer/other-cards")}>
               Back
             </Button>
           </div>
 
-          <div className="border border-gray-200 w-full bg-white p-6 rounded-lg shadow-sm overflow-hidden">
-          <p className="text-sm text-gray-600 mb-4">Review the beneficiary details below before removing.</p>
+          <div
+            className="w-full p-6 rounded-lg shadow-sm overflow-hidden"
+            style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+          >
+          <p className="text-sm mb-4" style={{ color: contentCard.subtitle }}>Review the beneficiary details below before removing.</p>
           {displayData.length > 0 && (
             <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 min-w-0">
               {displayData.map(({ label, value }) => (

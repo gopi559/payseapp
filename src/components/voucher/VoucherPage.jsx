@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { HiTicket, HiEye } from 'react-icons/hi2'
@@ -77,7 +77,7 @@ const VoucherPage = () => {
           label,
           content: (row) => {
             const amount = row[key] || row[key.toLowerCase()] || row.amount
-            return amount != null ? `₹${Number(amount).toFixed(2)}` : '—'
+            return amount != null ? `${Number(amount).toFixed(2)}` : '—'
           },
         }
       }
@@ -155,3 +155,5 @@ const VoucherPage = () => {
 }
 
 export default VoucherPage
+
+

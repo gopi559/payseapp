@@ -20,7 +20,7 @@ const downloadTransactionPdf = (details) => {
   }
 
   const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '—'
+    if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
       return date.toLocaleString('en-US', {
@@ -38,30 +38,30 @@ const downloadTransactionPdf = (details) => {
 
   const maskedFromCard = details?.from_card
     ? `${details.from_card.slice(0, 4)} **** **** ${details.from_card.slice(-4)}`
-    : '—'
+    : '-'
 
   const maskedToCard = details?.to_card
     ? `${details.to_card.slice(0, 4)} **** **** ${details.to_card.slice(-4)}`
-    : '—'
+    : '-'
 
   /* ---------------- TRANSACTION ---------------- */
   const transactionRows = [
-    { label: 'Transaction ID', value: details?.txn_id ?? '—' },
-    { label: 'RRN', value: details?.rrn ?? '—' },
+    { label: 'Transaction ID', value: details?.txn_id ?? '-' },
+    { label: 'RRN', value: details?.rrn ?? '-' },
     { label: 'Transaction Type', value: details?.txn_type ?? 'CARD_TO_CARD' },
     { label: 'Description', value: details?.txn_desc ?? 'Card To Card' },
     { label: 'Date & Time', value: formatDateTime(details?.txn_time) },
-    { label: 'Amount', value: `₹${Number(details?.txn_amount ?? 0).toFixed(2)}` },
+    { label: 'Amount', value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
     { label: 'Channel', value: details?.channel_type ?? 'WEB' },
     { label: 'Status', value: details?.status === 1 ? 'Success' : 'SUCCESS' },
-    { label: 'Fee Amount', value: `₹${Number(details?.fee_amount ?? 0).toFixed(2)}` },
-    { label: 'Remarks', value: details?.remarks ?? '—' },
+    { label: 'Fee Amount', value: `${Number(details?.fee_amount ?? 0).toFixed(2)}` },
+    { label: 'Remarks', value: details?.remarks ?? '-' },
   ]
 
   /* ---------------- FROM CARD ---------------- */
   const fromCardRows = [
     { label: 'Card Number', value: maskedFromCard },
-    { label: 'Card Name', value: details?.from_card_name ?? '—' },
+    { label: 'Card Name', value: details?.from_card_name ?? '-' },
     { label: 'Mobile Number', value: 'NA' },
     { label: 'Account Number', value: 'NA' },
   ]
@@ -69,7 +69,7 @@ const downloadTransactionPdf = (details) => {
   /* ---------------- TO CARD ---------------- */
   const toCardRows = [
     { label: 'Card Number', value: maskedToCard },
-    { label: 'Card Name', value: details?.to_card_name ?? '—' },
+    { label: 'Card Name', value: details?.to_card_name ?? '-' },
     { label: 'Mobile Number', value: 'NA' },
     { label: 'Account Number', value: 'NA' },
   ]
@@ -153,7 +153,7 @@ const CardToCardTransactionDetails = () => {
 
   // Format date and time
   const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '—'
+    if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
       const options = { 
@@ -183,11 +183,11 @@ const CardToCardTransactionDetails = () => {
 
   // Card data
   const fromCard = details?.from_card ?? ''
-  const maskedFromCard = fromCard ? `${fromCard.slice(0, 4)} **** **** ${fromCard.slice(-4)}` : '—'
-  const fromCardName = details?.from_card_name ?? '—'
+  const maskedFromCard = fromCard ? `${fromCard.slice(0, 4)} **** **** ${fromCard.slice(-4)}` : '-'
+  const fromCardName = details?.from_card_name ?? '-'
   const toCard = details?.to_card ?? ''
-  const maskedToCard = toCard ? `${toCard.slice(0, 4)} **** **** ${toCard.slice(-4)}` : '—'
-  const toCardName = details?.to_card_name ?? '—'
+  const maskedToCard = toCard ? `${toCard.slice(0, 4)} **** **** ${toCard.slice(-4)}` : '-'
+  const toCardName = details?.to_card_name ?? '-'
 
   const handleDownloadPdf = () => {
     downloadTransactionPdf(details)
@@ -222,7 +222,7 @@ const CardToCardTransactionDetails = () => {
               <span className="text-3xl text-brand-secondary">✓</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">Transaction Completed</h2>
-            <p className="text-3xl font-bold mb-4">₹{amount}</p>
+            <p className="text-3xl font-bold mb-4">{amount}</p>
             <div className="bg-white/20 rounded-lg px-4 py-2">
               <span className="text-sm font-medium">Card to Card Transfer</span>
             </div>
@@ -279,7 +279,7 @@ const CardToCardTransactionDetails = () => {
               <FaMoneyBillWave className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">Amount</p>
-                <p className="text-sm font-medium text-gray-800">₹{amount}</p>
+                <p className="text-sm font-medium text-gray-800">{amount}</p>
               </div>
             </div>
             
@@ -373,6 +373,8 @@ const CardToCardTransactionDetails = () => {
 }
 
 export default CardToCardTransactionDetails
+
+
 
 
 

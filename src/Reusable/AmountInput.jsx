@@ -42,17 +42,13 @@ const AmountInput = ({
       )}
 
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-semibold" style={{ color: inputColors.text }}>
-          Rs
-        </div>
-
         <input
           type="text"
           value={displayValue}
           onChange={handleChange}
           onKeyPress={handleKeyPress}
           placeholder="0.00"
-          className="w-full pl-12 pr-3 py-2.5 text-xl font-semibold rounded-md border"
+          className="w-full pl-3 pr-3 py-2.5 text-xl font-semibold rounded-md border"
           style={{ borderColor: inputColors.border, color: inputColors.text, backgroundColor: inputColors.background }}
         />
       </div>
