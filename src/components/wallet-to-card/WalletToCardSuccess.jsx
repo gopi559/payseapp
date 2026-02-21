@@ -1,9 +1,9 @@
-ï»¿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
-import AfganCurrency from '../../assets/afgan_currency.svg'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 const WalletToCardSuccess = () => {
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
@@ -29,12 +29,12 @@ const WalletToCardSuccess = () => {
     txn_time,
   } = details
 
-  const txnId = txn_id ?? 'â€”'
+  const txnId = txn_id ?? '—'
 
   const from = 'Wallet'
 
-  const formattedCardNumber = card_number ? formatCardNumber(card_number) : 'â€”'
-  const cardholderName = card_name || 'â€”'
+  const formattedCardNumber = card_number ? formatCardNumber(card_number) : '—'
+  const cardholderName = card_name || '—'
 
 const amount = txn_amount
   ? Number(txn_amount).toFixed(2)
@@ -91,7 +91,7 @@ const amount = txn_amount
             <span className="text-gray-600">To:</span>
             <div className="text-right">
               <div className="font-medium text-gray-900 font-mono">{formattedCardNumber}</div>
-              {cardholderName && cardholderName !== 'â€”' && (
+              {cardholderName && cardholderName !== '—' && (
                 <div className="text-xs text-gray-600 mt-0.5">{cardholderName}</div>
               )}
             </div>
@@ -104,7 +104,7 @@ const amount = txn_amount
     <img
       src={AfganCurrency}
       alt="Currency"
-      className="h-6 w-6"
+      className="h-7 w-7"
     />
     <span>{amount}</span>
   </div>
@@ -136,3 +136,4 @@ const amount = txn_amount
 }
 
 export default WalletToCardSuccess
+

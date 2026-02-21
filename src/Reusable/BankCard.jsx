@@ -52,7 +52,7 @@ const BankCard = ({ card, onBalance }) => {
                 <img
                   src={AfganCurrency}
                   alt="Currency"
-                  className="h-5 w-5"
+                  className="h-6 w-6"
                 />
                 <span>{card.balance}</span>
               </div>

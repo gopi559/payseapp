@@ -1,10 +1,10 @@
-ï»¿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
-import AfganCurrency from '../../assets/afgan_currency.svg'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 const CashInSuccess = () => {
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
@@ -31,9 +31,9 @@ const CashInSuccess = () => {
 
   if (!details) return null
 
-  const txnId = details.txn_id ?? 'â€”'
-  const formattedFromCardNumber = details.from_card_number ? formatCardNumber(details.from_card_number) : 'â€”'
-  const fromCardholderName = details.from_card_name || 'â€”'
+  const txnId = details.txn_id ?? '—'
+  const formattedFromCardNumber = details.from_card_number ? formatCardNumber(details.from_card_number) : '—'
+  const fromCardholderName = details.from_card_name || '—'
 const amount = details.txn_amount
   ? Number(details.txn_amount).toFixed(2)
   : '0.00'
@@ -45,7 +45,7 @@ const amount = details.txn_amount
         hour: 'numeric',
         minute: '2-digit',
       })
-    : 'â€”'
+    : '—'
 
   return (
     <PageContainer>
@@ -92,7 +92,7 @@ const amount = details.txn_amount
             <span className="text-gray-600">From:</span>
             <div className="text-right">
               <div className="font-medium text-gray-900 font-mono">{formattedFromCardNumber}</div>
-              {fromCardholderName && fromCardholderName !== 'â€”' && (
+              {fromCardholderName && fromCardholderName !== '—' && (
                 <div className="text-xs text-gray-600 mt-0.5">{fromCardholderName}</div>
               )}
             </div>
@@ -114,7 +114,7 @@ const amount = details.txn_amount
     <img
       src={AfganCurrency}
       alt="Currency"
-      className="h-6 w-6"
+      className="h-7 w-7"
     />
     <span>{amount}</span>
   </div>
@@ -139,3 +139,4 @@ const amount = details.txn_amount
 }
 
 export default CashInSuccess
+

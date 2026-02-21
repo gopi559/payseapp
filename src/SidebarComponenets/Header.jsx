@@ -133,7 +133,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
       <img
         src={AfganCurrency}
         alt="Currency"
-        className="h-5 w-5"
+        className="h-6 w-6"
       />
       <span>{formatAmount(balance)}</span>
     </div>
@@ -234,4 +234,3 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
 }
 
 export default Header
-

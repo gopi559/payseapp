@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
-import AfganCurrency from '../../assets/afgan_currency.svg'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 const CardToCardSuccess = () => {
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
@@ -119,7 +119,7 @@ const amount = details.txn_amount
     <img
       src={AfganCurrency}
       alt="Currency"
-      className="h-6 w-6"
+      className="h-7 w-7"
     />
     <span>{amount}</span>
   </div>
@@ -152,3 +152,4 @@ const amount = details.txn_amount
 }
 
 export default CardToCardSuccess
+

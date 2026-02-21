@@ -1,8 +1,8 @@
-ï»¿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import PageContainer from '../../Reusable/PageContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
-import AfganCurrency from '../../assets/afgan_currency.svg'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 const SendSuccess = () => {
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
@@ -29,9 +29,9 @@ const SendSuccess = () => {
     navigate('/customer/send/details')
   }
 
-  const txnId = details?.txn_id ?? 'â€”'
+  const txnId = details?.txn_id ?? '—'
   const from = details?.sender_name ?? 'Your Wallet'
-  const to = details?.beneficiary_name ?? 'â€”'
+  const to = details?.beneficiary_name ?? '—'
 
 const amount = details?.amount
   ? Number(details.amount).toFixed(2)
@@ -116,7 +116,7 @@ const amount = details?.amount
     <img
       src={AfganCurrency}
       alt="Currency"
-      className="h-6 w-6"
+      className="h-7 w-7"
     />
     <span>{amount}</span>
   </div>
@@ -150,3 +150,4 @@ const amount = details?.amount
 }
 
 export default SendSuccess
+
