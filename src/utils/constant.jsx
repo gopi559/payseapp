@@ -124,3 +124,6 @@ export const NATIONALITY_LIST = `${MAIN_API_URL}/nationality/list`;
 export const ID_TYPE_LIST = `${MAIN_API_URL}/id_type/list`;
 export const PROVINCE_LIST = `${MAIN_API_URL}/province/list`;
 export const DISTRICT_LIST = `${MAIN_API_URL}/district/list`;
+
+
+export const LOGIN_BANNER_LIST = `${MAIN_API_URL}/login/banner/list`;
