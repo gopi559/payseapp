@@ -15,8 +15,6 @@ export const UPDATE_CARD_STATUS =`${MAIN_API_URL}/card/status/update`;
 export const CUSTOMER_BALANCE = `${MAIN_API_URL}/account/cust_bal`;
 
 
-export const CARD_REQUEST_TYPE_LIST = `${MAIN_API_URL}/card/card_request_type_list`;
-export const CARD_REQUEST = `${MAIN_API_URL}/card/card_req`;
 
 
 export const BENIFICIARY_LIST = `${MAIN_API_URL}/card/beneficiary/list`;
@@ -95,26 +93,6 @@ export const CARD_CHECK_BALANCE = `${MAIN_API_URL}/external_card/balance_inquiry
 
 
 
-
-export const REQUEST_MONEY = `${MAIN_API_URL}/transaction_web/customer/txn_reqmoney`;
-// Payload: {"cust_id":100,"amount":100,"remarks":"Testing SendMoney via Web"}
-// Response: {"api":"/transaction_web/customer/txn_reqmoney","code":1,"message":"","status":"Success"}
-
-export const REQ_MONEY_LIST = `${MAIN_API_URL}/transaction_web/customer/reqmoney_list`;
-// Payload: {"get_cust_data":true}
-// Response: {"api":"/transaction_web/customer/reqmoney_list","code":1,"data":{"list":[{}],"message":"Money request list fetched successfully"},"status":"Success"}
-
-export const REQ_MONEY_FETCH = `${MAIN_API_URL}/transaction_web/customer/reqmoney_fetch`;
-// Payload: {"money_reqid":130}
-// Response: {"api":"/transaction_web/customer/reqmoney_fetch","code":1,"message":"","status":"Success"}
-
-export const PAY_REQUEST_MONEY = `${MAIN_API_URL}/transaction_web/customer/txn_pay_reqmoney`;
-// Payload: {"money_reqid":153,"amount":10,"remarks":"Testing SendMoney via Web"}
-// Response: {"api":"/transaction_web/customer/txn_pay_reqmoney","code":1,"message":"","status":"Success"}
-
-export const DECLINE_REQUEST_MONEY = `${MAIN_API_URL}/transaction_web/customer/txn_decline_reqmoney`;
-// Payload: {"money_reqid":153,"remarks":"Request Money"}
-// Response: {"api":"/transaction_web/customer/txn_decline_reqmoney","code":1,"message":"","status":"Success"}
 
 
 
