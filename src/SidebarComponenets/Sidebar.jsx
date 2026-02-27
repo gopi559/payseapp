@@ -78,7 +78,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     {
       icon: <img src={requestMoneyIcon} className="w-7 h-7 object-contain" alt="Request Money" />,
       label: 'Request Money',
-      route: '/customer/Receive',
+      route: '/customer/request-money',
       isImage: true,
     },
     {
@@ -427,7 +427,6 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 }
 
 export default Sidebar
-
 
 
 

@@ -29,7 +29,7 @@ const actions = [
 
  // KEEP AS IS
  { icon: <MdOutlineArrowOutward />, label: 'Send', route: '/customer/send', isComponent: true },
- { icon: <GoArrowDownLeft />, label: 'Request', route: '/customer/Receive', isComponent: true },
+ { icon: <GoArrowDownLeft />, label: 'Request', route: '/customer/request-money', isComponent: true },
 
  // ALREADY IMAGE â€“ NO CHANGE
  {
@@ -69,6 +69,5 @@ const actions = [
 }
 
 export default ActionGrid
-
 
 

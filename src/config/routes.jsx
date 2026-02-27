@@ -5,7 +5,12 @@ export const ROUTES = {
   SEND_CONFIRM: '/customer/send/confirm',
   SEND_SUCCESS: '/customer/send/success',
   SEND_DETAILS: '/customer/send/details',
-  RECEIVE: '/customer/receive',
+  RECEIVE: '/customer/request-money',
+  REQUEST_AMOUNT: '/customer/request-money/amount',
+  REQUEST_SUCCESS: '/customer/request-money/success',
+  REQUEST_RECEIVED: '/customer/request-money/received',
+  REQUEST_MY: '/customer/request-money/my',
+  REQUEST_PAY: '/customer/request-money/pay',
   WALLET_TO_CARD: '/customer/wallet-to-card',
   WALLET_TO_CARD_CONFIRM: '/customer/wallet-to-card/confirm',
   WALLET_TO_CARD_SUCCESS: '/customer/wallet-to-card/success',
@@ -25,5 +30,3 @@ export const ROUTES = {
   PROFILE: '/customer/profile',
   PROFILE_DETAILS: '/customer/profile/details',
 }
-
-

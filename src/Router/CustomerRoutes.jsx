@@ -8,7 +8,12 @@ import SendStart from '../components/send/SendStart.jsx'
 
 import SendSuccess from '../components/send/SendSuccess.jsx'
 import SendTransactionDetails from '../components/send/SendTransactionDetails.jsx'
-import ReceivePage from '../components/receive/ReceivePage'
+import RequestStart from '../components/request-money/RequestStart.jsx'
+import RequestAmount from '../components/request-money/RequestAmount.jsx'
+import RequestSuccess from '../components/request-money/RequestSuccess.jsx'
+import ReceivedRequests from '../components/request-money/ReceivedRequests.jsx'
+import MyRequests from '../components/request-money/MyRequests.jsx'
+import PayRequestStart from '../components/request-money/PayRequestStart.jsx'
 
 
 import WalletToCardCardList from '../components/wallet-to-card/WalletToCardCardList'
@@ -95,10 +100,58 @@ export const customerRoutes = [
     ),
   },
   {
+    path: 'request-money',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <RequestStart />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'request-money/amount',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <RequestAmount />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'request-money/success',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <RequestSuccess />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'request-money/received',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <ReceivedRequests />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'request-money/my',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <MyRequests />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'request-money/pay',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <PayRequestStart />
+      </Suspense>
+    ),
+  },
+  {
     path: 'receive',
     element: (
       <Suspense fallback={<LinearProgress />}>
-        <ReceivePage />
+        <RequestStart />
       </Suspense>
     ),
   },
@@ -371,4 +424,3 @@ export const customerRoutes = [
     ),
   },
 ]
-
