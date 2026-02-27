@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { HiCreditCard } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
-import { getAuthToken, deviceId } from '../../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId } from '../../../services/api'
 import { BENIFICIARY_LIST } from '../../../utils/constant'
 import OtherCardPreview from './OtherCardPreview'
 import { formatTableDateTime } from '../../../utils/formatDate'
@@ -34,6 +34,9 @@ const CardBeneficiaryList = () => {
   const fetchData = async () => {
     setLoading(true)
     try {
+      const userId = getCurrentUserId()
+      if (!userId) throw new Error('User not found')
+
       const response = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
         headers: {
@@ -47,7 +50,7 @@ const CardBeneficiaryList = () => {
         body: JSON.stringify({
           page: 1,
           no_of_data: FETCH_PAGE_SIZE,
-           "user_id":98,
+          user_id: userId,
           is_temp: 0,
         }),
       })

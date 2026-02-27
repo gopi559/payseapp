@@ -45,7 +45,7 @@ const actions = [
  {
  icon: <img src={airtimeIcon} alt="Airtime" className="w-27 h-27 sm:w-28 sm:h-28 object-contain" />,
  label: 'Airtime',
- route: '/customer/send',
+ route: '/customer/airtime',
  isImage: true },
 ]
 
@@ -69,5 +69,4 @@ const actions = [
 }
 
 export default ActionGrid
-
 

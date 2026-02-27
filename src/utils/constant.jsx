@@ -119,3 +119,7 @@ export const DISTRICT_LIST = `${MAIN_API_URL}/district/list`;
 
 
 export const LOGIN_BANNER_LIST = `${MAIN_API_URL}/login/banner/list`;
+
+
+export const AIRTIME_TXN_SEND_OTP = `${MAIN_API_URL}/airtime/txn_send_otp`;
+export const AIRTIME_TXN_SEND = `${MAIN_API_URL}/airtime/txn_send`;

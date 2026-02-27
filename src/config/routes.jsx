@@ -19,6 +19,7 @@ export const ROUTES = {
   CARD_TO_CARD_CONFIRM: '/customer/card-to-card/confirm',
   CARD_TO_CARD_SUCCESS: '/customer/card-to-card/success',
   CARD_TO_CARD_DETAILS: '/customer/card-to-card/details',
+  AIRTIME: '/customer/airtime',
   CASH_IN: '/customer/cash-in',
   CASH_IN_CONFIRM: '/customer/cash-in/confirm',
   CASH_IN_SUCCESS: '/customer/cash-in/success',

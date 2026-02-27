@@ -38,6 +38,7 @@ import CashInCardList from '../components/cash-in/CashInCardList'
 import CardToCardCardList from '../components/card-to-card/CardToCardCardList'
 import CardToCardSuccess from '../components/card-to-card/CardToCardSuccess'
 import CardToCardTransactionDetails from '../components/card-to-card/CardToCardTransactionDetails'
+import AirtimePage from '../components/airtime/AirtimePage'
 
 import HistoryPage from '../components/history/HistoryPage'
 import TransactionDetails from '../components/history/TransactionDetails'
@@ -203,6 +204,14 @@ export const customerRoutes = [
   element: (
     <Suspense fallback={<LinearProgress />}>
       <CardToCardCardList />
+    </Suspense>
+  ),
+},
+{
+  path: 'airtime',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <AirtimePage />
     </Suspense>
   ),
 },

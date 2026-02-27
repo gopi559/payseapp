@@ -15,7 +15,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 
 import cardToCardService from './cardToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId } from '../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 import { formatCardNumber } from '../../utils/formatCardNumber'
@@ -53,6 +53,9 @@ const CardToCardCardList = () => {
 
   const fetchSourceCards = async () => {
     try {
+      const userId = getCurrentUserId()
+      if (!userId) throw new Error('User not found')
+
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
         headers: {
@@ -63,7 +66,13 @@ const CardToCardCardList = () => {
             device_id: deviceId,
           }),
         },
-        body: JSON.stringify({ beneficiary_type: 1 }),
+        body: JSON.stringify({
+          page: 1,
+          no_of_data: 50,
+          user_id: userId,
+          is_temp: 0,
+          beneficiary_type: 1,
+        }),
       })
 
       const data = await res.json()
@@ -79,6 +88,9 @@ const CardToCardCardList = () => {
 
   const fetchDestinationCards = async () => {
     try {
+      const userId = getCurrentUserId()
+      if (!userId) throw new Error('User not found')
+
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
         headers: {
@@ -89,7 +101,13 @@ const CardToCardCardList = () => {
             device_id: deviceId,
           }),
         },
-        body: JSON.stringify({ beneficiary_type: 1 }),
+        body: JSON.stringify({
+          page: 1,
+          no_of_data: 50,
+          user_id: userId,
+          is_temp: 0,
+          beneficiary_type: 1,
+        }),
       })
 
       const data = await res.json()

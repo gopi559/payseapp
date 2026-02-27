@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { FaCarSide, FaShoppingBag } from 'react-icons/fa'
 import { MdFastfood } from 'react-icons/md'
 import { BsBasketFill, BsThreeDots } from 'react-icons/bs'
-import { IoChevronForward } from 'react-icons/io5'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
+import AmountInput from '../../Reusable/AmountInput'
 import Input from '../../Reusable/Input'
+import Button from '../../Reusable/Button'
+import THEME_COLORS from '../../theme/colors'
 import requestMoneyService from './requestMoney.service'
 import { buildRemarks } from './requestMoney.utils'
 
@@ -22,10 +24,12 @@ const RequestAmount = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const beneficiary = location.state?.beneficiary
+  const contentCard = THEME_COLORS.contentCard
 
   const [amount, setAmount] = useState('')
-  const [note, setNote] = useState('')
+  const [description, setDescription] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Others')
+  const [autoDescription, setAutoDescription] = useState(true)
   const [loading, setLoading] = useState(false)
 
   const parsedAmount = useMemo(() => Number(amount), [amount])
@@ -38,6 +42,11 @@ const RequestAmount = () => {
 
   if (!beneficiary?.user_id) return null
 
+  useEffect(() => {
+    if (!autoDescription) return
+    setDescription(selectedCategory === 'Others' ? '' : selectedCategory)
+  }, [selectedCategory, autoDescription])
+
   const handleSubmit = async () => {
     if (!amount || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
       toast.error('Please enter a valid amount')
@@ -46,7 +55,7 @@ const RequestAmount = () => {
 
     setLoading(true)
     try {
-      const remarks = buildRemarks({ category: selectedCategory, note })
+      const remarks = buildRemarks({ category: selectedCategory, note: description })
       const { data } = await requestMoneyService.createRequestMoney({
         cust_id: beneficiary.user_id,
         amount: parsedAmount,
@@ -73,54 +82,61 @@ const RequestAmount = () => {
 
   return (
     <PageContainer>
-      <div className="h-screen bg-[#dff3e8] flex justify-start">
-        <div className="w-full max-w-md mx-auto px-6 pt-10 relative">
+      <div className="max-w-md mx-auto px-4 py-6 space-y-5">
+        <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>
+          Request Money
+        </h1>
 
-          <div className="text-center mb-8">
-            <h2 className="text-[24px] font-semibold text-black">
-              Requesting from {beneficiary.name}
-            </h2>
-            <p className="mt-1 text-[17px] text-black">
-              {beneficiary.reg_mobile}
-            </p>
-          </div>
+        <div
+          className="text-sm p-3 rounded"
+          style={{
+            backgroundColor: contentCard.background,
+            border: `1px solid ${contentCard.border}`,
+            color: contentCard.subtitle,
+          }}
+        >
+          Beneficiary Name: <strong>{beneficiary.name}</strong>
+          <div className="mt-1">{beneficiary.reg_mobile}</div>
+        </div>
 
-          <div className="rounded-3xl border-[4px] border-emerald-500 bg-white/60 px-5 py-6 mb-8">
-            <input
-              type="text"
-              value={amount}
-              onChange={(e) => {
-                const next = e.target.value.replace(/[^\d.]/g, '')
-                if ((next.match(/\./g) || []).length > 1) return
-                setAmount(next)
-              }}
-              placeholder="0.00"
-              className="w-full bg-transparent text-center text-[72px] leading-none text-gray-400 outline-none"
-            />
-          </div>
+        <AmountInput
+          label="Amount"
+          value={amount}
+          onChange={setAmount}
+        />
 
-          <div className="mb-8">
-            <Input
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Add a note"
-              className="!h-24 !rounded-3xl !border-[3px] !border-emerald-500 !text-[22px]"
-            />
-          </div>
+        <Input
+          label="Description"
+          value={description}
+          onChange={(e) => {
+            const value = e.target.value
+            setDescription(value)
+            setAutoDescription(value.trim() === '')
+          }}
+          placeholder="Add description"
+        />
 
-          <div className="grid grid-cols-2 gap-4 mb-20">
+        <div>
+          <p className="text-xs font-medium mb-2" style={{ color: contentCard.subtitle }}>
+            Category
+          </p>
+          <div className="grid grid-cols-2 gap-2">
             {categories.map((category) => {
               const active = selectedCategory === category.label
               return (
                 <button
                   key={category.label}
                   type="button"
-                  onClick={() => setSelectedCategory(category.label)}
-                  className={`h-14 rounded-2xl border-2 text-[20px] font-semibold flex items-center justify-center gap-2 ${
-                    active
-                      ? 'bg-emerald-500 text-white border-emerald-600'
-                      : 'bg-white/80 text-black border-emerald-600'
-                  }`}
+                  onClick={() => {
+                    setSelectedCategory(category.label)
+                    setAutoDescription(true)
+                  }}
+                  className="h-10 rounded-md text-sm font-medium flex items-center justify-center gap-2"
+                  style={{
+                    backgroundColor: active ? THEME_COLORS.brand.primary : contentCard.background,
+                    color: active ? THEME_COLORS.common.white : contentCard.title,
+                    border: `1px solid ${active ? THEME_COLORS.brand.primary : contentCard.border}`,
+                  }}
                 >
                   {category.icon}
                   <span>{category.label}</span>
@@ -128,16 +144,29 @@ const RequestAmount = () => {
               )
             })}
           </div>
+        </div>
 
-          <button
+        <div className="pt-2 flex gap-2">
+          <Button
             type="button"
+            fullWidth
             onClick={handleSubmit}
             disabled={loading}
-            className="absolute bottom-6 right-6 w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg disabled:opacity-70"
           >
-            <IoChevronForward size={32} />
+            {loading ? 'Processing...' : 'Continue'}
+          </Button>
+          <button
+            type="button"
+            onClick={() => navigate('/customer/request-money')}
+            className="px-4 py-2 rounded-md text-sm font-medium"
+            style={{
+              backgroundColor: contentCard.background,
+              border: `1px solid ${contentCard.border}`,
+              color: contentCard.title,
+            }}
+          >
+            Back
           </button>
-
         </div>
       </div>
     </PageContainer>

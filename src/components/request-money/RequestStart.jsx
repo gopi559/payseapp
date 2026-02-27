@@ -1,42 +1,29 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { FiSearch } from 'react-icons/fi'
-import { IoChevronForward } from 'react-icons/io5'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
+import MobileInput from '../../Reusable/MobileInput'
+import Button from '../../Reusable/Button'
+import THEME_COLORS from '../../theme/colors'
 import requestMoneyService from './requestMoney.service'
 import { getCustomerId, normalizeMobile } from './requestMoney.utils'
-
-const COUNTRY_CODE = '+93'
 
 const RequestStart = () => {
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
+  const contentCard = THEME_COLORS.contentCard
 
   const currentUserId = getCustomerId(user)
   const currentUserMobile = normalizeMobile(
     user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
   )
 
-  const [mobile, setMobile] = useState(COUNTRY_CODE)
+  const [mobile, setMobile] = useState('+93')
   const [loading, setLoading] = useState(false)
 
   const cleanedMobile = useMemo(() => normalizeMobile(mobile), [mobile])
   const digitCount = useMemo(() => cleanedMobile.replace(/\D/g, '').length, [cleanedMobile])
-
-  const handleChange = (e) => {
-    let value = e.target.value
-
-    if (!value.startsWith(COUNTRY_CODE)) {
-      value = COUNTRY_CODE
-    }
-
-    const digitsOnly = value.slice(COUNTRY_CODE.length).replace(/\D/g, '')
-    const limitedDigits = digitsOnly.slice(0, 9)
-
-    setMobile(COUNTRY_CODE + limitedDigits)
-  }
 
   const handleContinue = async () => {
     if (digitCount !== 11) {
@@ -82,49 +69,59 @@ const RequestStart = () => {
 
   return (
     <PageContainer>
-      <div className="h-screen bg-[#dff3e8] flex justify-start">
-        <div className="w-full max-w-md mx-auto px-5 pt-10">
+      <div className="max-w-md mx-auto px-4 py-6 space-y-6">
+        <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>
+          Request Money
+        </h1>
 
-          <div className="flex justify-center gap-4 mb-6">
-            <button
-              type="button"
-              onClick={() => navigate('/customer/request-money/received')}
-              className="h-10 px-5 rounded-full bg-[#cdeedc] text-[16px] font-semibold"
-            >
-              Receive Requests
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/customer/request-money/my')}
-              className="h-10 px-5 rounded-full bg-[#cdeedc] text-[16px] font-semibold"
-            >
-              Requested Money
-            </button>
-          </div>
-
-          <div className="rounded-2xl border-[3px] border-emerald-500 bg-white/60 h-16 flex items-center px-4 gap-3">
-            <FiSearch size={30} className="text-emerald-500" />
-            <input
-              type="tel"
-              value={mobile}
-              onChange={handleChange}
-              className="flex-1 bg-transparent outline-none text-[20px] text-emerald-600"
-            />
-            <button
-              type="button"
-              onClick={handleContinue}
-              disabled={loading}
-              className="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center disabled:opacity-70"
-            >
-              <IoChevronForward size={22} />
-            </button>
-          </div>
-
-          <p className="mt-4 text-sm text-gray-600 text-center">
-            Enter Recipient Mobile Number And Continue.
-          </p>
-
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/customer/request-money/received')}
+            className="h-10 px-3 rounded-md text-sm font-medium"
+            style={{
+              backgroundColor: contentCard.background,
+              border: `1px solid ${contentCard.border}`,
+              color: contentCard.title,
+            }}
+          >
+            Receive Requests
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/customer/request-money/my')}
+            className="h-10 px-3 rounded-md text-sm font-medium"
+            style={{
+              backgroundColor: contentCard.background,
+              border: `1px solid ${contentCard.border}`,
+              color: contentCard.title,
+            }}
+          >
+            Requested Money
+          </button>
         </div>
+
+        <div className="space-y-4">
+          <MobileInput
+            label="Beneficiary Mobile Number"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+            placeholder="e.g. 998877665"
+          />
+
+          <Button
+            type="button"
+            fullWidth
+            onClick={handleContinue}
+            disabled={loading}
+          >
+            {loading ? 'Validating...' : 'Continue'}
+          </Button>
+        </div>
+
+        <p className="text-sm" style={{ color: contentCard.subtitle }}>
+          Enter recipient mobile number and continue.
+        </p>
       </div>
     </PageContainer>
   )

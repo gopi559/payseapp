@@ -4,7 +4,7 @@ import BankCard from '../../Reusable/BankCard'
 import Button from '../../Reusable/Button'
 import AmountInput from '../../Reusable/AmountInput'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId } from '../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import cashInService from './cashIn.service'
@@ -43,6 +43,9 @@ const CashInCardList = () => {
 
   const fetchCards = async () => {
     try {
+      const userId = getCurrentUserId()
+      if (!userId) throw new Error('User not found')
+
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
         headers: {
@@ -53,7 +56,13 @@ const CashInCardList = () => {
             device_id: deviceId,
           }),
         },
-        body: JSON.stringify({ beneficiary_type: 1 }),
+        body: JSON.stringify({
+          page: 1,
+          no_of_data: 50,
+          user_id: userId,
+          is_temp: 0,
+          beneficiary_type: 1,
+        }),
       })
 
       const data = await res.json()

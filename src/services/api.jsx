@@ -107,6 +107,28 @@ export const getAuthToken = () => {
   return null
 }
 
+export const getAuthUser = () => {
+  try {
+    const state = Store?.getState?.()
+    if (state?.auth?.user) return state.auth.user
+  } catch {}
+
+  const persisted = safeJsonParse(localStorage.getItem('reduxState'))
+  return persisted?.auth?.user ?? null
+}
+
+export const getCurrentUserId = () => {
+  const user = getAuthUser()
+  const id =
+    user?.reg_info?.id ??
+    user?.reg_info?.user_id ??
+    user?.user_id ??
+    user?.id ??
+    null
+
+  return id != null ? Number(id) : null
+}
+
 const buildHeaders = ({ extraHeaders } = {}) => {
   const token = getAuthToken()
 

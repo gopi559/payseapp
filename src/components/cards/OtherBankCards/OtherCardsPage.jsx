@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { HiCreditCard } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
-import { getAuthToken, deviceId } from '../../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId } from '../../../services/api'
 import { BENIFICIARY_LIST } from '../../../utils/constant'
 import OtherCardPreview from './OtherCardPreview'
 import THEME_COLORS from '../../../theme/colors'
@@ -37,6 +37,9 @@ const OtherCardsPage = () => {
 
   const loadList = async (pageNum = 1, append = false) => {
     try {
+      const userId = getCurrentUserId()
+      if (!userId) throw new Error('User not found')
+
       pageNum === 1 ? setLoading(true) : setLoadingMore(true)
       setError('')
 
@@ -53,6 +56,7 @@ const OtherCardsPage = () => {
         body: JSON.stringify({
           page: pageNum,
           no_of_data: NUM_DATA,
+          user_id: userId,
           is_temp: 0,
         }),
       })

@@ -13,7 +13,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 import cardService from '../cards/PaysePayCards/card.service'
 import walletToCardService from './walletToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId } from '../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
 
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 import { formatCardNumber } from '../../utils/formatCardNumber'
@@ -105,6 +105,9 @@ setSourceCards((prev) =>
 
   const fetchDestinationCards = async () => {
     try {
+      const userId = getCurrentUserId()
+      if (!userId) throw new Error('User not found')
+
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
         headers: {
@@ -116,10 +119,11 @@ setSourceCards((prev) =>
           }),
         },
 body: JSON.stringify({
-  user_id: 98,      
+  user_id: userId,
   is_temp: 0,
-  no_of_data: 10,
+  no_of_data: 50,
   page: 1,
+  beneficiary_type: 1,
 }),
 
 
