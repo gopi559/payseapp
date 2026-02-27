@@ -16,7 +16,7 @@ const BankCard = ({ card, onBalance }) => {
   return (
     <div
       className="relative rounded-2xl p-5 mb-4 shadow-sm overflow-hidden text-white"
-      style={{ backgroundColor: card.color_code || '#2fb36f' }}
+      style={{ backgroundColor: card.color_code }}
     >
       {isMyPayseCard && (
         <img
