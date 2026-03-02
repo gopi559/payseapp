@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { HiCreditCard } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
-import { getAuthToken, deviceId, getCurrentUserId, getClientRefId } from '../../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId } from '../../../services/api'
 import { BENIFICIARY_LIST } from '../../../utils/constant'
 import OtherCardPreview from './OtherCardPreview'
 import THEME_COLORS from '../../../theme/colors'
@@ -48,15 +48,10 @@ const OtherCardsPage = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${getAuthToken()}`,
-          DeviceInfo: JSON.stringify({
+          deviceinfo: JSON.stringify({
             device_type: 'WEB',
             device_id: deviceId,
           }),
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-          Clientrefid: getClientRefId(),
         },
         body: JSON.stringify({
           page: pageNum,

@@ -13,7 +13,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 import cardService from '../cards/PaysePayCards/card.service'
 import walletToCardService from './walletToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId, getCurrentUserId, getClientRefId } from '../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
 
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 import { formatCardNumber } from '../../utils/formatCardNumber'
@@ -113,15 +113,10 @@ setSourceCards((prev) =>
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${getAuthToken()}`,
-          DeviceInfo: JSON.stringify({
+          deviceinfo: JSON.stringify({
             device_type: 'WEB',
             device_id: deviceId,
           }),
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-          Clientrefid: getClientRefId(),
         },
 body: JSON.stringify({
   user_id: userId,

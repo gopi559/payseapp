@@ -5,12 +5,12 @@ import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
 
-const AirtimeSuccess = () => {
+const BillPaymentSuccess = () => {
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('airtimeSuccess')
+    const raw = sessionStorage.getItem('billPaymentSuccess')
     if (!raw) return
 
     try {
@@ -21,12 +21,12 @@ const AirtimeSuccess = () => {
   }, [])
 
   const handleDone = () => {
-    sessionStorage.removeItem('airtimeSuccess')
+    sessionStorage.removeItem('billPaymentSuccess')
     navigate('/customer')
   }
 
   const handleViewDetails = () => {
-    navigate('/customer/airtime/details')
+    navigate('/customer/bill-payment/details')
   }
 
   if (!details) return null
@@ -34,8 +34,8 @@ const AirtimeSuccess = () => {
   const txnId = details.txn_id ?? '-'
   const formattedFromCardNumber = details.from_card ? formatCardNumber(details.from_card) : '-'
   const fromCardholderName = details.from_card_name || '-'
-  const toMobile = details.to_mobile || '-'
-  const beneficiaryName = details.beneficiary_name || null
+  const serviceName = details.service_name || 'Bill Payment'
+  const billNumber = details.bill_number || '-'
   const amount = details.txn_amount ? Number(details.txn_amount).toFixed(2) : '0.00'
 
   const dateTime = details.txn_time
@@ -84,10 +84,10 @@ const AirtimeSuccess = () => {
           </div>
 
           <div className="flex justify-between items-start text-sm">
-            <span className="text-gray-600">To:</span>
+            <span className="text-gray-600">Bill:</span>
             <div className="text-right">
-              <div className="font-medium text-gray-900">{toMobile}</div>
-              {beneficiaryName && <div className="text-xs text-gray-600 mt-0.5">{beneficiaryName}</div>}
+              <div className="font-medium text-gray-900">{serviceName}</div>
+              <div className="text-xs text-gray-600 mt-0.5">#{billNumber}</div>
             </div>
           </div>
 
@@ -123,4 +123,4 @@ const AirtimeSuccess = () => {
   )
 }
 
-export default AirtimeSuccess
+export default BillPaymentSuccess

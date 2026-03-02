@@ -39,6 +39,12 @@ import CardToCardCardList from '../components/card-to-card/CardToCardCardList'
 import CardToCardSuccess from '../components/card-to-card/CardToCardSuccess'
 import CardToCardTransactionDetails from '../components/card-to-card/CardToCardTransactionDetails'
 import AirtimePage from '../components/airtime/AirtimePage'
+import AirtimeSuccess from '../components/airtime/airtimeSuccess'
+import AirtimeTransactionDetails from '../components/airtime/airtimeTransactionDetails'
+import BillPaymentMenu from '../components/bill-payment/BillPaymentMenu'
+import BillPaymentPage from '../components/bill-payment/BillPaymentPage'
+import BillPaymentSuccess from '../components/bill-payment/billPaymentSuccess'
+import BillPaymentTransactionDetails from '../components/bill-payment/billPaymentTransactionDetails'
 
 import HistoryPage from '../components/history/HistoryPage'
 import TransactionDetails from '../components/history/TransactionDetails'
@@ -212,6 +218,54 @@ export const customerRoutes = [
   element: (
     <Suspense fallback={<LinearProgress />}>
       <AirtimePage />
+    </Suspense>
+  ),
+},
+{
+  path: 'bill-payment',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <BillPaymentMenu />
+    </Suspense>
+  ),
+},
+{
+  path: 'bill-payment/create/:serviceId',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <BillPaymentPage />
+    </Suspense>
+  ),
+},
+{
+  path: 'bill-payment/success',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <BillPaymentSuccess />
+    </Suspense>
+  ),
+},
+{
+  path: 'bill-payment/details',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <BillPaymentTransactionDetails />
+    </Suspense>
+  ),
+},
+{
+  path: 'airtime/success',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <AirtimeSuccess />
+    </Suspense>
+  ),
+},
+{
+  path: 'airtime/details',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <AirtimeTransactionDetails />
     </Suspense>
   ),
 },

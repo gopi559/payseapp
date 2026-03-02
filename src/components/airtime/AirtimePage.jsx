@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
 import PageContainer from '../../Reusable/PageContainer'
@@ -12,16 +13,19 @@ import OtpPopup from '../../Reusable/OtpPopup'
 
 import airtimeService from './airtime.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId, getCurrentUserId, getClientRefId } from '../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
 import { sendService } from '../send/send.service'
 
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200]
 
 const AirtimePage = () => {
+  const navigate = useNavigate()
   const scrollRef = useRef(null)
 
   const [cards, setCards] = useState([])
+  const [cardsLoading, setCardsLoading] = useState(false)
+  const [cardsError, setCardsError] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const [amount, setAmount] = useState('')
   const [mobileNo, setMobileNo] = useState('+93')
@@ -72,6 +76,8 @@ const AirtimePage = () => {
   }, [mobileNo])
 
   const fetchCards = async () => {
+    setCardsLoading(true)
+    setCardsError('')
     try {
       const userId = getCurrentUserId()
       if (!userId) throw new Error('User not found')
@@ -81,33 +87,37 @@ const AirtimePage = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${getAuthToken()}`,
-          DeviceInfo: JSON.stringify({
+          deviceinfo: JSON.stringify({
             device_type: 'WEB',
             device_id: deviceId,
           }),
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-          Clientrefid: getClientRefId(),
         },
         body: JSON.stringify({
           page: 1,
           no_of_data: 50,
           user_id: userId,
           is_temp: 0,
-          beneficiary_type: 1,
         }),
       })
 
       const data = await res.json()
-      if (!res.ok || data.code !== 1) {
+      if (!res.ok || Number(data?.code) !== 1) {
         throw new Error(data?.message || 'Failed to load cards')
       }
 
-      setCards(data?.data || [])
+      const list = Array.isArray(data?.data) ? data.data : []
+      setCards(list)
+      setActiveIndex(0)
+
+      if (!list.length) {
+        setCardsError('No beneficiary cards found for this account.')
+      }
     } catch (e) {
-      toast.error(e.message || 'Failed to load cards')
+      const msg = e?.message || 'Failed to load cards'
+      setCardsError(msg)
+      toast.error(msg)
+    } finally {
+      setCardsLoading(false)
     }
   }
 
@@ -197,7 +207,7 @@ const AirtimePage = () => {
 
     setLoading(true)
     try {
-      await airtimeService.sendAirtime({
+      const { data } = await airtimeService.sendAirtime({
         card_number: selectedCard.card_number,
         txn_amount: amount,
         cvv: cvvData.cvv,
@@ -208,11 +218,33 @@ const AirtimePage = () => {
         mobile_no: beneficiary?.reg_mobile || mobileNo,
       })
 
-      toast.success('Airtime transaction processed successfully')
+      const beneficiaryName = [beneficiary?.first_name, beneficiary?.middle_name, beneficiary?.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim()
+
+      sessionStorage.setItem(
+        'airtimeSuccess',
+        JSON.stringify({
+          txn_id: data?.txn_id,
+          rrn: data?.rrn,
+          txn_amount: data?.txn_amount ?? amount,
+          txn_time: data?.txn_time || new Date().toISOString(),
+          channel_type: data?.channel_type || 'WEB',
+          status: 1,
+          fee_amount: data?.fee_amount ?? 0,
+          remarks: data?.remarks ?? null,
+          txn_type: 'AIRTIME',
+          txn_desc: 'Airtime purchase',
+          from_card: selectedCard.card_number,
+          from_card_name: selectedCard.cardholder_name || selectedCard.card_name || null,
+          to_mobile: beneficiary?.reg_mobile || mobileNo,
+          beneficiary_name: beneficiaryName || null,
+        })
+      )
+
       resetFlow()
-      setAmount('')
-      setMobileNo('+93')
-      setBeneficiary(null)
+      navigate('/customer/airtime/success')
     } catch (e) {
       toast.error(e.message || 'Transaction failed')
     } finally {
@@ -234,27 +266,37 @@ const AirtimePage = () => {
         <h1 className="text-2xl font-semibold mb-1">Airtime</h1>
         <p className="text-sm mb-5 text-gray-500">Buy airtime with your card</p>
 
-        <div
-          ref={scrollRef}
-          onScroll={() => {
-            const c = scrollRef.current
-            if (!c) return
-            setActiveIndex(Math.round(c.scrollLeft / c.offsetWidth))
-          }}
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
-        >
-          {cards.map((card, index) => (
-            <div
-              key={card.id ?? `${card.card_number}-${index}`}
-              className={`snap-center shrink-0 w-full ${
-                activeIndex === index ? 'ring-2 ring-green-500 rounded-xl' : ''
-              }`}
-              onClick={() => setActiveIndex(index)}
-            >
-              <BankCard card={card} />
-            </div>
-          ))}
-        </div>
+        {cardsLoading ? (
+          <p className="text-sm text-gray-500 mb-4">Loading cards...</p>
+        ) : cards.length === 0 ? (
+          <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+            <p className="text-sm text-gray-600">
+              {cardsError || 'No cards available.'}
+            </p>
+          </div>
+        ) : (
+          <div
+            ref={scrollRef}
+            onScroll={() => {
+              const c = scrollRef.current
+              if (!c) return
+              setActiveIndex(Math.round(c.scrollLeft / c.offsetWidth))
+            }}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
+          >
+            {cards.map((card, index) => (
+              <div
+                key={card.id ?? `${card.card_number}-${index}`}
+                className={`snap-center shrink-0 w-full ${
+                  activeIndex === index ? 'ring-2 ring-green-500 rounded-xl' : ''
+                }`}
+                onClick={() => setActiveIndex(index)}
+              >
+                <BankCard card={card} />
+              </div>
+            ))}
+          </div>
+        )}
 
         <AmountInput label="Amount" value={amount} onChange={setAmount} />
 
@@ -301,7 +343,7 @@ const AirtimePage = () => {
           <Button
             fullWidth
             onClick={handleContinue}
-            disabled={!amount || Number(amount) <= 0 || !mobileNo}
+            disabled={!amount || Number(amount) <= 0 || !mobileNo || cardsLoading || cards.length === 0}
           >
             Continue
           </Button>

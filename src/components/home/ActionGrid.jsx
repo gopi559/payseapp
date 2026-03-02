@@ -40,7 +40,7 @@ const actions = [
  {
  icon: <img src={payBillIcon} alt="Pay Bill" className="w-24 h-24 sm:w-28 sm:h-28 object-contain" />,
  label: 'Pay Bill',
- route: '/customer/send',
+ route: '/customer/bill-payment',
  isImage: true },
  {
  icon: <img src={airtimeIcon} alt="Airtime" className="w-27 h-27 sm:w-28 sm:h-28 object-contain" />,
@@ -69,4 +69,3 @@ const actions = [
 }
 
 export default ActionGrid
-

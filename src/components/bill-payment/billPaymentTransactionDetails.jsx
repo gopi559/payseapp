@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
 import { HiOutlineCreditCard } from 'react-icons/hi2'
-import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop, FaMobileAlt } from 'react-icons/fa'
+import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop, FaFileInvoice } from 'react-icons/fa'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
@@ -43,8 +43,8 @@ const downloadTransactionPdf = (details) => {
   const transactionRows = [
     { label: 'Transaction ID', value: details?.txn_id ?? '-' },
     { label: 'RRN', value: details?.rrn ?? '-' },
-    { label: 'Transaction Type', value: details?.txn_type ?? 'AIRTIME' },
-    { label: 'Description', value: details?.txn_desc ?? 'Airtime purchase' },
+    { label: 'Transaction Type', value: details?.txn_type ?? 'BILL_PAYMENT' },
+    { label: 'Description', value: details?.txn_desc ?? 'Bill payment' },
     { label: 'Date & Time', value: formatDateTime(details?.txn_time) },
     { label: 'Amount', value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
     { label: 'Channel', value: details?.channel_type ?? 'WEB' },
@@ -58,9 +58,12 @@ const downloadTransactionPdf = (details) => {
     { label: 'Card Name', value: details?.from_card_name ?? '-' },
   ]
 
-  const toBeneficiaryRows = [
-    { label: 'Mobile Number', value: details?.to_mobile ?? '-' },
-    { label: 'Beneficiary Name', value: details?.beneficiary_name ?? '-' },
+  const billRows = [
+    { label: 'Service', value: details?.service_name ?? 'Bill Payment' },
+    { label: 'Service ID', value: details?.service_id ?? '-' },
+    { label: 'Bill Number', value: details?.bill_number ?? '-' },
+    { label: 'Mobile Number', value: details?.mobile_no ?? '-' },
+    { label: 'STAN', value: details?.stan ?? '-' },
   ]
 
   const formatRows = (rows) =>
@@ -111,8 +114,8 @@ const downloadTransactionPdf = (details) => {
       <h2>From Card Details</h2>
       <table><tbody>${formatRows(fromCardRows)}</tbody></table>
 
-      <h2>Beneficiary Details</h2>
-      <table><tbody>${formatRows(toBeneficiaryRows)}</tbody></table>
+      <h2>Bill Details</h2>
+      <table><tbody>${formatRows(billRows)}</tbody></table>
     </body>
     </html>
   `)
@@ -123,12 +126,12 @@ const downloadTransactionPdf = (details) => {
   win.onafterprint = () => win.close()
 }
 
-const AirtimeTransactionDetails = () => {
+const BillPaymentTransactionDetails = () => {
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('airtimeSuccess')
+    const raw = sessionStorage.getItem('billPaymentSuccess')
     if (raw) {
       try {
         setDetails(JSON.parse(raw))
@@ -163,23 +166,24 @@ const AirtimeTransactionDetails = () => {
   const amount = details?.txn_amount != null ? Number(details.txn_amount).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
   const txnTime = details?.txn_time ?? details?.created_at ?? ''
-  const txnType = details?.txn_type ?? 'AIRTIME'
-  const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? 'Airtime purchase'
+  const txnType = details?.txn_type ?? 'BILL_PAYMENT'
+  const txnDesc = details?.txn_desc ?? 'Bill payment'
   const channel = details?.channel_type ?? 'WEB'
 
   const fromCard = details?.from_card ?? ''
   const maskedFromCard = fromCard ? `${fromCard.slice(0, 4)} **** **** ${fromCard.slice(-4)}` : '-'
   const fromCardName = details?.from_card_name ?? '-'
-
-  const toMobile = details?.to_mobile ?? '-'
-  const beneficiaryName = details?.beneficiary_name ?? '-'
+  const serviceName = details?.service_name ?? 'Bill Payment'
+  const serviceId = details?.service_id ?? '-'
+  const billNumber = details?.bill_number ?? '-'
+  const mobileNo = details?.mobile_no ?? '-'
 
   const handleDownloadPdf = () => {
     downloadTransactionPdf(details)
   }
 
   const handleDone = () => {
-    sessionStorage.removeItem('airtimeSuccess')
+    sessionStorage.removeItem('billPaymentSuccess')
     navigate('/customer/home')
   }
 
@@ -207,7 +211,7 @@ const AirtimeTransactionDetails = () => {
             <h2 className="text-2xl font-bold mb-2">Transaction Completed</h2>
             <p className="text-3xl font-bold mb-4">{amount}</p>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <span className="text-sm font-medium">Airtime Purchase</span>
+              <span className="text-sm font-medium">{serviceName}</span>
             </div>
           </div>
         </div>
@@ -305,25 +309,41 @@ const AirtimeTransactionDetails = () => {
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
-              <FaMobileAlt className="w-4 h-4 text-white" />
+              <FaFileInvoice className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">Beneficiary Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">Bill Details</h3>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <FaMobileAlt className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <FaFileInvoice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Mobile Number</p>
-                <p className="text-sm font-medium text-gray-800">{toMobile}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Service</p>
+                <p className="text-sm font-medium text-gray-800">{serviceName}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
               <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Beneficiary Name</p>
-                <p className="text-sm font-medium text-gray-800">{beneficiaryName}</p>
+                <p className="text-xs text-gray-500 mb-0.5">Service ID</p>
+                <p className="text-sm font-medium text-gray-800">{serviceId}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">Bill Number</p>
+                <p className="text-sm font-medium text-gray-800">{billNumber}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">Mobile Number</p>
+                <p className="text-sm font-medium text-gray-800">{mobileNo}</p>
               </div>
             </div>
           </div>
@@ -350,4 +370,4 @@ const AirtimeTransactionDetails = () => {
   )
 }
 
-export default AirtimeTransactionDetails
+export default BillPaymentTransactionDetails

@@ -39,7 +39,7 @@ const requestMoneyService = {
       'Failed to validate beneficiary'
     )
 
-    if (!res?.data) throw new Error(res?.message || 'Beneficiary not found')
+    if (!res?.data) throw new Error( 'Beneficiary Not Found')
 
     return {
       data: res.data,

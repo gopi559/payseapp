@@ -18,6 +18,7 @@ import sendIcon from '../assets/Send.svg'
 import payseyCardsIcon from '../assets/PayseyCards.svg'
 import otherCardsIcon from '../assets/OtherCards.svg'
 import airtimeIcon from '../assets/PayseyMobileiconMobile.svg'
+import payBillIcon from '../assets/PayseyPOSBillPayment.svg'
 import THEME_COLORS from '../theme/colors'
 import { IoChevronDown } from 'react-icons/io5'
 
@@ -92,6 +93,12 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       icon: <img src={airtimeIcon} className="w-7 h-7 object-contain" alt="Airtime" />,
       label: 'Airtime',
       route: '/customer/airtime',
+      isImage: true,
+    },
+    {
+      icon: <img src={payBillIcon} className="w-7 h-7 object-contain" alt="Pay Bill" />,
+      label: 'Pay Bill',
+      route: '/customer/bill-payment',
       isImage: true,
     },
     {
@@ -434,5 +441,4 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 }
 
 export default Sidebar
-
 
