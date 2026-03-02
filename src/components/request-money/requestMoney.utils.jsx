@@ -24,8 +24,8 @@ export const getStatusConfig = (status) => {
   return { label: 'Unknown', bgClass: 'bg-gray-100', textClass: 'text-gray-500' }
 }
 export const getCustomerId = (user) =>
-  user?.reg_info?.id ??
   user?.reg_info?.user_id ??
+  user?.reg_info?.id ??
   user?.user_id ??
   user?.id ??
   null

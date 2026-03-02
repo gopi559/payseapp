@@ -15,7 +15,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 
 import cardToCardService from './cardToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId, getClientRefId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 import { formatCardNumber } from '../../utils/formatCardNumber'
@@ -61,10 +61,15 @@ const CardToCardCardList = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${getAuthToken()}`,
+          DeviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
           deviceInfo: JSON.stringify({
             device_type: 'WEB',
             device_id: deviceId,
           }),
+          Clientrefid: getClientRefId(),
         },
         body: JSON.stringify({
           page: 1,
@@ -96,10 +101,15 @@ const CardToCardCardList = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${getAuthToken()}`,
+          DeviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
           deviceInfo: JSON.stringify({
             device_type: 'WEB',
             device_id: deviceId,
           }),
+          Clientrefid: getClientRefId(),
         },
         body: JSON.stringify({
           page: 1,

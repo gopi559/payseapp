@@ -12,7 +12,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 
 import airtimeService from './airtime.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId, getClientRefId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
 import { sendService } from '../send/send.service'
 
@@ -81,10 +81,15 @@ const AirtimePage = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${getAuthToken()}`,
+          DeviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
           deviceInfo: JSON.stringify({
             device_type: 'WEB',
             device_id: deviceId,
           }),
+          Clientrefid: getClientRefId(),
         },
         body: JSON.stringify({
           page: 1,

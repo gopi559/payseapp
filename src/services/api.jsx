@@ -120,13 +120,30 @@ export const getAuthUser = () => {
 export const getCurrentUserId = () => {
   const user = getAuthUser()
   const id =
-    user?.reg_info?.id ??
     user?.reg_info?.user_id ??
+    user?.reg_info?.id ??
     user?.user_id ??
     user?.id ??
     null
 
   return id != null ? Number(id) : null
+}
+
+export const getClientRefId = () => {
+  const user = getAuthUser()
+  const clientRefId =
+    user?.reg_info?.client_ref_id ??
+    user?.reg_info?.clientrefid ??
+    user?.client_ref_id ??
+    import.meta.env.VITE_CLIENT_REF_ID ??
+    user?.reg_info?.user_ref ??
+    user?.reg_info?.user_id ??
+    user?.reg_info?.id ??
+    user?.user_id ??
+    user?.id ??
+    ''
+
+  return String(clientRefId || '').trim()
 }
 
 const buildHeaders = ({ extraHeaders } = {}) => {

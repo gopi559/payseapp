@@ -4,7 +4,7 @@ import BankCard from '../../Reusable/BankCard'
 import Button from '../../Reusable/Button'
 import AmountInput from '../../Reusable/AmountInput'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
+import { getAuthToken, deviceId, getCurrentUserId, getClientRefId } from '../../services/api'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import cashInService from './cashIn.service'
@@ -51,10 +51,15 @@ const CashInCardList = () => {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${getAuthToken()}`,
+          DeviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
           deviceInfo: JSON.stringify({
             device_type: 'WEB',
             device_id: deviceId,
           }),
+          Clientrefid: getClientRefId(),
         },
         body: JSON.stringify({
           page: 1,
