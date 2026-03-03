@@ -1,8 +1,8 @@
-﻿import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import { BsCashCoin } from 'react-icons/bs'
-import PageContainer from '../../Reusable/PageContainer'
+import { IoArrowBack } from 'react-icons/io5'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
 import Input from '../../Reusable/Input'
@@ -21,6 +21,7 @@ const CashInPage = () => {
   const [validating, setValidating] = useState(false)
   const verifyTimeoutRef = useRef(null)
   const contentCard = THEME_COLORS.contentCard
+  const statusColors = THEME_COLORS.status
 
   const handleVerifyCard = async () => {
     const card = cardNumber.trim().replace(/\s/g, '')
@@ -120,108 +121,126 @@ const CashInPage = () => {
     navigate('/customer/cash-in/confirm')
   }
 
-  return (
-    <PageContainer>
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
-            <BsCashCoin className="w-6 h-6" style={{ color: contentCard.iconColor }} />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold" style={{ color: contentCard.title }}>Cash In</h1>
-            <p className="text-sm" style={{ color: contentCard.subtitle }}>Add money to your wallet from your card</p>
-          </div>
-        </div>
+  const header = (
+    <div className="px-4 pt-4 pb-3 border-b border-[#E9ECEB] bg-[#F5FAF6]">
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          aria-label="Go back"
+          onClick={() => navigate(-1)}
+          className="w-9 h-9 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#1F2937]"
+        >
+          <IoArrowBack size={18} />
+        </button>
+        <h1 className="text-3xl font-semibold text-[#111827]">Cash In</h1>
+      </div>
+    </div>
+  )
 
+  return (
+    <MobileScreenContainer header={header}>
+      <div className="p-4 space-y-4 bg-[#F5FAF6] min-h-full overflow-x-hidden">
         {error && (
-          <div className="px-3 py-2 rounded-md mb-4 text-sm" style={{ border: `1px solid ${THEME_COLORS.status.failedBackground}`, color: THEME_COLORS.status.failedText }}>
+          <div
+            className="px-3 py-2 rounded-xl text-sm"
+            style={{ border: `1px solid ${statusColors.failedBackground}`, color: statusColors.failedText }}
+          >
             {error}
           </div>
         )}
 
-        <div className="rounded-lg shadow-sm border p-4 sm:p-6" style={{ backgroundColor: contentCard.background, borderColor: contentCard.border }}>
-          <p className="text-xs sm:text-sm mb-3 sm:mb-4" style={{ color: contentCard.subtitle }}>
-            Enter card details. An OTP will be sent to complete the transaction.
-          </p>
-          <form onSubmit={(e) => { e.preventDefault(); handleContinue(); }} autoComplete="on">
-            <div className="space-y-4">
-              <div>
-                <Input
-                  label="Card number"
-                  value={cardNumber}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '')
-                    setCardNumber(value)
-                    if (value.length !== cardNumber.length) {
-                      setCardVerified(false)
-                      setCardName('')
-                      setError('')
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      if (cardVerified) {
-                        handleContinue()
-                      } else if (cardNumber.trim().replace(/\s/g, '').length === 16) {
-                        handleVerifyCard()
-                      }
-                    }
-                  }}
-                  placeholder="e.g. 2345543212345432"
-                  maxLength={16}
-                  disabled={cardVerified}
-                  autoComplete="cc-number"
-                  inputMode="numeric"
-                />
-                {cardVerified && cardName && (
-                  <div className="mt-2 rounded-lg px-3 py-2 text-sm" style={{ border: `1px solid ${contentCard.divider}`, backgroundColor: contentCard.accentBackground }}>
-                    <span style={{ color: contentCard.subtitle }}>Card Name: </span>
-                    <span className="font-medium" style={{ color: contentCard.title }}>{cardName}</span>
-                  </div>
-                )}
-                {validating && (
-                  <div className="mt-2 text-sm" style={{ color: contentCard.subtitle }}>
-                    Verifying card...
-                  </div>
-                )}
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="CVV"
-                  type="password"
-                  value={cvv}
-                  onChange={(e) => {
-                    setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))
+        <form onSubmit={(e) => { e.preventDefault(); handleContinue(); }} autoComplete="on" className="space-y-4">
+          <section className="bg-white rounded-2xl p-4 shadow-[0_6px_18px_rgba(15,23,42,0.08)] border border-[#E5E7EB] space-y-4">
+            <h3 className="text-lg font-semibold text-[#1F2937]">Cash In Funds</h3>
+            <p className="text-sm" style={{ color: contentCard.subtitle }}>
+              Enter card details. An OTP will be sent to complete the transaction.
+            </p>
+
+            <div>
+              <Input
+                label="Card number"
+                value={cardNumber}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '')
+                  setCardNumber(value)
+                  if (value.length !== cardNumber.length) {
+                    setCardVerified(false)
+                    setCardName('')
                     setError('')
-                  }}
-                  placeholder="e.g. 234"
-                  maxLength={4}
-                  autoComplete="cc-csc"
-                />
-                <Input
-                  label="Expiry (MMYY)"
-                  value={expiryDate}
-                  onChange={(e) => {
-                    setExpiryDate(e.target.value.replace(/\D/g, '').slice(0, 4))
-                    setError('')
-                  }}
-                  placeholder="e.g. 1030"
-                  maxLength={4}
-                  autoComplete="cc-exp"
-                />
-              </div>
-              <AmountInput label="Amount" value={amount} onChange={setAmount} />
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    if (cardVerified) {
+                      handleContinue()
+                    } else if (cardNumber.trim().replace(/\s/g, '').length === 16) {
+                      handleVerifyCard()
+                    }
+                  }
+                }}
+                placeholder="e.g. 2345543212345432"
+                maxLength={16}
+                disabled={cardVerified}
+                autoComplete="cc-number"
+                inputMode="numeric"
+              />
+              {cardVerified && cardName && (
+                <div
+                  className="mt-2 rounded-lg px-3 py-2 text-sm"
+                  style={{ border: `1px solid ${contentCard.divider}`, backgroundColor: contentCard.accentBackground }}
+                >
+                  <span style={{ color: contentCard.subtitle }}>Card Name: </span>
+                  <span className="font-medium" style={{ color: contentCard.title }}>{cardName}</span>
+                </div>
+              )}
+              {validating && (
+                <div className="mt-2 text-sm" style={{ color: contentCard.subtitle }}>
+                  Verifying card...
+                </div>
+              )}
             </div>
-            <div className="pt-4">
-              <Button type="submit" fullWidth size="md">
-                Continue
-              </Button>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="CVV"
+                type="password"
+                value={cvv}
+                onChange={(e) => {
+                  setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))
+                  setError('')
+                }}
+                placeholder="e.g. 234"
+                maxLength={4}
+                autoComplete="cc-csc"
+              />
+              <Input
+                label="Expiry (MMYY)"
+                value={expiryDate}
+                onChange={(e) => {
+                  setExpiryDate(e.target.value.replace(/\D/g, '').slice(0, 4))
+                  setError('')
+                }}
+                placeholder="e.g. 1030"
+                maxLength={4}
+                autoComplete="cc-exp"
+              />
             </div>
-          </form>
-        </div>
+          </section>
+
+          <section className="bg-white rounded-2xl p-4 shadow-[0_6px_18px_rgba(15,23,42,0.08)] border border-[#E5E7EB] space-y-3">
+            <h3 className="text-lg font-semibold text-[#1F2937]">Enter Amount</h3>
+            <AmountInput label="Amount" value={amount} onChange={setAmount} />
+          </section>
+
+          <div className="pt-1">
+            <Button type="submit" fullWidth size="md">
+              Continue
+            </Button>
+          </div>
+        </form>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

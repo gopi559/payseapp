@@ -38,11 +38,11 @@ const OtpPopup = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center px-3"
       style={{ backgroundColor: popupColors.backdrop }}
     >
       <div
-        className="w-full max-w-[420px] rounded-3xl p-6 ml-0 md:ml-72"
+        className="w-full max-w-[409px] rounded-3xl p-4 ml-1 md:ml-72"
         style={{ backgroundColor: popupColors.panelBackground, border: `1px solid ${popupColors.panelBorder}` }}
       >
         <h2 className="text-lg font-semibold mb-2" style={{ color: popupColors.title }}>Enter OTP</h2>

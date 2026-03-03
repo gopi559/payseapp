@@ -9,9 +9,10 @@ import {
   HiOutlineBuildingOffice,
 } from 'react-icons/hi2'
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 
 function escapeHtml(str) {
   const s = String(str ?? '')
@@ -204,7 +205,7 @@ const SendTransactionDetails = () => {
   }
 
   return (
-    <PageContainer className="bg-white">
+    <MobileScreenContainer>
       <div className="bg-brand-secondary text-white px-4 py-3 flex items-center gap-3">
         <button onClick={() => navigate('/customer/home')} className="text-white hover:opacity-80 transition-opacity">
           <IoArrowBack className="w-6 h-6" />
@@ -220,7 +221,10 @@ const SendTransactionDetails = () => {
           <div className="flex flex-col items-center text-center">
             <h2 className="text-2xl font-bold mb-2">Transaction Completed</h2>
             {isPayRequestFlow && <p className="text-sm mb-2 font-medium">Paid Request</p>}
-            <p className="text-3xl font-bold mb-4">{amount}</p>
+            <div className="text-3xl font-bold mb-4 flex items-center gap-2">
+              <img src={AfganCurrency} alt="AFN" className="h-8 w-8 object-contain" />
+              <span>{amount}</span>
+            </div>
             <div className="bg-white/20 rounded-lg px-4 py-2">
               <span className="text-sm font-medium">{isPayRequestFlow ? 'Paid Request' : 'Money Sent'}</span>
             </div>
@@ -276,7 +280,10 @@ const SendTransactionDetails = () => {
               <FaMoneyBillWave className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">Amount</p>
-                <p className="text-sm font-medium text-gray-800">{amount}</p>
+                <div className="text-sm font-medium text-gray-800 flex items-center gap-1">
+                  <img src={AfganCurrency} alt="AFN" className="w-5 h-5 object-contain" />
+                  <span>{amount}</span>
+                </div>
               </div>
             </div>
 
@@ -399,7 +406,7 @@ const SendTransactionDetails = () => {
           </Button>
         </div>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

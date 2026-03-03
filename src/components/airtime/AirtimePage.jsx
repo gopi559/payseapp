@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
 import AmountInput from '../../Reusable/AmountInput'
 import MobileInput from '../../Reusable/MobileInput'
@@ -261,7 +261,7 @@ const AirtimePage = () => {
   }
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="px-4 py-4 max-w-md mx-auto">
         <h1 className="text-2xl font-semibold mb-1">Airtime</h1>
         <p className="text-sm mb-5 text-gray-500">Buy airtime with your card</p>
@@ -374,7 +374,7 @@ const AirtimePage = () => {
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
       />
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

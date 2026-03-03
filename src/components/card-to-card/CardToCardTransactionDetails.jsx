@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
 import { HiOutlineCreditCard } from 'react-icons/hi2'
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 
@@ -199,7 +199,7 @@ const CardToCardTransactionDetails = () => {
   }
 
   return (
-    <PageContainer className="bg-white">
+    <MobileScreenContainer>
       {/* Green Header */}
       <div className="bg-brand-secondary text-white px-4 py-3 flex items-center gap-3">
         <button
@@ -368,7 +368,7 @@ const CardToCardTransactionDetails = () => {
           </Button>
         </div>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

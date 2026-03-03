@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import MobileInput from '../../Reusable/MobileInput'
 import Button from '../../Reusable/Button'
 import THEME_COLORS from '../../theme/colors'
@@ -68,7 +68,7 @@ const RequestStart = () => {
   }
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
         <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>
           Request Money
@@ -123,7 +123,7 @@ const RequestStart = () => {
           Enter recipient mobile number and continue.
         </p>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

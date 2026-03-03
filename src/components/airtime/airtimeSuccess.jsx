@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
@@ -49,7 +49,7 @@ const AirtimeSuccess = () => {
     : '-'
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-28 bg-white max-w-md mx-auto">
         <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
           <svg
@@ -119,7 +119,7 @@ const AirtimeSuccess = () => {
           </button>
         </div>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

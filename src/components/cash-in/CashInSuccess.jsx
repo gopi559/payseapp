@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+ï»¿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
@@ -31,9 +31,9 @@ const CashInSuccess = () => {
 
   if (!details) return null
 
-  const txnId = details.txn_id ?? '—'
-  const formattedFromCardNumber = details.from_card_number ? formatCardNumber(details.from_card_number) : '—'
-  const fromCardholderName = details.from_card_name || '—'
+  const txnId = details.txn_id ?? 'â€”'
+  const formattedFromCardNumber = details.from_card_number ? formatCardNumber(details.from_card_number) : 'â€”'
+  const fromCardholderName = details.from_card_name || 'â€”'
 const amount = details.txn_amount
   ? Number(details.txn_amount).toFixed(2)
   : '0.00'
@@ -45,10 +45,10 @@ const amount = details.txn_amount
         hour: 'numeric',
         minute: '2-digit',
       })
-    : '—'
+    : 'â€”'
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-28 bg-white max-w-md mx-auto">
 
         {/* Success Icon */}
@@ -92,7 +92,7 @@ const amount = details.txn_amount
             <span className="text-gray-600">From:</span>
             <div className="text-right">
               <div className="font-medium text-gray-900 font-mono">{formattedFromCardNumber}</div>
-              {fromCardholderName && fromCardholderName !== '—' && (
+              {fromCardholderName && fromCardholderName !== 'â€”' && (
                 <div className="text-xs text-gray-600 mt-0.5">{fromCardholderName}</div>
               )}
             </div>
@@ -134,9 +134,10 @@ const amount = details.txn_amount
       </div>
 
 
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 
 export default CashInSuccess
+
 

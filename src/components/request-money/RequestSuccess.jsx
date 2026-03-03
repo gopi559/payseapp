@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IoInformationCircleOutline } from 'react-icons/io5'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
 
 const RequestSuccess = () => {
@@ -48,7 +48,7 @@ const RequestSuccess = () => {
   }
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-28 bg-white max-w-md mx-auto">
         <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
           <svg
@@ -115,7 +115,7 @@ const RequestSuccess = () => {
           </button>
         </div>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

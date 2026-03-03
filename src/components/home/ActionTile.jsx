@@ -1,18 +1,12 @@
-// src/components/home/ActionTile.jsx
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import THEME_COLORS from '../../theme/colors'
 
-const ActionTile = ({
-  icon,
-  label,
-  route,
-  onClick,
-  isComponent = false,
-  isImage = false,
-}) => {
+const ActionTile = ({ icon, label, route, onClick, isComponent = false, isImage = false }) => {
   const navigate = useNavigate()
   const colors = THEME_COLORS.home.actionTile
+  const normalizedLabel = String(label || '').trim().toLowerCase()
+  const isPrimaryCircle = normalizedLabel === 'cash in' || normalizedLabel === 'cash out'
 
   const handleClick = () => {
     if (onClick) onClick()
@@ -23,46 +17,34 @@ const ActionTile = ({
     if (isImage && React.isValidElement(icon)) {
       const existing = icon.props.className || ''
       return React.cloneElement(icon, {
-        className: `w-12 h-12 sm:w-14 sm:h-14 object-contain ${existing}`.trim(),
+        className: `w-9 h-9 object-contain ${isPrimaryCircle ? 'brightness-0 invert' : ''} ${existing}`.trim(),
       })
     }
 
     if (isComponent) {
-      return (
-        <span
-          className="text-4xl sm:text-5xl flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14"
-          style={{ color: colors.iconText }}
-        >
-          {icon}
-        </span>
-      )
+      return <span className="text-[34px] leading-none">{icon}</span>
     }
 
-    return (
-      <span className="text-4xl sm:text-5xl flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14">
-        {icon}
-      </span>
-    )
+    return <span className="text-[34px] leading-none">{icon}</span>
   }
 
   return (
     <button
       onClick={handleClick}
-      className="flex flex-col items-center justify-center bg-transparent p-0 active:scale-95 transition-transform duration-200"
+      className="flex flex-col items-center justify-start bg-transparent border-0 shadow-none p-0 transition-transform duration-200 hover:scale-105 active:scale-95"
+      type="button"
     >
       <div
-        className="flex items-center justify-center mb-3 w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-sm"
+        className="flex items-center justify-center rounded-full bg-[#357219] text-white w-[72px] h-[72px] lg:w-[76px] lg:h-[76px]"
         style={{
-          backgroundColor: colors.iconBg,
+          backgroundColor: isPrimaryCircle ? colors.iconBg : '#DDE5DE',
+          color: isPrimaryCircle ? colors.iconText : colors.iconBg,
         }}
       >
         {renderIcon()}
       </div>
 
-      <span
-        className="text-sm sm:text-base font-medium text-center leading-tight"
-        style={{ color: colors.labelText }}
-      >
+      <span className="mt-3.5 text-base font-medium text-center leading-tight" style={{ color: colors.labelText }}>
         {label}
       </span>
     </button>

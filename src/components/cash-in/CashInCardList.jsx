@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
 import Button from '../../Reusable/Button'
 import AmountInput from '../../Reusable/AmountInput'
@@ -230,7 +230,7 @@ const handleConfirmOtp = async (otp) => {
   }
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="px-4 py-4 max-w-md mx-auto">
 
         {/* Card carousel */}
@@ -312,7 +312,7 @@ const handleConfirmOtp = async (otp) => {
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
       />
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

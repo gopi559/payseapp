@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { formatAmount } from '../utils/formatAmount'
 import THEME_COLORS from '../theme/colors'
+import AfganCurrency from '../assets/afgan_currency_green.svg'
 
 const AmountInput = ({
   value,
@@ -42,13 +43,16 @@ const AmountInput = ({
       )}
 
       <div className="relative">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <img src={AfganCurrency} alt="AFN" className="w-6 h-6 object-contain" />
+        </span>
         <input
           type="text"
           value={displayValue}
           onChange={handleChange}
           onKeyPress={handleKeyPress}
           placeholder="0.00"
-          className="w-full pl-3 pr-3 py-2.5 text-xl font-semibold rounded-md border"
+          className="w-full pl-11 pr-3 py-2.5 text-xl font-semibold rounded-md border"
           style={{ borderColor: inputColors.border, color: inputColors.text, backgroundColor: inputColors.background }}
         />
       </div>

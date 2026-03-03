@@ -1,6 +1,6 @@
 ﻿import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { HiChevronRight } from 'react-icons/hi2'
 import THEME_COLORS from '../../theme/colors'
 
@@ -9,7 +9,7 @@ const CashInMethod = () => {
   const menuCard = THEME_COLORS.menuCard
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="min-h-screen flex justify-center">
         <div className="w-full max-w-md px-4 pt-6 pb-10">
           <h1
@@ -70,7 +70,7 @@ const CashInMethod = () => {
           </button>
         </div>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

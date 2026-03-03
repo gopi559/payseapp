@@ -4,7 +4,7 @@ import { IoArrowBack } from 'react-icons/io5'
 import { FaSearch } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
@@ -249,7 +249,7 @@ const BillPaymentPage = () => {
   }
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="px-4 py-4 max-w-md mx-auto">
         <div className="flex items-center gap-3 mb-5">
           <button
@@ -363,7 +363,7 @@ const BillPaymentPage = () => {
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
       />
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

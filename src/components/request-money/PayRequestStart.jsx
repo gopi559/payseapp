@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Input from '../../Reusable/Input'
 import Button from '../../Reusable/Button'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
@@ -56,7 +56,7 @@ const PayRequestStart = () => {
   }
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
         <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>
           Pay Request
@@ -147,7 +147,7 @@ const PayRequestStart = () => {
         }}
         onCancel={() => setStep(null)}
       />
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

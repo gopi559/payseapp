@@ -34,7 +34,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
     >
       <div className="relative ml-0 md:ml-72">
         <div
-          className="w-full max-w-[420px] rounded-3xl p-6"
+          className="w-full max-w-[409px] rounded-3xl p-5"
           style={{ backgroundColor: popupColors.panelBackground, border: `1px solid ${popupColors.panelBorder}` }}
         >
           <div className="flex items-center gap-3 mb-1">

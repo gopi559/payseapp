@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
 import { HiOutlineUser, HiOutlinePhone, HiOutlineCreditCard, HiOutlineBuildingOffice } from 'react-icons/hi2'
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 
@@ -224,7 +224,7 @@ const CashInTransactionDetails = () => {
   }
 
   return (
-    <PageContainer className="bg-white">
+    <MobileScreenContainer>
       {/* Green Header */}
       <div className="bg-brand-secondary text-white px-4 py-3 flex items-center gap-3">
         <button
@@ -427,7 +427,7 @@ const CashInTransactionDetails = () => {
           </Button>
         </div>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { FiArrowLeft, FiSearch } from 'react-icons/fi'
 import { toast } from 'react-toastify'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import requestMoneyService from './requestMoney.service'
 import RequestCard from './RequestCard'
 import { getCustomerId, sortByAddedOnDesc } from './requestMoney.utils'
@@ -45,7 +45,7 @@ const MyRequests = () => {
   }, [requests, search])
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="mx-auto w-full max-w-md min-h-screen px-4 pt-6 pb-8 bg-[#dff3e8]">
         <div className="relative flex items-center justify-center mb-5">
           <button
@@ -81,7 +81,7 @@ const MyRequests = () => {
           ))}
         </div>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

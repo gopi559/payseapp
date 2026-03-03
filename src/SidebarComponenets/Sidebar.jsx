@@ -7,18 +7,18 @@ import { CiLogout } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
 import logoImage from '../assets/PayseyPaylogoGreen.png'
 import authService from '../Login/auth.service.jsx'
-import cashInIcon from '../assets/PayseyCustomerPortalCashIn.svg'
-import voucherIcon from '../assets/PayseyCustomerPortalVoucher.svg'
-import walletToCardIcon from '../assets/PayseyCustomerPortalWalletToCard.svg'
+import cashInIcon from '../assets/CashInNewIcon.svg'
+import cashOutIcon from '../assets/CashOutNewIcon.svg'
+import voucherIcon from '../assets/VoucherNewIcon.svg'
 import cardToCardIcon from '../assets/PayseyCustomerPortalCardToCard.svg'
 import transactionIcon from '../assets/PayseyCustomerPortalTransaction.svg'
 import disputeIcon from '../assets/PayseyCustomerPortalDispute.svg'
-import requestMoneyIcon from '../assets/RequestMoney.svg'
-import sendIcon from '../assets/Send.svg'
+import receiveIcon from '../assets/ReceiveNewIcon.svg'
+import sendIcon from '../assets/SendIconNew.svg'
 import payseyCardsIcon from '../assets/PayseyCards.svg'
 import otherCardsIcon from '../assets/OtherCards.svg'
-import airtimeIcon from '../assets/PayseyMobileiconMobile.svg'
-import payBillIcon from '../assets/PayseyPOSBillPayment.svg'
+import airtimeIcon from '../assets/AirtimeNewIcon.svg'
+import payBillIcon from '../assets/BillPaymentNewIcon.svg'
 import THEME_COLORS from '../theme/colors'
 import { IoChevronDown } from 'react-icons/io5'
 
@@ -36,6 +36,8 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   useSelector((state) => state.auth.user)
 
   const sidebarColors = THEME_COLORS.sidebar
+  const primaryGreenIconFilter =
+    'brightness(0) saturate(100%) invert(31%) sepia(54%) saturate(970%) hue-rotate(58deg) brightness(96%) contrast(92%)'
 
   const handleLogout = () => {
     authService.logout()
@@ -64,11 +66,36 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   }, [location.pathname])
 
   const menuItems = [
-    { icon: <IoHome />, label: 'Home', route: '/customer/home', isComponent: true },
     {
-      icon: <img src={cashInIcon} className="w-7 h-7 object-contain" alt="Cash In" />,
+      icon: <IoHome style={{ color: '#357219' }} />,
+      label: 'Home',
+      route: '/customer/home',
+      isComponent: true,
+    },
+    {
+      icon: (
+        <img
+          src={cashInIcon}
+          className="w-7 h-7 object-contain"
+          style={{ filter: primaryGreenIconFilter }}
+          alt="Cash In"
+        />
+      ),
       label: 'Cash In',
       route: '/customer/cash-in',
+      isImage: true,
+    },
+    {
+      icon: (
+        <img
+          src={cashOutIcon}
+          className="w-7 h-7 object-contain"
+          style={{ filter: primaryGreenIconFilter }}
+          alt="Cash Out"
+        />
+      ),
+      label: 'Cash Out',
+      route: '/customer/wallet-to-card',
       isImage: true,
     },
     {
@@ -78,7 +105,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       isImage: true,
     },
     {
-      icon: <img src={requestMoneyIcon} className="w-7 h-7 object-contain" alt="Request Money" />,
+      icon: <img src={receiveIcon} className="w-7 h-7 object-contain" alt="Request Money" />,
       label: 'Request Money',
       route: '/customer/request-money',
       isImage: true,
@@ -96,31 +123,53 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       isImage: true,
     },
     {
-      icon: <img src={payBillIcon} className="w-7 h-7 object-contain" alt="Pay Bill" />,
+      icon: (
+        <img
+          src={payBillIcon}
+          className="w-7 h-7 object-contain"
+          style={{ filter: primaryGreenIconFilter }}
+          alt="Pay Bill"
+        />
+      ),
       label: 'Pay Bill',
       route: '/customer/bill-payment',
       isImage: true,
     },
     {
-      icon: <img src={walletToCardIcon} className="w-7 h-7 object-contain" alt="Wallet to Card" />,
-      label: 'Wallet to Card',
-      route: '/customer/wallet-to-card',
-      isImage: true,
-    },
-    {
-      icon: <img src={cardToCardIcon} className="w-7 h-7 object-contain" alt="Card to Card" />,
+      icon: (
+        <img
+          src={cardToCardIcon}
+          className="w-7 h-7 object-contain"
+          style={{ filter: primaryGreenIconFilter }}
+          alt="Card to Card"
+        />
+      ),
       label: 'Card to Card',
       route: '/customer/card-to-card',
       isImage: true,
     },
     {
-      icon: <img src={transactionIcon} className="w-7 h-7 object-contain" alt="Transactions" />,
+      icon: (
+        <img
+          src={transactionIcon}
+          className="w-7 h-7 object-contain"
+          style={{ filter: primaryGreenIconFilter }}
+          alt="Transactions"
+        />
+      ),
       label: 'Transactions',
       route: '/customer/transactions',
       isImage: true,
     },
     {
-      icon: <img src={disputeIcon} className="w-7 h-7 object-contain" alt="Disputes" />,
+      icon: (
+        <img
+          src={disputeIcon}
+          className="w-7 h-7 object-contain"
+          style={{ filter: primaryGreenIconFilter }}
+          alt="Disputes"
+        />
+      ),
       label: 'Disputes',
       route: '/customer/disputes',
       isImage: true,
@@ -280,7 +329,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                 />
               )}
             <span className="flex-none text-xl flex items-center justify-center">
-              <FaCreditCard />
+              <FaCreditCard style={{ color: '#357219' }} />
             </span>
             {!isCollapsed && (
               <>
@@ -324,7 +373,12 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                     }
                 }
               >
-                <img src={payseyCardsIcon} className="w-6 h-6 object-contain" alt="Paysey Card" />
+                <img
+                  src={payseyCardsIcon}
+                  className="w-6 h-6 object-contain"
+                  style={{ filter: primaryGreenIconFilter }}
+                  alt="Paysey Card"
+                />
                 <span className="flex-1 truncate text-sm font-medium" style={{ color: 'inherit' }}>Paysepe Card</span>
               </button>
               <button
@@ -351,7 +405,12 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                     }
                 }
               >
-                <img src={otherCardsIcon} className="w-6 h-6 object-contain" alt="Other Card" />
+                <img
+                  src={otherCardsIcon}
+                  className="w-6 h-6 object-contain"
+                  style={{ filter: primaryGreenIconFilter }}
+                  alt="Other Card"
+                />
                 <span className="flex-1 truncate text-sm font-medium" style={{ color: 'inherit' }}>Other Card</span>
               </button>
             </div>
@@ -441,4 +500,3 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
 }
 
 export default Sidebar
-

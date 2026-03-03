@@ -9,10 +9,10 @@ const CvvBottomSheet = ({ open, onClose, onSubmit, loading }) => {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end" style={{ backgroundColor: popupColors.backdrop }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ backgroundColor: popupColors.backdrop }}>
       <div
-        className="w-full rounded-t-3xl p-5"
-        style={{ backgroundColor: popupColors.panelBackground, borderTop: `1px solid ${popupColors.panelBorder}` }}
+        className="w-full max-w-[390px] rounded-3xl p-5"
+        style={{ backgroundColor: popupColors.panelBackground, border: `1px solid ${popupColors.panelBorder}` }}
       >
         <h2 className="text-lg font-semibold mb-3" style={{ color: popupColors.title }}>
           Enter CVV2 to check balance

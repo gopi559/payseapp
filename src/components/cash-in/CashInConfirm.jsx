@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import ConfirmCard from '../../Reusable/ConfirmCard'
 import Button from '../../Reusable/Button'
 import OtpInput from '../../Reusable/OtpInput'
@@ -111,7 +111,7 @@ const CashInConfirm = () => {
  : '—'
 
  return (
- <PageContainer>
+ <MobileScreenContainer>
  <div className="px-4 py-6">
  <h1 className="text-2xl font-bold text-brand-dark mb-6">
  {otpSent ? 'Enter OTP' : 'Confirm Transaction'}
@@ -179,7 +179,7 @@ const CashInConfirm = () => {
  </>
  )}
  </div>
- </PageContainer>
+ </MobileScreenContainer>
  )
 }
 

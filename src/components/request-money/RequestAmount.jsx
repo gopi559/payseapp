@@ -4,7 +4,7 @@ import { FaCarSide, FaShoppingBag } from 'react-icons/fa'
 import { MdFastfood } from 'react-icons/md'
 import { BsBasketFill, BsThreeDots } from 'react-icons/bs'
 import { toast } from 'react-toastify'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import AmountInput from '../../Reusable/AmountInput'
 import Input from '../../Reusable/Input'
 import Button from '../../Reusable/Button'
@@ -81,7 +81,7 @@ const RequestAmount = () => {
   }
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="max-w-md mx-auto px-4 py-6 space-y-5">
         <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>
           Request Money
@@ -169,7 +169,7 @@ const RequestAmount = () => {
           </button>
         </div>
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 

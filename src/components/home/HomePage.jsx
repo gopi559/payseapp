@@ -6,11 +6,12 @@ import PromoBanner from './PromoBanner'
 const HomePage = () => {
   return (
     <PageContainer>
-      <ActionGrid />
-      <PromoBanner />
+      <div className="w-full max-w-[500px] mx-auto pb-12 min-h-[115vh]">
+        <ActionGrid />
+        <PromoBanner />
+      </div>
     </PageContainer>
   )
 }
 
 export default HomePage
-

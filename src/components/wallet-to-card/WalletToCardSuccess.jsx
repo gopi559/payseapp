@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+ï»¿import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PageContainer from '../../Reusable/PageContainer'
+import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
@@ -29,12 +29,12 @@ const WalletToCardSuccess = () => {
     txn_time,
   } = details
 
-  const txnId = txn_id ?? '—'
+  const txnId = txn_id ?? 'â€”'
 
   const from = 'Wallet'
 
-  const formattedCardNumber = card_number ? formatCardNumber(card_number) : '—'
-  const cardholderName = card_name || '—'
+  const formattedCardNumber = card_number ? formatCardNumber(card_number) : 'â€”'
+  const cardholderName = card_name || 'â€”'
 
 const amount = txn_amount
   ? Number(txn_amount).toFixed(2)
@@ -60,7 +60,7 @@ const amount = txn_amount
   }
 
   return (
-    <PageContainer>
+    <MobileScreenContainer>
       <div className="min-h-screen flex flex-col items-center px-4 pt-10 pb-28 bg-white max-w-md mx-auto">
 
         <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
@@ -91,7 +91,7 @@ const amount = txn_amount
             <span className="text-gray-600">To:</span>
             <div className="text-right">
               <div className="font-medium text-gray-900 font-mono">{formattedCardNumber}</div>
-              {cardholderName && cardholderName !== '—' && (
+              {cardholderName && cardholderName !== 'â€”' && (
                 <div className="text-xs text-gray-600 mt-0.5">{cardholderName}</div>
               )}
             </div>
@@ -131,9 +131,10 @@ const amount = txn_amount
         </div>
 
       </div>
-    </PageContainer>
+    </MobileScreenContainer>
   )
 }
 
 export default WalletToCardSuccess
+
 

@@ -64,3 +64,17 @@ export const fetchWithBasicAuth = async (url, body) => {
     inflightRequests.delete(requestKey)
   }
 }
+
+export const postWithBasicAuth = async (url, body) => {
+  const resolvedUrl = toUrl(url)
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getBasicAuthHeader(),
+    },
+    body: JSON.stringify(body ?? {}),
+  }
+
+  return fetch(resolvedUrl, options)
+}
