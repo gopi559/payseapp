@@ -1,11 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { IoArrowBack, IoCheckmarkCircle } from 'react-icons/io5'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
+import AddBeneficiaryPopup from '../../Reusable/AddBeneficiaryPopup'
 
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
@@ -14,6 +16,7 @@ import cardService from '../cards/PaysePayCards/card.service'
 import walletToCardService from './walletToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
+import bankIcon from '../../assets/BankIcon.png'
 
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 import { formatCardNumber } from '../../utils/formatCardNumber'
@@ -23,7 +26,6 @@ const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
 const WalletToCardCardList = () => {
   const navigate = useNavigate()
-  const destScrollRef = useRef(null)
 
 const [sourceCards, setSourceCards] = useState([])
 const [activeSourceIndex, setActiveSourceIndex] = useState(0)
@@ -35,6 +37,7 @@ const sourceCard = sourceCards[activeSourceIndex]
 
 // null | 'CONFIRM' | 'OTP'
   const [step, setStep] = useState(null)
+  const [isAddNewOpen, setIsAddNewOpen] = useState(false)
 
   const [loading, setLoading] = useState(false)
 
@@ -317,6 +320,19 @@ const resetFlow = () => {
   return (
     <MobileScreenContainer>
       <div className="px-4 py-4 max-w-md mx-auto">
+        <div className="relative flex items-center justify-between mb-5">
+          <button
+            type="button"
+            onClick={() => navigate('/customer/wallet-to-card')}
+            className="w-9 h-9 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center text-[#357219]"
+            aria-label="Go back"
+          >
+            <IoArrowBack size={18} />
+          </button>
+          <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-[#357219] pointer-events-none">
+            Wallet to Card
+          </h1>
+        </div>
 
 {sourceCards.length > 0 && (
   <>
@@ -369,35 +385,63 @@ const resetFlow = () => {
           ))}
         </div>
 
-        <div className="mt-8 text-sm font-medium">Select Destination Card</div>
+        <div className="mt-8 mb-3 flex items-center justify-between">
+          <div className="text-sm font-medium">Select Destination</div>
+          <button
+            type="button"
+            onClick={() => setIsAddNewOpen(true)}
+            className="text-sm font-semibold text-[#357219]"
+          >
+            Add New
+          </button>
+        </div>
 
-        <div
-          ref={destScrollRef}
-          onScroll={() => {
-            const c = destScrollRef.current
-            if (!c) return
-            setActiveDestIndex(Math.round(c.scrollLeft / c.offsetWidth))
-          }}
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
-        >
+        <div className="space-y-3 max-h-64 overflow-y-auto pr-1 pb-2">
           {destCards.map((card, index) => (
             <div
               key={card.id}
               onClick={() => setActiveDestIndex(index)}
-              className={`snap-center shrink-0 w-full cursor-pointer ${
+              className={`w-full cursor-pointer rounded-2xl border px-4 py-3 ${
                 activeDestIndex === index
-                  ? 'ring-2 ring-green-500 rounded-xl'
-                  : ''
+                  ? 'border-[#357219] bg-[#F2FBF6]'
+                  : 'border-[#E5E7EB] bg-white'
               }`}
             >
-<BankCard
-  card={card}
-  onBalance={
-    activeDestIndex === index
-      ? () => fetchDestCardBalance(index)
-      : undefined
-  }
-/>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-11 h-11 rounded-full bg-[#EEF2EF] flex items-center justify-center shrink-0">
+                    <img src={bankIcon} alt="Bank" className="w-6 h-6 object-contain" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-base font-semibold text-[#111827] truncate">
+                      {card.external_inst_name || card.cardholder_name || 'Bank Card'}
+                    </p>
+                    <p className="text-sm text-[#4B5563] mt-0.5">
+                      {formatCardNumber(card.card_number || card.masked_card)}
+                    </p>
+                  </div>
+                </div>
+
+                {activeDestIndex === index && (
+                  <div className="inline-flex items-center gap-1.5 rounded-xl bg-[#E6F4E7] px-3 py-2 text-[#357219] shrink-0">
+                    <IoCheckmarkCircle size={18} />
+                    <span className="text-sm font-semibold">Selected</span>
+                  </div>
+                )}
+              </div>
+
+              {activeDestIndex === index && (
+                <button
+                  type="button"
+                  className="mt-2 text-xs text-[#357219] underline"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    fetchDestCardBalance(index)
+                  }}
+                >
+                  Refresh balance
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -438,6 +482,12 @@ const resetFlow = () => {
         loading={loading}
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
+      />
+
+      <AddBeneficiaryPopup
+        open={isAddNewOpen}
+        onClose={() => setIsAddNewOpen(false)}
+        onSuccess={fetchDestinationCards}
       />
     </MobileScreenContainer>
   )
