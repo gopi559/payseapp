@@ -61,7 +61,7 @@ const OtpPopup = ({
               maxLength={1}
               value={digit}
               onChange={(e) => handleChange(e.target.value, index)}
-              className="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl border rounded-xl focus:outline-none"
+className="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl font-bold border rounded-xl focus:outline-none"
               style={{
                 backgroundColor: popupColors.inputBackground,
                 borderColor: popupColors.otp.cellBorder,

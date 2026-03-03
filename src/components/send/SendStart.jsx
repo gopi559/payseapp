@@ -89,7 +89,7 @@ const SendStart = () => {
         <section className="bg-white rounded-2xl p-4 shadow-[0_6px_18px_rgba(15,23,42,0.08)] space-y-4">
           <h2 className="text-lg font-semibold text-[#1F2937]">Send Funds</h2>
           <p className="text-sm text-[#4B5563]">
-            To send money, first enter the phone number of the Paysey user you wish to transfer funds.
+            To Send Money, First Enter The Phone Number Of The Paysey User You Wish To Transfer Funds.
           </p>
 
           <MobileInput
