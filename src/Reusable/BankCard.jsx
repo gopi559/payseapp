@@ -15,29 +15,32 @@ const BankCard = ({ card, onBalance }) => {
 
   return (
     <div
-      className="relative rounded-2xl p-5 mb-4 shadow-sm overflow-hidden text-white"
+      className="relative rounded-2xl p-4 mb-4 shadow-sm overflow-hidden text-white"
       style={{ backgroundColor: card.color_code }}
     >
       {isMyPayseCard && (
         <img
           src={PayseyLogoWhite}
           alt="Paysey"
-          className="absolute top-4 right-5 h-9"
+          className="absolute top-4 right-5 h-8"
         />
       )}
 
-      <img src={Chip} alt="Chip" className="absolute top-12 left-5 h-14" />
-      <img src={Wifi} alt="NFC" className="absolute top-14 right-5 h-10" />
+      {/* 🔹 Chip - slightly smaller */}
+      <img src={Chip} alt="Chip" className="absolute top-10 left-5 h-12" />
 
-      <div className="relative z-10 mt-28">
-        <div className="mb-4">
+      {/* 🔹 WiFi - slightly bigger */}
+      <img src={Wifi} alt="NFC" className="absolute top-12 right-5 h-12" />
+
+      <div className="relative z-10 mt-24">
+        <div className="mb-3">
           <div className="text-sm text-white/80">Card number</div>
           <div className="text-lg font-mono tracking-[0.22em]">
             {formattedCardNumber}
           </div>
         </div>
 
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between">
           <div>
             <div className="text-sm text-white/80">Card holder name</div>
             <div className="text-sm font-semibold uppercase">

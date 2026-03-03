@@ -16,10 +16,10 @@ const CashInMethod = () => {
             className="text-2xl font-semibold mb-1"
             style={{ color: menuCard.screenTitle }}
           >
-            Choose Your Method
+            Add Money Using
           </h1>
           <p className="text-base mb-8" style={{ color: menuCard.screenSubtitle }}>
-            Select How You Want To Add Money To Your Wallet
+            Select A Payment Method
           </p>
 
           <button
@@ -37,7 +37,7 @@ const CashInMethod = () => {
                   className="text-xl font-semibold"
                   style={{ color: menuCard.cardTitle }}
                 >
-                  Card Payment
+                  Card Transfer
                 </h2>
 
                 <p className="text-base mt-2" style={{ color: menuCard.cardSubtitle }}>

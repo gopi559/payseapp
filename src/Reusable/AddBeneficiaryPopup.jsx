@@ -8,6 +8,7 @@ import { toast } from 'react-toastify'
 import THEME_COLORS from '../theme/colors'
 
 const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
+  // ✅ store only digits (no spaces)
   const [cardNumber, setCardNumber] = useState('')
   const [cardholderName, setCardholderName] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
@@ -18,6 +19,11 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
   const popupColors = THEME_COLORS.popup
 
   const reqIdRef = useRef(0)
+
+  // ✅ format for display: 1234 5678 9012 3456
+  const formattedCardNumber = useMemo(() => {
+    return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ').trim()
+  }, [cardNumber])
 
   const isValid = useMemo(() => {
     const hasValidCard = cardNumber.length === 16
@@ -137,6 +143,7 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
           }),
         },
         body: JSON.stringify({
+          // ✅ send digits-only value
           card_number: cardNumber,
           cardholder_name: cardholderName.trim() || '',
           stan,
@@ -159,147 +166,134 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
   }
 
   return (
-<div
-  className="fixed inset-0 z-50 flex items-center justify-center md:justify-center px-4 md:px-10"
-  style={{ backgroundColor: popupColors.backdrop }}
->
-  <div
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center md:justify-center px-4 md:px-10"
+      style={{ backgroundColor: popupColors.backdrop }}
+    >
+      <div
         className="w-full max-w-[409px] rounded-3xl p-4 ml-1 md:ml-72"
-    style={{
-      backgroundColor: popupColors.panelBackground,
-      border: `1px solid ${popupColors.panelBorder}`,
-    }}
-  >
-    <div className="flex items-center gap-3 mb-1">
-      <HiExclamationTriangle
-        className="w-6 h-6"
-        style={{ color: popupColors.cvv.icon }}
-      />
-      <h2
-        className="text-lg font-semibold"
-        style={{ color: popupColors.title }}
+        style={{
+          backgroundColor: popupColors.panelBackground,
+          border: `1px solid ${popupColors.panelBorder}`,
+        }}
       >
-        Add New Card
-      </h2>
-    </div>
+        <div className="flex items-center gap-3 mb-1">
+          <HiExclamationTriangle
+            className="w-6 h-6"
+            style={{ color: popupColors.cvv.icon }}
+          />
+          <h2
+            className="text-lg font-semibold"
+            style={{ color: popupColors.title }}
+          >
+            Add New Card
+          </h2>
+        </div>
 
-    <p
-      className="text-sm mb-4"
-      style={{ color: popupColors.subtitle }}
-    >
-      Enter card details to add beneficiary
-    </p>
+        <p className="text-sm mb-4" style={{ color: popupColors.subtitle }}>
+          Enter Card Details To Add Beneficiary
+        </p>
 
-    <div className="space-y-4 mb-6">
-      <input
-        type="text"
-        inputMode="numeric"
-        maxLength={16}
-        autoFocus
-        value={cardNumber}
-        onChange={(e) =>
-          setCardNumber(
-            e.target.value.replace(/\D/g, "").slice(0, 16)
-          )
-        }
-        placeholder="Card Number"
-        className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
-        style={{
-          backgroundColor: popupColors.inputBackground,
-          borderColor: popupColors.inputBorder,
-          color: popupColors.title,
-        }}
-      />
+        <div className="space-y-4 mb-6">
+          <input
+            type="text"
+            inputMode="numeric"
+            // ✅ 16 digits + 3 spaces = 19
+            maxLength={19}
+            autoFocus
+            value={formattedCardNumber}
+            onChange={(e) => {
+              // ✅ keep only digits in state
+              const digits = e.target.value.replace(/\D/g, '').slice(0, 16)
+              setCardNumber(digits)
+            }}
+            placeholder="1234 5678 9012 3456"
+            className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
+            style={{
+              backgroundColor: popupColors.inputBackground,
+              borderColor: popupColors.inputBorder,
+              color: popupColors.title,
+            }}
+          />
 
-      {binStatus === "checking" && (
-        <p
-          className="text-xs px-1"
+          {binStatus === 'checking' && (
+            <p className="text-xs px-1" style={{ color: popupColors.subtitle }}>
+              Checking card BIN...
+            </p>
+          )}
+
+          {binStatus === 'valid' && (
+            <p className="text-xs px-1 text-[#16A34A]">Card BIN is supported.</p>
+          )}
+
+          {binStatus === 'invalid' && (
+            <p className="text-xs px-1 text-[#DC2626]">
+              This card is not supported.
+            </p>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              type="password"
+              inputMode="numeric"
+              maxLength={3}
+              value={cvv}
+              onChange={(e) =>
+                setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))
+              }
+              placeholder="CVV (optional)"
+              className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
+              style={{
+                backgroundColor: popupColors.inputBackground,
+                borderColor: popupColors.inputBorder,
+                color: popupColors.title,
+              }}
+            />
+
+            <input
+              type="text"
+              inputMode="numeric"
+              maxLength={5}
+              value={expiryDate}
+              onChange={(e) => handleExpiryChange(e.target.value)}
+              placeholder="MM/YY (optional)"
+              className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
+              style={{
+                backgroundColor: popupColors.inputBackground,
+                borderColor: popupColors.inputBorder,
+                color: popupColors.title,
+              }}
+            />
+          </div>
+
+          <input
+            type="text"
+            value={cardholderName}
+            onChange={(e) => setCardholderName(e.target.value)}
+            placeholder="Cardholder Name"
+            className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
+            style={{
+              backgroundColor: popupColors.inputBackground,
+              borderColor: popupColors.inputBorder,
+              color: popupColors.title,
+            }}
+          />
+        </div>
+
+        <Button fullWidth onClick={handleContinue} disabled={!isValid || loading}>
+          {loading ? 'Submitting...' : 'Continue'}
+        </Button>
+
+        <button
+          className="w-full mt-4 text-sm"
           style={{ color: popupColors.subtitle }}
+          onClick={handleClose}
+          disabled={loading}
         >
-          Checking card BIN...
-        </p>
-      )}
-
-      {binStatus === "valid" && (
-        <p className="text-xs px-1 text-[#16A34A]">
-          Card BIN is supported.
-        </p>
-      )}
-
-      {binStatus === "invalid" && (
-        <p className="text-xs px-1 text-[#DC2626]">
-          This card is not supported.
-        </p>
-      )}
-
-      <div className="grid grid-cols-2 gap-3">
-        <input
-          type="password"
-          inputMode="numeric"
-          maxLength={3}
-          value={cvv}
-          onChange={(e) =>
-            setCvv(
-              e.target.value.replace(/\D/g, "").slice(0, 3)
-            )
-          }
-          placeholder="CVV (optional)"
-          className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
-          style={{
-            backgroundColor: popupColors.inputBackground,
-            borderColor: popupColors.inputBorder,
-            color: popupColors.title,
-          }}
-        />
-
-        <input
-          type="text"
-          inputMode="numeric"
-          maxLength={5}
-          value={expiryDate}
-          onChange={(e) => handleExpiryChange(e.target.value)}
-          placeholder="MM/YY (optional)"
-          className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
-          style={{
-            backgroundColor: popupColors.inputBackground,
-            borderColor: popupColors.inputBorder,
-            color: popupColors.title,
-          }}
-        />
+          Cancel
+        </button>
       </div>
-
-      <input
-        type="text"
-        value={cardholderName}
-        onChange={(e) => setCardholderName(e.target.value)}
-        placeholder="Cardholder Name"
-        className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
-        style={{
-          backgroundColor: popupColors.inputBackground,
-          borderColor: popupColors.inputBorder,
-          color: popupColors.title,
-        }}
-      />
     </div>
-
-    <Button
-      fullWidth
-      onClick={handleContinue}
-      disabled={!isValid || loading}
-    >
-      {loading ? "Submitting..." : "Continue"}
-    </Button>
-
-    <button
-      className="w-full mt-4 text-sm"
-      style={{ color: popupColors.subtitle }}
-      onClick={handleClose}
-      disabled={loading}
-    >
-      Cancel
-    </button>
-  </div>
-</div>
   )
 }
 
