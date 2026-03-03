@@ -54,14 +54,13 @@ export const SEND_MONEY = `${MAIN_API_URL}/transaction_web/customer/send_money`;
 export const GENERATE_TRANSACTION_OTP = `${MAIN_API_URL}/transaction_web/customer/generate_otp`;
 export const VERIFY_TRANSACTION_OTP = `${MAIN_API_URL}/transaction_web/customer/verify_otp`;
 
-// ================= REQUEST MONEY =================
+
 export const CREATE_REQUEST_MONEY = `${MAIN_API_URL}/transaction_web/customer/txn_reqmoney`;
 export const REQUEST_MONEY_LIST = `${MAIN_API_URL}/transaction_web/customer/reqmoney_list`;
 export const PAY_REQUEST_MONEY = `${MAIN_API_URL}/transaction_web/customer/txn_pay_reqmoney`;
 export const DECLINE_REQUEST_MONEY = `${MAIN_API_URL}/transaction_web/customer/txn_decline_reqmoney`;
 export const REQUEST_MONEY_FETCH = `${MAIN_API_URL}/transaction_web/customer/reqmoney_fetch`;
 
-// Backward-compatible aliases
 export const REQUEST_MONEY = CREATE_REQUEST_MONEY;
 export const REQ_MONEY_LIST = REQUEST_MONEY_LIST;
 
@@ -71,6 +70,7 @@ export const REQ_MONEY_LIST = REQUEST_MONEY_LIST;
 
 export const CARD_NUMBER_VERIFY = `${MAIN_API_URL}/external_card/cardname_inquiry`;
 export const WALLET_TO_CARD = `${MAIN_API_URL}/external_card/wallet_to_card_cnp`;
+export const EXTERNAL_BIN_LIST = `${MAIN_API_URL}/external_bin/list`;
 
 
 export const TRANSACTION_LIST = `${MAIN_API_URL}/transaction_web/customer/txn_list`;
