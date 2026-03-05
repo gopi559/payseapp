@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 import { HiXMark } from 'react-icons/hi2'
 import Button from '../../Reusable/Button'
 import chatbotService from './chatbot.service'
+import THEME_COLORS from '../../theme/colors'
 
 const GREETING = { role: 'assistant', text: 'Hello! How can I help you today?' }
 
@@ -50,6 +51,8 @@ const LOAD_MORE_COOLDOWN_MS = 800
 const PREVIOUS_PAGE_SIZE = 15
 
 const ChatBotPanel = ({ isOpen, onClose }) => {
+  const headerColors = THEME_COLORS.header
+  const contentCard = THEME_COLORS.contentCard
   const user = useSelector((state) => state.auth?.user)
   const custId = user?.reg_info?.user_id ?? user?.reg_info?.id ?? user?.user_id ?? user?.id ?? ''
   const [allFetchedPrevious, setAllFetchedPrevious] = useState([])
@@ -375,9 +378,14 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
       <div
         className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
           m.role === 'user'
-            ? 'bg-brand-primary text-white'
-            : 'bg-gray-100 text-gray-800'
+            ? 'text-white'
+            : ''
         }`}
+        style={
+          m.role === 'user'
+            ? { backgroundColor: headerColors.background }
+            : { backgroundColor: contentCard.background, color: contentCard.title }
+        }
       >
         {m.role === 'assistant' ? renderBotText(m.text) : m.text}
       </div>
@@ -394,14 +402,23 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
   return (
     <div
       ref={panelRef}
-      className="fixed bottom-20 right-4 z-50 w-[min(100vw-2rem,380px)] rounded-2xl shadow-2xl border border-gray-200 bg-white flex flex-col overflow-hidden"
-      style={{ maxHeight: '70vh' }}
+      className="fixed bottom-20 right-4 z-50 w-[min(100vw-2rem,380px)] rounded-2xl shadow-2xl border bg-white flex flex-col overflow-hidden"
+      style={{ borderColor: contentCard.border, maxHeight: '70vh' }}
     >
-      <div className="flex items-center justify-between px-4 py-3 bg-brand-primary text-white shrink-0">
+      <div
+        className="flex items-center justify-between px-4 py-3 text-white shrink-0"
+        style={{ backgroundColor: headerColors.background }}
+      >
         <div className="flex items-center gap-2">
           <span className="font-semibold">Chat</span>
           {isLiveAgentActive && (
-            <span className="text-xs bg-green-500 px-2 py-0.5 rounded-full">
+            <span
+              className="text-xs px-2 py-0.5 rounded-full"
+              style={{
+                backgroundColor: THEME_COLORS.sidebar.activeBackground,
+                color: THEME_COLORS.sidebar.activeText,
+              }}
+            >
               {isWebSocketConnected ? 'Live Agent' : 'Connecting...'}
             </span>
           )}
@@ -448,7 +465,10 @@ const ChatBotPanel = ({ isOpen, onClose }) => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={waitingForDisputeDescription ? "Describe your issue..." : "Type a message..."}
-            className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
+            className="flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-[#357219] focus:border-[#357219]"
+            style={{
+              borderColor: contentCard.border,
+            }}
             disabled={loading || isRequestingLiveAgent || !custId}
           />
           <Button type="submit" size="sm" disabled={loading || isRequestingLiveAgent || !input.trim() || !custId}>
