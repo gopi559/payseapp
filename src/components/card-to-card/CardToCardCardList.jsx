@@ -364,11 +364,7 @@ const CardToCardCardList = () => {
               {sourceCards.map((card, index) => (
                 <div
                   key={card.id}
-                  className={`snap-center shrink-0 w-full ${
-                    activeSourceIndex === index
-                      ? 'ring-2 ring-green-500 rounded-xl'
-                      : ''
-                  }`}
+                  className="snap-center shrink-0 w-full"
                   onClick={() => setActiveSourceIndex(index)}
                 >
                   <BankCard
@@ -414,11 +410,7 @@ const CardToCardCardList = () => {
             <div
               key={card.id}
               onClick={() => setActiveDestIndex(index)}
-              className={`snap-center shrink-0 w-full cursor-pointer ${
-                activeDestIndex === index
-                  ? 'ring-2 ring-green-500 rounded-xl'
-                  : ''
-              }`}
+              className="snap-center shrink-0 w-full cursor-pointer"
             >
               <BankCard
                 card={card}

@@ -282,9 +282,7 @@ const BillPaymentPage = () => {
             {cards.map((card, index) => (
               <div
                 key={card.id ?? `${card.card_number}-${index}`}
-                className={`snap-center shrink-0 w-full ${
-                  activeIndex === index ? 'ring-2 ring-green-500 rounded-xl' : ''
-                }`}
+                className="snap-center shrink-0 w-full"
                 onClick={() => setActiveIndex(index)}
               >
                 <BankCard card={card} />
