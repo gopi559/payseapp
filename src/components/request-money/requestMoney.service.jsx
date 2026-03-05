@@ -11,6 +11,20 @@ import authService from '../../Login/auth.service.jsx'
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
 
+const normalizeBeneficiaryData = (data) => {
+  if (!data || typeof data !== 'object') return data
+
+  const toUpper = (value) =>
+    value == null ? value : String(value).toUpperCase()
+
+  return {
+    ...data,
+    first_name: toUpper(data.first_name),
+    middle_name: toUpper(data.middle_name),
+    last_name: toUpper(data.last_name),
+  }
+}
+
 const postJson = async (url, body, defaultError) => {
   const response = await fetch(url, {
     method: 'POST',
@@ -42,7 +56,7 @@ const requestMoneyService = {
     if (!res?.data) throw new Error( 'Beneficiary Not Found')
 
     return {
-      data: res.data,
+      data: normalizeBeneficiaryData(res.data),
       message: res?.message,
     }
   },

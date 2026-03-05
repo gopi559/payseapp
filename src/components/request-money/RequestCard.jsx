@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { FiPhone } from 'react-icons/fi'
 import { HiOutlineCurrencyDollar } from 'react-icons/hi2'
 import { getStatusConfig, formatShortDate, REQUEST_STATUS } from './requestMoney.utils'
+import THEME_COLORS from '../../theme/colors'
 
 const RequestCard = ({
   item,
@@ -15,6 +16,8 @@ const RequestCard = ({
   const statusConfig = getStatusConfig(item?.status)
   const canTakeAction = Number(item?.status) === REQUEST_STATUS.pending
   const isSent = variant === 'sent'
+  const menuGreen = THEME_COLORS.header.background
+  const contentCard = THEME_COLORS.contentCard
 
   const fullName =
     [
@@ -28,7 +31,7 @@ const RequestCard = ({
     'Unknown'
 
   return (
-    <div className="bg-white rounded-2xl border border-emerald-100 p-4 shadow-sm">
+    <div className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${contentCard.border}` }}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="font-semibold text-[20px] text-black">{fullName}</h3>
@@ -50,7 +53,7 @@ const RequestCard = ({
         </div>
 
         <div className="shrink-0 flex flex-col items-end">
-          <p className="text-[20px] font-bold text-emerald-500 flex items-center gap-1">
+          <p className="text-[20px] font-bold flex items-center gap-1" style={{ color: menuGreen }}>
             <HiOutlineCurrencyDollar size={22} />
             <span>{Number(item?.amount || 0).toFixed(2)}</span>
           </p>
@@ -73,11 +76,16 @@ const RequestCard = ({
             className={`h-12 rounded-xl font-semibold transition
               ${
                 canTakeAction
-                  ? 'bg-white border border-emerald-500 text-emerald-600'
+                  ? 'bg-white'
                   : 'border border-gray-300 text-gray-400'
               }
               disabled:opacity-60
             `}
+            style={
+              canTakeAction
+                ? { border: `1px solid ${menuGreen}`, color: menuGreen }
+                : undefined
+            }
           >
             Decline
           </button>
@@ -94,11 +102,12 @@ const RequestCard = ({
             className={`h-12 rounded-xl font-semibold transition
               ${
                 canTakeAction
-                  ? 'bg-emerald-500 text-white'
+                  ? 'text-white'
                   : 'border border-gray-300 text-gray-400'
               }
               disabled:opacity-60
             `}
+            style={canTakeAction ? { backgroundColor: menuGreen } : undefined}
           >
             Pay
           </button>

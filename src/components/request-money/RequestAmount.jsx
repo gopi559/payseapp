@@ -7,7 +7,6 @@ import { toast } from 'react-toastify'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import AmountInput from '../../Reusable/AmountInput'
 import Input from '../../Reusable/Input'
-import Button from '../../Reusable/Button'
 import THEME_COLORS from '../../theme/colors'
 import requestMoneyService from './requestMoney.service'
 import { buildRemarks } from './requestMoney.utils'
@@ -25,6 +24,8 @@ const RequestAmount = () => {
   const location = useLocation()
   const beneficiary = location.state?.beneficiary
   const contentCard = THEME_COLORS.contentCard
+  const menuGreen = THEME_COLORS.header.background
+  const menuGreenHover = THEME_COLORS.sidebar.logoutHoverBackground
 
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
@@ -133,9 +134,9 @@ const RequestAmount = () => {
                   }}
                   className="h-10 rounded-md text-sm font-medium flex items-center justify-center gap-2"
                   style={{
-                    backgroundColor: active ? THEME_COLORS.brand.primary : contentCard.background,
+                    backgroundColor: active ? menuGreen : contentCard.background,
                     color: active ? THEME_COLORS.common.white : contentCard.title,
-                    border: `1px solid ${active ? THEME_COLORS.brand.primary : contentCard.border}`,
+                    border: `1px solid ${active ? menuGreen : contentCard.border}`,
                   }}
                 >
                   {category.icon}
@@ -147,14 +148,21 @@ const RequestAmount = () => {
         </div>
 
         <div className="pt-2 flex gap-2">
-          <Button
+          <button
             type="button"
-            fullWidth
             onClick={handleSubmit}
             disabled={loading}
+            className="w-full px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
+            style={{ backgroundColor: menuGreen, color: THEME_COLORS.common.white }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = menuGreenHover
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = menuGreen
+            }}
           >
             {loading ? 'Processing...' : 'Continue'}
-          </Button>
+          </button>
           <button
             type="button"
             onClick={() => navigate('/customer/request-money')}

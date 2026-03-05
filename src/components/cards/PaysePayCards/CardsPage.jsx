@@ -89,7 +89,7 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
     </div>
     {/* Cardholder – gold */}
     <div className="absolute left-4 bottom-4 z-20 text-amber-200">
-      <p className="text-xs text-amber-300/90">cardholder</p>
+      <p className="text-xs text-amber-300/90">Cardholder</p>
       <p className="font-semibold text-sm sm:text-base text-amber-200 truncate max-w-[140px] sm:max-w-[180px]">
         {card.name_on_card || '—'}
       </p>
@@ -108,7 +108,7 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
 const MetaRow = ({ icon: Icon, label, value }) => (
   <>
     <div className="flex items-center gap-2">
-      {Icon && <Icon className="text-blue-500 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
+      {Icon && <Icon className="text-brand-secondary w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
       <span className="font-medium text-gray-500 text-sm">{label}</span>
     </div>
     <span className="font-semibold text-gray-800 break-words text-sm">{value ?? '—'}</span>
@@ -331,8 +331,8 @@ const CardsPage = () => {
             <div className="flex-1 min-w-0 flex flex-col gap-3 sm:gap-4 bg-white rounded-lg shadow-sm p-2 sm:p-3 lg:p-4 w-full h-[80vh]">
               <div className="flex items-center justify-between p-2 gap-2 sm:gap-4 flex-shrink-0">
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <HiCreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                  <div className="bg-brand-secondary p-2 rounded-lg">
+                    <HiCreditCard className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800">
                     Card information
@@ -445,7 +445,7 @@ const CardsPage = () => {
                         value={selectedCard.expiry_on ? formatExpiry(selectedCard.expiry_on) : null}
                       />
                       <div className="flex items-center gap-2">
-                        <MdBrowserUpdated className="text-blue-500 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                        <MdBrowserUpdated className="text-brand-secondary w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                         <span className="font-medium text-gray-500">Select Action</span>
                       </div>
                       <div className="font-semibold text-gray-800">

@@ -60,7 +60,7 @@ const OtherCardPreview = ({ card, onClick, selectable = true, fullWidth = false 
 
     {/* Cardholder */}
     <div className="absolute left-4 bottom-4 z-20 text-gray-800">
-      <p className="text-xs text-gray-600">cardholder</p>
+      <p className="text-xs text-gray-600">Cardholder</p>
       <p className="font-semibold text-sm sm:text-base truncate max-w-[180px]">
         {card.cardholder_name || '—'}
       </p>

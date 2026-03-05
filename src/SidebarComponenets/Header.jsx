@@ -88,8 +88,6 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
     setIsDropdownOpen(false)
   }
 
-  
-
   const headerColors = THEME_COLORS.header
 
   return (
@@ -98,6 +96,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
       style={{ backgroundColor: headerColors.background, color: headerColors.text }}
     >
       <div className="flex items-center justify-between">
+        {/* LEFT SIDE */}
         <div className="flex items-center gap-3">
           <button
             onClick={onMenuClick}
@@ -125,31 +124,34 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
           </div>
         </div>
 
-<div className="hidden md:flex items-center gap-4">
-  <div className="flex flex-col items-end leading-tight">
-    <span className="text-xs opacity-80">Available Balance</span>
+        {/* BALANCE SECTION */}
+        <div className="hidden md:flex items-center gap-4">
+          <div className="flex items-center gap-2 text-xl font-bold">
+            <span className="text-sm font-medium opacity-80 mr-1">
+              Available Balance
+            </span>
 
-    <div className="flex items-center gap-2 text-xl font-bold">
-      <img
-        src={AfganCurrency}
-        alt="Currency"
-        className="h-6 w-6"
-      />
-      <span>{formatAmount(balance)}</span>
-    </div>
-  </div>
+            <img
+              src={AfganCurrency}
+              alt="Currency"
+              className="h-6 w-6"
+            />
 
-  <button
-    onClick={handleBalanceRefresh}
-    disabled={isRefreshing}
-    className="p-1.5 rounded-full disabled:opacity-50"
-    style={{ backgroundColor: headerColors.overlaySoft }}
-    title="Refresh balance"
-  >
-    <MdRefresh size={20} className={isRefreshing ? 'animate-spin' : ''} />
-  </button>
-</div>
+            <span>{formatAmount(balance)}</span>
+          </div>
 
+          <button
+            onClick={handleBalanceRefresh}
+            disabled={isRefreshing}
+            className="p-1.5 rounded-full disabled:opacity-50"
+            style={{ backgroundColor: headerColors.overlaySoft }}
+            title="Refresh balance"
+          >
+            <MdRefresh size={20} className={isRefreshing ? 'animate-spin' : ''} />
+          </button>
+        </div>
+
+        {/* PROFILE DROPDOWN */}
         <div className="relative shrink-0" ref={dropdownRef}>
           <button
             type="button"
@@ -183,7 +185,10 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
               >
                 <p className="font-semibold truncate">{displayName}</p>
                 {regInfo?.mobile && (
-                  <p className="text-xs truncate mt-0.5" style={{ color: headerColors.mutedText }}>
+                  <p
+                    className="text-xs truncate mt-0.5"
+                    style={{ color: headerColors.mutedText }}
+                  >
                     {regInfo.mobile}
                   </p>
                 )}
@@ -211,7 +216,10 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
                   </button>
                 </li>
 
-                <li className="border-t" style={{ borderColor: headerColors.dropdownBorder }}>
+                <li
+                  className="border-t"
+                  style={{ borderColor: headerColors.dropdownBorder }}
+                >
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-2 px-4 py-2 text-sm"

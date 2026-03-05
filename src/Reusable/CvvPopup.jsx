@@ -7,6 +7,13 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
   const [cvv, setCvv] = useState('')
   const [expiry, setExpiry] = useState('')
   const popupColors = THEME_COLORS.popup
+  const expiryDigits = expiry.replace(/\D/g, '')
+  const expiryMonth = Number(expiryDigits.slice(0, 2))
+  const hasValidExpiry =
+    expiryDigits.length === 4 &&
+    Number.isInteger(expiryMonth) &&
+    expiryMonth >= 1 &&
+    expiryMonth <= 12
 
   useEffect(() => {
     if (open) {
@@ -23,8 +30,25 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
   if (!open) return null
 
   const handleContinue = () => {
-    if (cvv.length !== 3 || expiry.length < 4) return
+    if (cvv.length !== 3 || !hasValidExpiry) return
     onConfirm({ cvv, expiry })
+  }
+
+  const handleExpiryChange = (value) => {
+    let digits = value.replace(/[^\d]/g, '').slice(0, 4)
+    if (digits.length >= 2) {
+      const month = Number(digits.slice(0, 2))
+      if (month > 12) {
+        digits = `12${digits.slice(2)}`
+      } else if (month === 0) {
+        digits = `01${digits.slice(2)}`
+      }
+    }
+    if (digits.length > 2) {
+      setExpiry(`${digits.slice(0, 2)}/${digits.slice(2)}`)
+      return
+    }
+    setExpiry(digits)
   }
 
   return (
@@ -45,18 +69,18 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
           </div>
 
           <p className="text-sm mb-4" style={{ color: popupColors.subtitle }}>
-            Enter CVV And Expiry Date
+            Enter CVV2 And Expiry Date
           </p>
 
           <div className="grid grid-cols-2 gap-3 mb-6">
             <input
               type="password"
               inputMode="numeric"
-              maxLength={4}
+              maxLength={3}
               autoFocus
               value={cvv}
-              onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
-              placeholder="CVV"
+              onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))}
+              placeholder="CVV2"
               className="border rounded-xl px-4 py-3 text-lg focus:outline-none"
               style={{
                 backgroundColor: popupColors.inputBackground,
@@ -70,11 +94,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
               inputMode="numeric"
               maxLength={5}
               value={expiry}
-              onChange={(e) => {
-                let v = e.target.value.replace(/[^\d]/g, '')
-                if (v.length > 2) v = v.slice(0, 2) + '/' + v.slice(2, 4)
-                setExpiry(v)
-              }}
+              onChange={(e) => handleExpiryChange(e.target.value)}
               placeholder="MM/YY"
               className="border rounded-xl px-4 py-3 text-lg focus:outline-none"
               style={{
@@ -87,7 +107,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
 
           <Button
             fullWidth
-            disabled={cvv.length < 3 || expiry.length < 4 || loading}
+            disabled={cvv.length !== 3 || !hasValidExpiry || loading}
             onClick={handleContinue}
           >
             {loading ? 'Processing...' : 'Continue'}

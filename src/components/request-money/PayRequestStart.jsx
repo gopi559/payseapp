@@ -5,7 +5,6 @@ import { toast } from 'react-toastify'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Input from '../../Reusable/Input'
-import Button from '../../Reusable/Button'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
 import THEME_COLORS from '../../theme/colors'
@@ -20,6 +19,8 @@ const PayRequestStart = () => {
   const balance = useSelector((state) => state.wallet?.balance ?? 0)
   const request = location.state?.request
   const contentCard = THEME_COLORS.contentCard
+  const menuGreen = THEME_COLORS.header.background
+  const menuGreenHover = THEME_COLORS.sidebar.logoutHoverBackground
 
   const senderMobile =
     user?.reg_info?.mobile ??
@@ -78,9 +79,20 @@ const PayRequestStart = () => {
           <Input label="Amount" value={amount ? Number(amount).toFixed(2) : '0.00'} disabled />
           <Input label="Remarks" value={remarks} disabled />
 
-          <Button type="button" fullWidth onClick={handleContinue}>
+          <button
+            type="button"
+            onClick={handleContinue}
+            className="w-full px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 shadow-sm hover:shadow"
+            style={{ backgroundColor: menuGreen, color: THEME_COLORS.common.white }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = menuGreenHover
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = menuGreen
+            }}
+          >
             Continue
-          </Button>
+          </button>
         </div>
       </div>
 

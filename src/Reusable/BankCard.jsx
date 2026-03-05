@@ -12,6 +12,11 @@ const BankCard = ({ card, onBalance }) => {
 
   const cardNumberToFormat = card.card_number || card.masked_card || ''
   const formattedCardNumber = formatCardNumber(cardNumberToFormat)
+  const bankName =
+    card.external_inst_name?.trim() ||
+    card.inst_short_name?.trim() ||
+    (isMyPayseCard ? 'Paysey' : 'Bank')
+  const cardholderName = card.cardholder_name || card.name_on_card || '—'
 
   return (
     <div
@@ -26,6 +31,12 @@ const BankCard = ({ card, onBalance }) => {
         />
       )}
 
+      {!isMyPayseCard && (
+        <div className="absolute top-4 right-5 text-base font-semibold text-gray-900 z-10">
+          {bankName}
+        </div>
+      )}
+
       {/* 🔹 Chip - slightly smaller */}
       <img src={Chip} alt="Chip" className="absolute top-10 left-5 h-12" />
 
@@ -34,7 +45,7 @@ const BankCard = ({ card, onBalance }) => {
 
       <div className="relative z-10 mt-24">
         <div className="mb-3">
-          <div className="text-sm text-white/80">Card number</div>
+          <div className="text-sm text-white/80">Card Number</div>
           <div className="text-lg font-mono tracking-[0.22em]">
             {formattedCardNumber}
           </div>
@@ -42,9 +53,9 @@ const BankCard = ({ card, onBalance }) => {
 
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-sm text-white/80">Card holder name</div>
-            <div className="text-sm font-semibold uppercase">
-              {card.cardholder_name || card.name_on_card}
+            <div className="text-sm text-white/80">Card Holder Name</div>
+            <div className="text-sm font-semibold capitalize">
+              {cardholderName}
             </div>
           </div>
 

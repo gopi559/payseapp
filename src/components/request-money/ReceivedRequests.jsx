@@ -7,11 +7,13 @@ import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import requestMoneyService from './requestMoney.service'
 import RequestCard from './RequestCard'
 import { getCustomerId, sortByAddedOnDesc } from './requestMoney.utils'
+import THEME_COLORS from '../../theme/colors'
 
 const ReceivedRequests = () => {
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
   const currentUserId = getCustomerId(user)
+  const menuGreen = THEME_COLORS.header.background
 
   const [loading, setLoading] = useState(false)
   const [actioningId, setActioningId] = useState(null)
@@ -81,17 +83,18 @@ const loadRequests = async () => {
 
   return (
     <MobileScreenContainer>
-      <div className="mx-auto w-full max-w-md min-h-screen px-4 pt-6 pb-8 bg-[#dff3e8]">
+      <div className="max-w-md mx-auto px-4 py-6">
         <div className="relative flex items-center justify-center mb-5">
           <button
             type="button"
             onClick={() => navigate('/customer/request-money')}
-            className="absolute left-0 text-emerald-600"
+            className="absolute left-0"
+            style={{ color: menuGreen }}
             aria-label="Back"
           >
             <FiArrowLeft size={26} />
           </button>
-          <h1 className="text-2xl font-bold text-emerald-700">Received Request</h1>
+          <h1 className="text-2xl font-bold" style={{ color: menuGreen }}>Received Request</h1>
         </div>
 
         <div className="rounded-2xl bg-white/80 h-14 px-4 flex items-center gap-3 shadow-sm">

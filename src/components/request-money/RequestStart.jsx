@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import MobileInput from '../../Reusable/MobileInput'
-import Button from '../../Reusable/Button'
 import THEME_COLORS from '../../theme/colors'
 import requestMoneyService from './requestMoney.service'
 import { getCustomerId, normalizeMobile } from './requestMoney.utils'
@@ -13,6 +12,8 @@ const RequestStart = () => {
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
   const contentCard = THEME_COLORS.contentCard
+  const menuGreen = THEME_COLORS.header.background
+  const menuGreenHover = THEME_COLORS.sidebar.logoutHoverBackground
 
   const currentUserId = getCustomerId(user)
   const currentUserMobile = normalizeMobile(
@@ -109,18 +110,25 @@ const RequestStart = () => {
             placeholder="e.g. 998877665"
           />
 
-          <Button
+          <button
             type="button"
-            fullWidth
             onClick={handleContinue}
             disabled={loading}
+            className="w-full px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
+            style={{ backgroundColor: menuGreen, color: THEME_COLORS.common.white }}
+            onMouseEnter={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = menuGreenHover
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) e.currentTarget.style.backgroundColor = menuGreen
+            }}
           >
             {loading ? 'Validating...' : 'Continue'}
-          </Button>
+          </button>
         </div>
 
         <p className="text-sm" style={{ color: contentCard.subtitle }}>
-          Enter recipient mobile number and continue.
+          Enter Recipient Mobile Number And Continue.
         </p>
       </div>
     </MobileScreenContainer>

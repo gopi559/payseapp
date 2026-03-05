@@ -25,6 +25,8 @@ const MetaRow = ({ label, value }) => (
 const OtherCardsPage = () => {
   const navigate = useNavigate()
   const contentCard = THEME_COLORS.contentCard
+  const getBankName = (card) =>
+    card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || 'Bank'
 
   const [cards, setCards] = useState([])
   const [selectedCard, setSelectedCard] = useState(null)
@@ -209,7 +211,7 @@ const OtherCardsPage = () => {
                     style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                      <MetaRow label="Bank" value="Other Bank" />
+                      <MetaRow label="Bank" value={getBankName(selectedCard)} />
                       <MetaRow label="Card number" value={selectedCard.masked_card} />
                       <MetaRow label="Cardholder" value={selectedCard.cardholder_name} />
                       <MetaRow label="Nickname" value={selectedCard.cardholder_nick_name} />

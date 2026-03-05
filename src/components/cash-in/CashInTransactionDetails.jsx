@@ -266,7 +266,7 @@ const CashInTransactionDetails = () => {
           <div className="space-y-3">
             {rrn && (
               <div className="flex items-start gap-3">
-                <FaFingerprint className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                <FaFingerprint className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
                   <p className="text-xs text-gray-500 mb-0.5">RRN</p>
                   <p className="text-sm font-medium text-gray-800 font-mono">{rrn}</p>
@@ -275,7 +275,7 @@ const CashInTransactionDetails = () => {
             )}
             
             <div className="flex items-start gap-3">
-              <FaExchangeAlt className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+              <FaExchangeAlt className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">Transaction Type</p>
                 <p className="text-sm font-medium text-gray-800">{txnType}</p>
@@ -292,7 +292,7 @@ const CashInTransactionDetails = () => {
             
             {txnTime && (
               <div className="flex items-start gap-3">
-                <FaClock className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+                <FaClock className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
                   <p className="text-xs text-gray-500 mb-0.5">Date & Time</p>
                   <p className="text-sm font-medium text-gray-800">{formatDateTime(txnTime)}</p>
@@ -301,7 +301,7 @@ const CashInTransactionDetails = () => {
             )}
             
             <div className="flex items-start gap-3">
-              <FaMoneyBillWave className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+              <FaMoneyBillWave className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">Amount</p>
                 <p className="text-sm font-medium text-gray-800">{amount}</p>
@@ -309,7 +309,7 @@ const CashInTransactionDetails = () => {
             </div>
             
             <div className="flex items-start gap-3">
-              <FaDesktop className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
+              <FaDesktop className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">Channel</p>
                 <p className="text-sm font-medium text-gray-800">{channel}</p>
@@ -321,7 +321,7 @@ const CashInTransactionDetails = () => {
         {/* Sender Details Section (Card) */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-6 h-6 bg-blue-500 rounded flex items-center justify-center">
+            <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <HiOutlineCreditCard className="w-4 h-4 text-white" />
             </div>
             <h3 className="text-lg font-bold text-gray-800">Sender Details</h3>

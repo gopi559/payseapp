@@ -16,7 +16,7 @@ import cardService from '../cards/PaysePayCards/card.service'
 import walletToCardService from './walletToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
-import bankIcon from '../../assets/BankIcon.png'
+import bankIcon from '../../assets/BankIcon.svg'
 
 import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 import { formatCardNumber } from '../../utils/formatCardNumber'
@@ -316,10 +316,23 @@ const resetFlow = () => {
 }
 
   const dest = destCards[activeDestIndex]
+  const getBankName = (card) =>
+    card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || 'Bank'
+  const footer = (
+    <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
+      <Button
+        fullWidth
+        onClick={handleContinue}
+        disabled={!amount || activeDestIndex === null}
+      >
+        Continue
+      </Button>
+    </div>
+  )
 
   return (
-    <MobileScreenContainer>
-      <div className="px-4 py-4 max-w-md mx-auto">
+    <MobileScreenContainer footer={footer}>
+      <div className="px-4 py-4 max-w-md mx-auto h-full flex flex-col overflow-hidden">
         <div className="relative flex items-center justify-between mb-5">
           <button
             type="button"
@@ -348,11 +361,7 @@ const resetFlow = () => {
       {sourceCards.map((card, index) => (
         <div
           key={card.id}
-          className={`snap-center shrink-0 w-full ${
-            activeSourceIndex === index
-              ? 'ring-2 ring-green-500 rounded-xl'
-              : ''
-          }`}
+          className="snap-center shrink-0 w-full"
           onClick={() => setActiveSourceIndex(index)}
         >
 <BankCard
@@ -396,7 +405,7 @@ const resetFlow = () => {
           </button>
         </div>
 
-        <div className="space-y-3 max-h-64 overflow-y-auto pr-1 pb-2">
+        <div className="space-y-3 max-h-[190px] overflow-y-auto pr-1 pb-1 flex-1 min-h-0">
           {destCards.map((card, index) => (
             <div
               key={card.id}
@@ -414,7 +423,7 @@ const resetFlow = () => {
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-semibold text-[#111827] truncate">
-                      {card.external_inst_name || card.cardholder_name || 'Bank Card'}
+                      {getBankName(card)}
                     </p>
                     <p className="text-sm text-[#4B5563] mt-0.5">
                       {formatCardNumber(card.card_number || card.masked_card)}
@@ -446,13 +455,6 @@ const resetFlow = () => {
           ))}
         </div>
 
-        <Button
-          fullWidth
-          onClick={handleContinue}
-          disabled={!amount || activeDestIndex === null}
-        >
-          Continue
-        </Button>
       </div>
 
 

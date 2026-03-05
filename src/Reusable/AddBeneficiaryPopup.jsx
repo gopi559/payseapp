@@ -112,7 +112,15 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
   if (!open) return null
 
   const handleExpiryChange = (value) => {
-    const raw = value.replace(/\D/g, '').slice(0, 4)
+    let raw = value.replace(/\D/g, '').slice(0, 4)
+    if (raw.length >= 2) {
+      const month = Number(raw.slice(0, 2))
+      if (month > 12) {
+        raw = `12${raw.slice(2)}`
+      } else if (month === 0) {
+        raw = `01${raw.slice(2)}`
+      }
+    }
     if (raw.length <= 2) {
       setExpiryDate(raw)
       return
@@ -241,7 +249,7 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
               onChange={(e) =>
                 setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))
               }
-              placeholder="CVV (optional)"
+              placeholder="CVV2 (optional)"
               className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
               style={{
                 backgroundColor: popupColors.inputBackground,

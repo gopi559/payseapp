@@ -94,13 +94,18 @@ const CashInPage = () => {
       setError('Please wait for card verification to complete')
       return
     }
-    if (!cvv || cvv.length < 3) {
-      setError('Please enter CVV')
+    if (!cvv || cvv.length !== 3) {
+      setError('Please enter CVV2')
       return
     }
     const expiry = expiryDate.trim().replace(/\D/g, '')
     if (expiry.length !== 4) {
       setError('Please enter expiry as MMYY (e.g. 1030)')
+      return
+    }
+    const month = Number(expiry.slice(0, 2))
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      setError('Please enter a valid expiry month (01-12)')
       return
     }
     if (!amount || parseFloat(amount) <= 0) {
@@ -203,22 +208,31 @@ const CashInPage = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="CVV"
+                label="CVV2"
                 type="password"
                 value={cvv}
                 onChange={(e) => {
-                  setCvv(e.target.value.replace(/\D/g, '').slice(0, 4))
+                  setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))
                   setError('')
                 }}
                 placeholder="e.g. 234"
-                maxLength={4}
+                maxLength={3}
                 autoComplete="cc-csc"
               />
               <Input
                 label="Expiry (MMYY)"
                 value={expiryDate}
                 onChange={(e) => {
-                  setExpiryDate(e.target.value.replace(/\D/g, '').slice(0, 4))
+                  let digits = e.target.value.replace(/\D/g, '').slice(0, 4)
+                  if (digits.length >= 2) {
+                    const month = Number(digits.slice(0, 2))
+                    if (month > 12) {
+                      digits = `12${digits.slice(2)}`
+                    } else if (month === 0) {
+                      digits = `01${digits.slice(2)}`
+                    }
+                  }
+                  setExpiryDate(digits)
                   setError('')
                 }}
                 placeholder="e.g. 1030"

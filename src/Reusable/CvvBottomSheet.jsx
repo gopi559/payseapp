@@ -21,9 +21,9 @@ const CvvBottomSheet = ({ open, onClose, onSubmit, loading }) => {
         <input
           type="password"
           inputMode="numeric"
-          maxLength={4}
+          maxLength={3}
           value={cvv}
-          onChange={(e) => setCvv(e.target.value.replace(/\D/g, ''))}
+          onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))}
           placeholder="CVV2"
           className="w-full border rounded-xl px-4 py-3 text-lg mb-4"
           style={{
