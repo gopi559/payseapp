@@ -1,4 +1,4 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
+import { getAuthToken, deviceId, getClientRefId } from '../../services/api.jsx'
 import { AIRTIME_TXN_SEND, AIRTIME_TXN_SEND_OTP } from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
@@ -10,6 +10,7 @@ const normalizeExpiry = (expiry) =>
 
 const airtimeService = {
   sendOtp: async ({ card_number, txn_amount }) => {
+    const clientRefId = getClientRefId()
     const body = {
       card_number: String(card_number).trim().replace(/\s/g, ''),
       txn_amount: Number(txn_amount),
@@ -24,6 +25,7 @@ const airtimeService = {
           device_type: 'WEB',
           device_id: deviceId,
         }),
+        client_ref_id: clientRefId,
       },
       body: JSON.stringify(body),
     })
@@ -46,6 +48,7 @@ const airtimeService = {
     stan,
     mobile_no,
   }) => {
+    const clientRefId = getClientRefId()
     const body = {
       card_number: String(card_number).trim().replace(/\s/g, ''),
       txn_amount: Number(txn_amount),
@@ -66,6 +69,7 @@ const airtimeService = {
           device_type: 'WEB',
           device_id: deviceId,
         }),
+        client_ref_id: clientRefId,
       },
       body: JSON.stringify(body),
     })

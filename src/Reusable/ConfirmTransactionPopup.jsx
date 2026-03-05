@@ -34,7 +34,8 @@ const ConfirmTransactionPopup = ({
       style={{ backgroundColor: popupColors.backdrop }}
     >
       <div
-className="w-full max-w-[409px] rounded-t-3xl px-5 pt-4 pb-5 ml-0 md:ml-72"        style={{ backgroundColor: popupColors.panelBackground, borderTop: `1px solid ${popupColors.panelBorder}` }}
+className="w-full max-w-[409px] rounded-t-3xl px-5 pt-4 pb-5 ml-0 md:ml-72"    
+    style={{ backgroundColor: popupColors.panelBackground, borderTop: `1px solid ${popupColors.panelBorder}` }}
       >
         <div
           className="w-12 h-1 rounded-full mx-auto mb-4"

@@ -67,6 +67,22 @@
   flex-shrink: 0;
 }
 
+/* Native dropdowns can ignore inherited theme styles; force readable option colors. */
+.voucher-select {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+.voucher-select option {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+.voucher-select:disabled {
+  color: #6b7280 !important;
+  background-color: #f3f4f6 !important;
+}
+
 @layer utilities {
   .backface-hidden {
     backface-visibility: hidden;
