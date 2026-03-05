@@ -25,55 +25,85 @@ const ConfirmTransactionPopup = ({
 
   if (!open) return null
 
-  const fromCardNumber = card?.card_number ? formatCardNumber(card.card_number) : null
+  const fromCardNumber = card?.card_number
+    ? formatCardNumber(card.card_number)
+    : null
+
   const fromCardholderName = card?.cardholder_name || card?.name_on_card
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed inset-0 z-50 flex items-end justify-center px-4 md:pl-[17.99rem]"
       style={{ backgroundColor: popupColors.backdrop }}
     >
       <div
-className="w-full max-w-[409px] rounded-t-3xl px-5 pt-4 pb-5 ml-0 md:ml-72"    
-    style={{ backgroundColor: popupColors.panelBackground, borderTop: `1px solid ${popupColors.panelBorder}` }}
+className="w-full max-w-[380px] rounded-3xl p-5 mb-4"
+        style={{
+          backgroundColor: popupColors.panelBackground,
+          border: `1px solid ${popupColors.panelBorder}`,
+        }}
       >
-        <div
-          className="w-12 h-1 rounded-full mx-auto mb-4"
-          style={{ backgroundColor: confirmColors.handle }}
-        />
-
-        <div className="flex items-center gap-3 mb-4">
-          <HiExclamationTriangle className="w-6 h-6" style={{ color: popupColors.accent }} />
-          <h2 className="text-xl font-semibold" style={{ color: popupColors.title }}>Confirm Transaction</h2>
+<div className="flex items-center gap-3 mb-4 w-fit">
+            <HiExclamationTriangle
+            className="w-6 h-6"
+            style={{ color: popupColors.accent }}
+          />
+          <h2
+            className="text-xl font-semibold"
+            style={{ color: popupColors.title }}
+          >
+            Confirm Transaction
+          </h2>
         </div>
 
         <div className="space-y-4 text-sm">
           <div>
             <p style={{ color: confirmColors.label }}>From</p>
+
             {fromCardNumber ? (
               <div>
-                <p className="font-medium font-mono" style={{ color: confirmColors.value }}>{fromCardNumber}</p>
+                <p
+                  className="font-medium font-mono"
+                  style={{ color: confirmColors.value }}
+                >
+                  {fromCardNumber}
+                </p>
+
                 {fromCardholderName && (
-                  <p className="text-xs mt-1" style={{ color: confirmColors.value }}>{fromCardholderName}</p>
+                  <p
+                    className="text-xs mt-1"
+                    style={{ color: confirmColors.value }}
+                  >
+                    {fromCardholderName}
+                  </p>
                 )}
               </div>
             ) : (
-              <p className="font-medium" style={{ color: confirmColors.value }}>Wallet Balance</p>
+              <p className="font-medium" style={{ color: confirmColors.value }}>
+                Wallet Balance
+              </p>
             )}
           </div>
 
           <div>
             <p style={{ color: confirmColors.label }}>To</p>
             {typeof to === 'string' ? (
-              <p className="font-medium" style={{ color: confirmColors.value }}>{to}</p>
+              <p className="font-medium" style={{ color: confirmColors.value }}>
+                {to}
+              </p>
             ) : (
-              <div className="font-medium" style={{ color: confirmColors.value }}>{to}</div>
+              <div className="font-medium" style={{ color: confirmColors.value }}>
+                {to}
+              </div>
             )}
           </div>
 
           <div className="flex justify-between">
             <span style={{ color: confirmColors.label }}>Mobile</span>
-            <span className="font-medium font-mono" style={{ color: confirmColors.value }}>
+            <span
+              className="font-medium font-mono"
+              style={{ color: confirmColors.value }}
+            >
               {mobile?.replace(/^\+93\s?/, '')}
             </span>
           </div>
@@ -96,7 +126,12 @@ className="w-full max-w-[409px] rounded-t-3xl px-5 pt-4 pb-5 ml-0 md:ml-72"
             {loading ? 'Sending OTP...' : 'Confirm Transaction'}
           </Button>
 
-          <Button fullWidth variant="secondary" onClick={onCancel} disabled={loading}>
+          <Button
+            fullWidth
+            variant="secondary"
+            onClick={onCancel}
+            disabled={loading}
+          >
             Cancel Transaction
           </Button>
         </div>

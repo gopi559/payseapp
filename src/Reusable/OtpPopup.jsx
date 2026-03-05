@@ -38,20 +38,31 @@ const OtpPopup = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-3"
+      className="fixed inset-0 z-50 flex items-center justify-center px-3 md:pl-[17.85rem]"
       style={{ backgroundColor: popupColors.backdrop }}
     >
       <div
-        className="w-full max-w-[409px] rounded-3xl p-4 ml-1 md:ml-72"
-        style={{ backgroundColor: popupColors.panelBackground, border: `1px solid ${popupColors.panelBorder}` }}
+        className="w-full max-w-[380px] rounded-3xl p-5"
+        style={{
+          backgroundColor: popupColors.panelBackground,
+          border: `1px solid ${popupColors.panelBorder}`,
+        }}
       >
-        <h2 className="text-lg font-semibold mb-2" style={{ color: popupColors.title }}>Enter OTP</h2>
+        <h2
+          className="text-lg font-semibold mb-2"
+          style={{ color: popupColors.title }}
+        >
+          Enter OTP
+        </h2>
 
-        <p className="text-sm mb-4" style={{ color: popupColors.subtitle }}>
+        <p
+          className="text-sm mb-4"
+          style={{ color: popupColors.subtitle }}
+        >
           Enter The {length}-Digit OTP Sent To Your Registered Mobile Number
         </p>
 
-        <div className="flex justify-between gap-3 mb-6">
+        <div className="flex justify-center gap-3 mb-5">
           {otp.map((digit, index) => (
             <input
               key={index}
@@ -61,7 +72,7 @@ const OtpPopup = ({
               maxLength={1}
               value={digit}
               onChange={(e) => handleChange(e.target.value, index)}
-className="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl font-bold border rounded-xl focus:outline-none"
+              className="w-12 h-12 text-center text-xl font-bold border rounded-xl focus:outline-none"
               style={{
                 backgroundColor: popupColors.inputBackground,
                 borderColor: popupColors.otp.cellBorder,
@@ -71,21 +82,24 @@ className="w-12 h-12 sm:w-14 sm:h-14 text-center text-xl font-bold border rounde
           ))}
         </div>
 
-        <Button
-          fullWidth
-          disabled={otpValue.length !== length || loading}
-          onClick={() => onConfirm(otpValue)}
-        >
-          {loading ? 'Processing...' : 'Complete Transaction'}
-        </Button>
+        {/* Buttons */}
+        <div className="space-y-2 w-fit ml-6">
+          <Button
+            disabled={otpValue.length !== length || loading}
+            onClick={() => onConfirm(otpValue)}
+            className="w-[300px]"
+          >
+            {loading ? 'Processing...' : 'Complete Transaction'}
+          </Button>
 
-        <button
-          className="w-full mt-4 text-sm"
-          style={{ color: popupColors.subtitle }}
-          onClick={onCancel}
-        >
-          Cancel
-        </button>
+          <Button
+            variant="secondary"
+            onClick={onCancel}
+            className="w-[300px]"
+          >
+            Cancel
+          </Button>
+        </div>
       </div>
     </div>
   )
