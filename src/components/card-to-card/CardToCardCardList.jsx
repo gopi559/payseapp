@@ -345,93 +345,99 @@ const CardToCardCardList = () => {
   }
 
   return (
-    <MobileScreenContainer>
-      <div className="px-4 py-4 max-w-md mx-auto">
-
-        {/* Source Card carousel */}
-        {sourceCards.length > 0 && (
-          <>
-            <div className="text-sm font-medium mb-2">Source Card</div>
-            <div
-              ref={sourceScrollRef}
-              onScroll={() => {
-                const c = sourceScrollRef.current
-                if (!c) return
-                setActiveSourceIndex(Math.round(c.scrollLeft / c.offsetWidth))
-              }}
-              className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
+    <MobileScreenContainer
+      footer={
+        <div className="px-4 py-3 border-t border-gray-100">
+          <div className="max-w-md mx-auto">
+            <Button
+              fullWidth
+              onClick={handleContinue}
+              disabled={!amount || activeDestIndex === null}
             >
-              {sourceCards.map((card, index) => (
-                <div
-                  key={card.id}
-                  className="snap-center shrink-0 w-full"
-                  onClick={() => setActiveSourceIndex(index)}
-                >
-                  <BankCard
-                    card={card}
-                    onBalance={
-                      activeSourceIndex === index
-                        ? () => fetchSourceCardBalance(index)
-                        : undefined
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-
-        <AmountInput label="Amount" value={amount} onChange={setAmount} />
-
-        <div className="grid grid-cols-5 gap-2 mt-3">
-          {QUICK_AMOUNTS.map((a) => (
-            <button
-              key={a}
-              onClick={() => setAmount(String(a))}
-              className="border rounded-full py-1 text-sm"
-            >
-              {a}
-            </button>
-          ))}
+              Continue
+            </Button>
+          </div>
         </div>
+      }
+    >
+      <div className="min-h-full flex flex-col">
+        <div className="px-4 py-4 pb-6 max-w-md mx-auto w-full">
 
-        {/* Destination Card carousel */}
-        <div className="mt-8 text-sm font-medium">Select Destination Card</div>
-        <div
-          ref={destScrollRef}
-          onScroll={() => {
-            const c = destScrollRef.current
-            if (!c) return
-            setActiveDestIndex(Math.round(c.scrollLeft / c.offsetWidth))
-          }}
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
-        >
-          {destCards.map((card, index) => (
-            <div
-              key={card.id}
-              onClick={() => setActiveDestIndex(index)}
-              className="snap-center shrink-0 w-full cursor-pointer"
-            >
-              <BankCard
-                card={card}
-                onBalance={
-                  activeDestIndex === index
-                    ? () => fetchDestCardBalance(index)
-                    : undefined
-                }
-              />
-            </div>
-          ))}
-        </div>
+          {/* Source Card carousel */}
+          {sourceCards.length > 0 && (
+            <>
+              <div className="text-sm font-medium mb-2 text-brand-dark">Source Card</div>
+              <div
+                ref={sourceScrollRef}
+                onScroll={() => {
+                  const c = sourceScrollRef.current
+                  if (!c) return
+                  setActiveSourceIndex(Math.round(c.scrollLeft / c.offsetWidth))
+                }}
+                className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
+              >
+                {sourceCards.map((card, index) => (
+                  <div
+                    key={card.id}
+                    className="snap-center shrink-0 w-full"
+                    onClick={() => setActiveSourceIndex(index)}
+                  >
+                    <BankCard
+                      card={card}
+                      onBalance={
+                        activeSourceIndex === index
+                          ? () => fetchSourceCardBalance(index)
+                          : undefined
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
-        <div className="mt-6">
-          <Button
-            fullWidth
-            onClick={handleContinue}
-            disabled={!amount || activeDestIndex === null}
+          <AmountInput label="Amount" value={amount} onChange={setAmount} />
+
+          <div className="grid grid-cols-5 gap-2 mt-3">
+            {QUICK_AMOUNTS.map((a) => (
+              <button
+                key={a}
+                onClick={() => setAmount(String(a))}
+                className="border border-brand-surfaceLight text-brand-dark rounded-full py-1 text-sm hover:bg-brand-surfaceMuted transition-colors"
+              >
+                {a}
+              </button>
+            ))}
+          </div>
+
+          {/* Destination Card carousel */}
+          <div className="mt-8 text-sm font-medium text-brand-dark">Select Destination Card</div>
+          <div
+            ref={destScrollRef}
+            onScroll={() => {
+              const c = destScrollRef.current
+              if (!c) return
+              setActiveDestIndex(Math.round(c.scrollLeft / c.offsetWidth))
+            }}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4"
           >
-            Continue
-          </Button>
+            {destCards.map((card, index) => (
+              <div
+                key={card.id}
+                onClick={() => setActiveDestIndex(index)}
+                className="snap-center shrink-0 w-full cursor-pointer"
+              >
+                <BankCard
+                  card={card}
+                  onBalance={
+                    activeDestIndex === index
+                      ? () => fetchDestCardBalance(index)
+                      : undefined
+                  }
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -451,11 +457,11 @@ const CardToCardCardList = () => {
         to={
           destCard ? (
             <div>
-              <p className="text-green-600 font-medium font-mono">
+              <p className="text-brand-secondary font-medium font-mono">
                 {formatCardNumber(destCard.card_number || destCard.masked_card)}
               </p>
               {destCard.cardholder_name && (
-                <p className="text-green-600 text-xs mt-1">{destCard.cardholder_name}</p>
+                <p className="text-brand-secondary text-xs mt-1">{destCard.cardholder_name}</p>
               )}
             </div>
           ) : null

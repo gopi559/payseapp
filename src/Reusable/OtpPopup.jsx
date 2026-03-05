@@ -38,7 +38,7 @@ const OtpPopup = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center px-3 md:pl-[17.85rem]"
+      className="fixed inset-0 z-50 flex items-center justify-center px-3 md:pl-[18.6rem]"
       style={{ backgroundColor: popupColors.backdrop }}
     >
       <div
@@ -93,7 +93,6 @@ const OtpPopup = ({
           </Button>
 
           <Button
-            variant="secondary"
             onClick={onCancel}
             className="w-[300px]"
           >

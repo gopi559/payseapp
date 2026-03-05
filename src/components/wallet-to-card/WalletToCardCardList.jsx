@@ -320,19 +320,22 @@ const resetFlow = () => {
     card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || 'Bank'
   const footer = (
     <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
-      <Button
-        fullWidth
-        onClick={handleContinue}
-        disabled={!amount || activeDestIndex === null}
-      >
-        Continue
-      </Button>
+      <div className="max-w-md mx-auto">
+        <Button
+          fullWidth
+          onClick={handleContinue}
+          disabled={!amount || activeDestIndex === null}
+        >
+          Continue
+        </Button>
+      </div>
     </div>
   )
 
   return (
     <MobileScreenContainer footer={footer}>
-      <div className="px-4 py-4 max-w-md mx-auto h-full flex flex-col overflow-hidden">
+      <div className="min-h-full flex flex-col">
+        <div className="px-4 py-4 pb-6 max-w-md mx-auto w-full">
         <div className="relative flex items-center justify-between mb-5">
           <button
             type="button"
@@ -405,7 +408,7 @@ const resetFlow = () => {
           </button>
         </div>
 
-        <div className="space-y-3 max-h-[190px] overflow-y-auto pr-1 pb-1 flex-1 min-h-0">
+        <div className="space-y-3 max-h-[190px] overflow-y-auto pr-1 pb-1">
           {destCards.map((card, index) => (
             <div
               key={card.id}
@@ -455,6 +458,7 @@ const resetFlow = () => {
           ))}
         </div>
 
+        </div>
       </div>
 
 
@@ -466,9 +470,9 @@ const resetFlow = () => {
         amount={amount}
         to={dest ? (
           <div>
-            <p className="text-green-600 font-medium font-mono">{formatCardNumber(dest.card_number || dest.masked_card)}</p>
+            <p className="text-brand-secondary font-medium font-mono">{formatCardNumber(dest.card_number || dest.masked_card)}</p>
             {dest.cardholder_name && (
-              <p className="text-green-600 text-xs mt-1">{dest.cardholder_name}</p>
+              <p className="text-brand-secondary text-xs mt-1">{dest.cardholder_name}</p>
             )}
           </div>
         ) : null}

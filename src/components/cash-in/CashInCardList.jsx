@@ -244,7 +244,7 @@ const CashInCardList = () => {
           </button>
 
           <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-[#357219] pointer-events-none">
-            Cash In by Card
+            Cash In By Card
           </h1>
         </div>
 

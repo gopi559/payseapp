@@ -32,17 +32,17 @@ const ConfirmTransactionPopup = ({
   const fromCardholderName = card?.cardholder_name || card?.name_on_card
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center px-4 md:pl-[17.99rem]"
-      style={{ backgroundColor: popupColors.backdrop }}
-    >
-      <div
-className="w-full max-w-[380px] rounded-3xl p-5 mb-4"
-        style={{
-          backgroundColor: popupColors.panelBackground,
-          border: `1px solid ${popupColors.panelBorder}`,
-        }}
-      >
+<div
+  className="fixed inset-0 z-50 flex items-end justify-center px-4 md:pl-[17.99rem]"
+  style={{ backgroundColor: popupColors.backdrop }}
+>
+<div
+  className="w-full max-w-[380px] rounded-3xl p-5 mb-0 ml-[1rem]"
+  style={{
+    backgroundColor: popupColors.panelBackground,
+    border: `1px solid ${popupColors.panelBorder}`,
+  }}
+>
 <div className="flex items-center gap-3 mb-4 w-fit">
             <HiExclamationTriangle
             className="w-6 h-6"
@@ -128,7 +128,6 @@ className="w-full max-w-[380px] rounded-3xl p-5 mb-4"
 
           <Button
             fullWidth
-            variant="secondary"
             onClick={onCancel}
             disabled={loading}
           >

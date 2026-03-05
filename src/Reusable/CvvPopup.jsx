@@ -61,7 +61,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
       style={{ backgroundColor: popupColors.backdrop }}
     >
-<div className="relative ml-0 md:ml-[16.75rem]">
+<div className="relative ml-0 md:ml-[17.75rem]">
   
   
             <div
@@ -133,7 +133,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
 
           <button
             className="w-full mt-4 text-sm"
-            style={{ color: popupColors.subtitle }}
+            style={{ color: popupColors.accent }}
             onClick={onClose}
           >
             Cancel
