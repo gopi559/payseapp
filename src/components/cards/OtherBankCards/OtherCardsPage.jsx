@@ -4,7 +4,7 @@ import { HiCreditCard } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
 import { getAuthToken, deviceId, getCurrentUserId } from '../../../services/api'
-import { BENIFICIARY_LIST } from '../../../utils/constant'
+import { BENIFICIARY_LIST, CARD_TXN_LIST } from '../../../utils/constant'
 import OtherCardPreview from './OtherCardPreview'
 import THEME_COLORS from '../../../theme/colors'
 
@@ -36,6 +36,8 @@ const OtherCardsPage = () => {
   const [hasMore, setHasMore] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [cardSearchQuery, setCardSearchQuery] = useState('')
+  const [cardTransactions, setCardTransactions] = useState([])
+  const [txnLoading, setTxnLoading] = useState(false)
 
   const loadList = async (pageNum = 1, append = false) => {
     try {
@@ -90,6 +92,63 @@ const OtherCardsPage = () => {
   useEffect(() => {
     loadList(1, false)
   }, [])
+
+  const fetchCardTransactions = async (cardNumber) => {
+    try {
+      setTxnLoading(true)
+
+      const response = await fetch(CARD_TXN_LIST, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+          deviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
+        },
+        body: JSON.stringify({
+          page: 1,
+          no_of_data: 50,
+          card_number: cardNumber,
+          success_only: true,
+          start_time: '',
+          end_time: '',
+        }),
+      })
+
+      const res = await response.json().catch(() => null)
+
+      if (res?.success || res?.code === 1) {
+        setCardTransactions(Array.isArray(res?.data) ? res.data : [])
+      } else {
+        setCardTransactions([])
+      }
+    } catch (err) {
+      console.error('Txn fetch error', err)
+      setCardTransactions([])
+    } finally {
+      setTxnLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!selectedCard) {
+      setCardTransactions([])
+      return
+    }
+
+    const rawCardNumber = String(selectedCard.card_number ?? '').trim()
+    const maskedCard = String(selectedCard.masked_card ?? '')
+    const cardNumber = rawCardNumber || maskedCard.replace(/\*/g, '').replace(/\s/g, '')
+
+    if (!cardNumber) {
+      setCardTransactions([])
+      return
+    }
+
+    fetchCardTransactions(cardNumber)
+  }, [selectedCard])
 
   const filteredCards = cards.filter((card) => {
     if (!cardSearchQuery.trim()) return true
@@ -250,6 +309,41 @@ const OtherCardsPage = () => {
                         Add New
                       </Button>
                     </div>
+                  </div>
+
+                  <div
+                    className="rounded-2xl shadow-xl p-4"
+                    style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+                  >
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">Card Transactions</h3>
+                    {txnLoading ? (
+                      <p className="text-sm text-gray-500">Loading transactions...</p>
+                    ) : cardTransactions.length === 0 ? (
+                      <p className="text-sm text-gray-500">No transactions found</p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-medium">
+                            <tr>
+                              <th className="p-2">Date</th>
+                              <th className="p-2">Amount</th>
+                              <th className="p-2">Merchant</th>
+                              <th className="p-2">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {cardTransactions.map((txn, index) => (
+                              <tr key={txn?.id ?? txn?.txn_id ?? `${txn?.rrn ?? 'txn'}-${index}`} className="border-b border-gray-100 last:border-0">
+                                <td className="p-2 text-gray-800">{txn?.txn_time || txn?.created_on || '—'}</td>
+                                <td className="p-2 text-gray-800">{txn?.txn_amount ?? txn?.amount ?? '—'}</td>
+                                <td className="p-2 text-gray-800">{txn?.merchant_name || txn?.txn_desc || '—'}</td>
+                                <td className="p-2 text-gray-800">{txn?.status_name || txn?.status || '—'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </div>
                 </>
               ) : (

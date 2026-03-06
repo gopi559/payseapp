@@ -8,7 +8,7 @@ const OtherCardPreview = ({ card, onClick, selectable = true, fullWidth = false 
   <button
     type="button"
     onClick={() => selectable && onClick?.(card.id)}
-    className={`relative h-[200px] sm:h-[240px] rounded-2xl overflow-hidden shadow-xl text-left transition-transform ${
+    className={`relative h-[200px] sm:h-[320px] rounded-2xl overflow-hidden shadow-xl text-left transition-transform ${
       fullWidth ? 'w-full' : 'w-full max-w-[320px] sm:max-w-[400px]'
     } ${selectable ? 'hover:scale-[1.02] active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
     style={{ backgroundColor: card.color_code || '#e5e7eb' }}
