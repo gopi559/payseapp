@@ -21,7 +21,7 @@ const billPaymentService = {
   }) => {
     const body = {
       card_number: String(card_number).trim().replace(/\s/g, ''),
-      txn_amount: Number(txn_amount),
+      txn_amount: String(txn_amount),
       bill_number: String(bill_number).trim(),
       service_id: String(service_id).trim(),
       otp: String(otp).trim(),
@@ -64,7 +64,7 @@ const billPaymentService = {
   }) => {
     const body = {
       card_number: String(card_number).trim().replace(/\s/g, ''),
-      txn_amount: Number(txn_amount),
+      txn_amount: String(txn_amount),
       cvv: String(cvv).trim(),
       expiry_date: normalizeExpiry(expiry_date),
       otp: String(otp).trim(),

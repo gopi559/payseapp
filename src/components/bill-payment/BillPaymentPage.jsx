@@ -145,7 +145,7 @@ const BillPaymentPage = () => {
 
       const { data } = await billPaymentService.fetchBillInfoAndSendOtp({
         card_number: selected.card_number,
-        txn_amount: amount,
+        txn_amount: String(amount),
         bill_number: billNumber,
         service_id: serviceId,
         otp: '',
@@ -199,7 +199,7 @@ const BillPaymentPage = () => {
     try {
       const { data } = await billPaymentService.payBill({
         card_number: selectedCard.card_number,
-        txn_amount: amount,
+        txn_amount: String(amount),
         cvv: cvvData.cvv,
         expiry_date: cvvData.expiry,
         otp,
@@ -214,7 +214,7 @@ const BillPaymentPage = () => {
         JSON.stringify({
           txn_id: data?.txn_id,
           rrn: data?.rrn ?? txnMeta.rrn,
-          txn_amount: data?.txn_amount ?? amount,
+          txn_amount: String(data?.txn_amount ?? amount ?? ''),
           txn_time: data?.txn_time || new Date().toISOString(),
           channel_type: data?.channel_type || 'WEB',
           status: 1,
@@ -248,9 +248,20 @@ const BillPaymentPage = () => {
     setLoading(false)
   }
 
+  const footer = (
+    <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
+      <div className="max-w-md mx-auto">
+        <Button fullWidth onClick={handleContinue} disabled={!txnMeta?.rrn || !txnMeta?.stan || loading}>
+          Continue
+        </Button>
+      </div>
+    </div>
+  )
+
   return (
-    <MobileScreenContainer>
-      <div className="px-4 py-4 max-w-md mx-auto">
+    <MobileScreenContainer footer={footer}>
+      <div className="min-h-full flex flex-col">
+        <div className="px-4 py-4 pb-6 max-w-md mx-auto w-full">
         <div className="flex items-center gap-3 mb-5">
           <button
             onClick={() => navigate('/customer/bill-payment')}
@@ -328,12 +339,7 @@ const BillPaymentPage = () => {
               Bill details fetched. RRN: <span className="font-mono">{txnMeta.rrn}</span>
             </p>
           )}
-
-          <div className="mt-4">
-            <Button fullWidth onClick={handleContinue} disabled={!txnMeta?.rrn || !txnMeta?.stan || loading}>
-              Continue
-            </Button>
-          </div>
+        </div>
         </div>
       </div>
 

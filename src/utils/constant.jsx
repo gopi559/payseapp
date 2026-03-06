@@ -23,7 +23,7 @@ export const BENIFICIARY_EDIT = `  ${MAIN_API_URL}/card/beneficiary/edit`;
 export const BENIFICIARY_DELETE = `${MAIN_API_URL}/card/beneficiary/remove`;
 
 
-
+export const CARD_TXN_LIST = `${MAIN_API_URL}/transaction_web/card/card_txn_list`;
 
 export const CHATBOT_BASE_URL = "https://aml.innovitegra.in"
 

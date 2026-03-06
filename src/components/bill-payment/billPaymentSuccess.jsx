@@ -36,7 +36,7 @@ const BillPaymentSuccess = () => {
   const fromCardholderName = details.from_card_name || '-'
   const serviceName = details.service_name || 'Bill Payment'
   const billNumber = details.bill_number || '-'
-  const amount = details.txn_amount ? Number(details.txn_amount).toFixed(2) : '0.00'
+  const amount = details.txn_amount != null ? String(details.txn_amount) : '0.00'
 
   const dateTime = details.txn_time
     ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString('en-IN', {
