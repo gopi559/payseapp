@@ -127,3 +127,8 @@ export const AIRTIME_TXN_SEND = `${MAIN_API_URL}/airtime/txn_send`;
 
 export const BILL_PAYMENT_INFO_CP = `${MAIN_API_URL}/billpayment/billerinfocp`;
 export const BILL_PAYMENT_CNP = `${MAIN_API_URL}/billpayment/billpaymentcnp`;
+
+
+
+export const PERSONAL_INFORMATION_LIST = `${MAIN_API_URL}/personal_informations/list`;
+export const PERSONAL_INFORMATION = `${MAIN_API_URL}/personal_informations`;
