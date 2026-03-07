@@ -1,7 +1,30 @@
 import { getAuthToken, deviceId } from '../../services/api.jsx'
-import { PROFILE_IMAGE, PROFILE_IMAGE_UPLOAD } from '../../utils/constant.jsx'
+import { PERSONAL_INFORMATION_LIST, PROFILE_IMAGE, PROFILE_IMAGE_UPLOAD } from '../../utils/constant.jsx'
 
 const profileService = {
+  getPersonalInformationList: async () => {
+    const response = await fetch(PERSONAL_INFORMATION_LIST, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${getAuthToken()}`,
+        'Content-Type': 'application/json',
+        deviceInfo: JSON.stringify({
+          device_type: 'WEB',
+          device_id: deviceId,
+        }),
+      },
+      body: JSON.stringify({}),
+    })
+
+    const res = await response.json().catch(() => null)
+
+    if (!response.ok || res?.code !== 1) {
+      throw new Error(res?.message || 'Failed to fetch personal information')
+    }
+
+    return res?.data ?? {}
+  },
+
   fetchImageById: async ({ image_id }) => {
     const id = Number(image_id)
     if (!id || Number.isNaN(id)) {

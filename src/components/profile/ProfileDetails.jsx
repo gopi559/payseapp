@@ -1,82 +1,208 @@
-﻿import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import PageContainer from '../../Reusable/PageContainer'
+import { FiBriefcase, FiMapPin, FiUser } from 'react-icons/fi'
 import Button from '../../Reusable/Button'
-import THEME_COLORS from '../../theme/colors'
+import PageContainer from '../../Reusable/PageContainer'
+import ProfileCard from '../../Reusable/ProfileCard'
+import profileService from './profile.service'
 
-const DetailRow = ({ label, value }) => {
-  const contentCard = THEME_COLORS.contentCard
+const formatValue = (value) => {
+  if (value === null || value === undefined) return 'N/A'
+  const text = String(value).trim()
+  return text ? text : 'N/A'
+}
+
+const formatDate = (value) => {
+  if (!value || value === '0001-01-01T00:00:00Z') return 'N/A'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'N/A'
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+const DetailGrid = ({ items }) => {
   return (
-    <div className="flex justify-between items-start gap-4 py-2 border-b last:border-0" style={{ borderColor: contentCard.divider }}>
-      <span className="text-xs sm:text-sm shrink-0" style={{ color: contentCard.subtitle }}>{label}</span>
-      <span className="text-sm sm:text-base font-medium text-right break-all" style={{ color: contentCard.title }}>{value ?? '—'}</span>
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {items.map((item) => (
+        <div
+          key={item.label}
+          className="rounded-lg border border-gray-200 bg-white p-3 transition hover:shadow-sm"
+        >
+          <p className="text-xs font-medium text-gray-500">{item.label}</p>
+          <p className="mt-1 text-sm font-semibold text-gray-900 break-words">
+            {formatValue(item.value)}
+          </p>
+        </div>
+      ))}
     </div>
   )
 }
 
 const ProfileDetails = () => {
   const navigate = useNavigate()
-  const user = useSelector((state) => state.auth.user)
-  const walletId = useSelector((state) => state.wallet.walletId)
-  const contentCard = THEME_COLORS.contentCard
+  const [loading, setLoading] = useState(true)
+  const [profileData, setProfileData] = useState({ kyc: {}, occupation: {}, address: [] })
+  const [error, setError] = useState('')
 
-  const regInfo = user?.reg_info || user
-  const userKyc = user?.user_kyc || null
-  const displayName = userKyc?.first_name || userKyc?.last_name
-    ? [userKyc.first_name, userKyc.last_name].filter(Boolean).join(' ')
-    : regInfo?.mobile || regInfo?.email || 'User'
+  useEffect(() => {
+    let isMounted = true
+
+    const fetchPersonalDetails = async () => {
+      setLoading(true)
+      setError('')
+
+      try {
+        const data = await profileService.getPersonalInformationList()
+
+        if (!isMounted) return
+
+        setProfileData({
+          kyc: data?.kyc ?? {},
+          occupation: data?.occupation ?? {},
+          address: Array.isArray(data?.address) ? data.address : [],
+        })
+      } catch (err) {
+        if (!isMounted) return
+        setError(err?.message || 'Unable to load profile details')
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    fetchPersonalDetails()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const kycItems = useMemo(() => {
+    const kyc = profileData.kyc || {}
+    return [
+      { label: 'First Name', value: kyc.UserFName },
+      { label: 'Last Name', value: kyc.UserLName },
+      { label: 'DOB', value: formatDate(kyc.DOB) },
+      { label: 'Email', value: kyc.Email },
+      { label: 'Marital Status', value: kyc.MaritalStatus },
+      { label: 'Nationality', value: kyc.NationalityName },
+      { label: 'Gender', value: kyc.GenderName },
+      { label: 'Religion', value: kyc.ReligionName },
+      { label: 'Qualification', value: kyc.QualificationName },
+      { label: 'Income', value: kyc.AnnualIncomeDesc },
+      { label: 'Net Worth', value: kyc.NetWorthDesc },
+      { label: 'Place of Birth', value: kyc.PlaceOfBirthName },
+      { label: 'Account Purpose', value: kyc.AccountPurposeName },
+      { label: 'Emergency Number', value: kyc.EmergencyNumber },
+    ]
+  }, [profileData.kyc])
+
+  const occupationItems = useMemo(() => {
+    const occupation = profileData.occupation || {}
+    return [
+      { label: 'Occupation Name', value: occupation.occupation_name },
+      { label: 'Employer Name', value: occupation.employer_name },
+      { label: 'Designation', value: occupation.designation },
+      { label: 'Source of Fund', value: occupation.source_of_fund },
+      { label: 'Monthly Income', value: occupation.momthly_income },
+      { label: 'Office Address', value: occupation.office_full_address },
+      { label: 'Place of Posting', value: occupation.place_of_posting },
+    ]
+  }, [profileData.occupation])
 
   return (
     <PageContainer>
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6" style={{ color: contentCard.title }}>Profile Details</h1>
+      <div className="mx-auto max-w-5xl px-4 py-8">
 
-        <div className="rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6" style={{ backgroundColor: contentCard.background, borderColor: contentCard.border }}>
-          <h2 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: contentCard.subtitle }}>Account</h2>
-          <div className="space-y-0">
-            <DetailRow label="Name" value={displayName} />
-            <DetailRow label="User Ref" value={regInfo?.user_ref} />
-            <DetailRow label="Mobile" value={regInfo?.mobile} />
-            <DetailRow label="Email" value={regInfo?.email} />
-            <DetailRow label="User Type" value={regInfo?.user_type_name} />
-            <DetailRow label="Auth Status" value={regInfo?.auth_status} />
-            <DetailRow label="Status" value={regInfo?.status != null ? String(regInfo.status) : undefined} />
-            <DetailRow label="Account Number" value={walletId || regInfo?.user_ref} />
+        <div className="mb-8 flex items-center justify-between border-b pb-4">
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Profile Details</h1>
+            <p className="text-sm text-gray-500">
+              Personal, occupation and address information
+            </p>
           </div>
+
+          <button
+            onClick={() => navigate('/customer/profile')}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+          >
+            Back
+          </button>
         </div>
 
-        {userKyc && (
-          <div className="rounded-lg shadow-sm border p-4 sm:p-6 mb-4 sm:mb-6" style={{ backgroundColor: contentCard.background, borderColor: contentCard.border }}>
-            <h2 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: contentCard.subtitle }}>KYC Details</h2>
-            <div className="space-y-0">
-              <DetailRow label="First Name" value={userKyc.first_name} />
-              <DetailRow label="Middle Name" value={userKyc.moddle_name} />
-              <DetailRow label="Last Name" value={userKyc.last_name} />
-              <DetailRow label="Father Name" value={userKyc.father_name} />
-              <DetailRow label="Document ID" value={userKyc.document_id} />
-              <DetailRow label="Email" value={userKyc.email} />
-              <DetailRow label="Emergency Mobile" value={userKyc.emergency_mobnum} />
-              <DetailRow label="Marital Status" value={userKyc.marital_status} />
-              <DetailRow label="Gender" value={userKyc.gender === 1 ? 'Male' : userKyc.gender === 2 ? 'Female' : userKyc.gender} />
-              <DetailRow
-                label="DOB"
-                value={
-                  userKyc.dob
-                    ? `${String(new Date(userKyc.dob).getDate()).padStart(2, '0')}-${String(new Date(userKyc.dob).getMonth() + 1).padStart(2, '0')}-${new Date(userKyc.dob).getFullYear()}`
-                    : '—'
-                }
-              />
-              <DetailRow label="Auth Status" value={userKyc.auth_status} />
+        {loading ? (
+          <div className="flex items-center justify-center rounded-xl border bg-white p-10">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent"></div>
+            <span className="ml-3 text-sm text-gray-600">Loading profile...</span>
+          </div>
+        ) : error ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+            {error}
+          </div>
+        ) : (
+          <div className="space-y-6">
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center gap-2">
+                <FiUser className="text-gray-500" />
+                <h2 className="text-sm font-semibold text-gray-800">KYC Details</h2>
+              </div>
+              <DetailGrid items={kycItems} />
             </div>
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center gap-2">
+                <FiBriefcase className="text-gray-500" />
+                <h2 className="text-sm font-semibold text-gray-800">Occupation Details</h2>
+              </div>
+              <DetailGrid items={occupationItems} />
+            </div>
+
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center gap-2">
+                <FiMapPin className="text-gray-500" />
+                <h2 className="text-sm font-semibold text-gray-800">Address Details</h2>
+              </div>
+
+              {profileData.address.length === 0 ? (
+                <p className="text-sm text-gray-500">No address records found</p>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {profileData.address.map((addr) => (
+                    <div
+                      key={addr.id}
+                      className="rounded-xl border border-gray-200 bg-gray-50 p-4"
+                    >
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-gray-900">
+                          {formatValue(addr.address_type_name)}
+                        </span>
+
+                        <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                          {formatValue(addr.address_proof_type_name)}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 text-sm text-gray-700">
+                        <p>{formatValue(addr.address_line)}</p>
+                        <p>
+                          {formatValue(addr.city_name)}, {formatValue(addr.state_name)}
+                        </p>
+                        <p>
+                          {formatValue(addr.country_name)} - {formatValue(addr.postal_code)}
+                        </p>
+                        <p>{formatValue(addr.village_name)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
         )}
-
-        <div className="rounded-lg shadow-sm border p-4 sm:p-6" style={{ backgroundColor: contentCard.background, borderColor: contentCard.border }}>
-          <Button onClick={() => navigate('/customer/profile')} variant="outline" fullWidth size="md">
-            Back
-          </Button>
-        </div>
       </div>
     </PageContainer>
   )

@@ -6,7 +6,7 @@ import receiveIcon from '../../assets/ReceiveNewIcon.svg'
 import voucherIcon from '../../assets/VoucherNewIcon.svg'
 import payBillIcon from '../../assets/BillPaymentNewIcon.svg'
 import airtimeIcon from '../../assets/AirtimeNewIcon.svg'
-import { FaQrcode } from 'react-icons/fa'
+import { FaExchangeAlt } from 'react-icons/fa'
 import ActionTile from './ActionTile'
 
 const ActionGrid = () => {
@@ -18,7 +18,11 @@ const ActionGrid = () => {
     { icon: <img src={voucherIcon} alt="Voucher" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
     { icon: <img src={payBillIcon} alt="Pay Bill" />, label: 'Pay bill', route: '/customer/bill-payment', isImage: true },
     { icon: <img src={airtimeIcon} alt="Airtime" />, label: 'Airtime', route: '/customer/airtime', isImage: true },
-    { icon: <FaQrcode />, label: 'Scan', route: '/customer/scan', isComponent: true },
+    // { icon: <FaQrcode />, label: 'Scan', route: '/customer/scan', isComponent: true },
+
+    { icon: <FaExchangeAlt />, label: 'C2C', route: '/customer/card-to-card', isComponent: true },
+
+
   ]
 
   return (
