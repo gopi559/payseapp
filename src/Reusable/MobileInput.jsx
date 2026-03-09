@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import THEME_COLORS from '../theme/colors'
 
 const MobileInput = ({
@@ -12,8 +13,14 @@ const MobileInput = ({
   prefix = '+93',
   ...props
 }) => {
+  const { t, i18n } = useTranslation()
   const inputColors = THEME_COLORS.input
   const maxDigits = 9
+  const resolvedLabel = typeof label === 'string' && i18n.exists(label) ? t(label) : label
+  const resolvedPlaceholder =
+    typeof placeholder === 'string' && i18n.exists(placeholder)
+      ? t(placeholder)
+      : placeholder || t('mobile_placeholder')
 
   const handleChange = (e) => {
     const inputValue = e.target.value
@@ -44,7 +51,7 @@ const MobileInput = ({
     <div className="w-full">
       {label && (
         <label className="block text-xs font-medium mb-1.5" style={{ color: inputColors.text }}>
-          {label}
+          {resolvedLabel}
         </label>
       )}
       <div className="relative">
@@ -55,7 +62,7 @@ const MobileInput = ({
           type="tel"
           value={displayValue}
           onChange={handleChange}
-          placeholder={placeholder || 'e.g. 998877665'}
+          placeholder={resolvedPlaceholder}
           disabled={disabled}
           className={`w-full pl-12 pr-3 py-2 rounded-md border text-sm disabled:cursor-not-allowed ${className}`}
           style={{

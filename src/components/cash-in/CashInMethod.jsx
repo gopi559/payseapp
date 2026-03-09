@@ -1,10 +1,12 @@
-﻿import React from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { HiChevronRight } from 'react-icons/hi2'
 import THEME_COLORS from '../../theme/colors'
 
 const CashInMethod = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const menuCard = THEME_COLORS.menuCard
 
@@ -16,10 +18,10 @@ const CashInMethod = () => {
             className="text-2xl font-semibold mb-1"
             style={{ color: menuCard.screenTitle }}
           >
-            Add Money Using
+            {t('add_money_using')}
           </h1>
           <p className="text-base mb-8" style={{ color: menuCard.screenSubtitle }}>
-            Select A Payment Method
+            {t('select_payment_method')}
           </p>
 
           <button
@@ -37,11 +39,11 @@ const CashInMethod = () => {
                   className="text-xl font-semibold"
                   style={{ color: menuCard.cardTitle }}
                 >
-                  Card Transfer
+                  {t('card_transfer')}
                 </h2>
 
                 <p className="text-base mt-2" style={{ color: menuCard.cardSubtitle }}>
-                  Add Money Using Your Debit Or Credit Card
+                  {t('add_money_using_card')}
                 </p>
 
                 <div
@@ -51,7 +53,7 @@ const CashInMethod = () => {
                     color: menuCard.pillText,
                   }}
                 >
-                  Instant • Convenient • Secure
+                  {t('instant_convenient_secure')}
                 </div>
               </div>
 

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import Input from '../Reusable/Input'
+import { useTranslation } from 'react-i18next'
 import MobileInput from '../Reusable/MobileInput'
 import Button from '../Reusable/Button'
 import OtpInput from '../Reusable/OtpInput'
 import useLogin from '../Hooks/useLogin'
 
 const LoginForm = () => {
+  const { t } = useTranslation()
   const location = useLocation()
   const { sendOtp, verifyOtp, errorMessage, showModal, setShowModal } = useLogin()
   const mobileFromState = location.state?.mobile ?? ''
@@ -19,6 +20,7 @@ const LoginForm = () => {
   const [countdown, setCountdown] = useState(0)
 
   const displayError = showModal ? errorMessage : error
+
   const clearError = () => {
     setError('')
     setShowModal(false)
@@ -31,14 +33,14 @@ const LoginForm = () => {
     }
   }, [countdown])
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault()
+  const handleSendOtp = async (event) => {
+    event.preventDefault()
     setError('')
     setShowModal(false)
 
     const digitsOnly = mobileNumber.replace(/\D/g, '')
     if (!mobileNumber || digitsOnly.length < 10) {
-      setError('Please enter a valid mobile number')
+      setError(t('please_enter_valid_mobile_number'))
       return
     }
 
@@ -50,10 +52,10 @@ const LoginForm = () => {
         setCountdown(60)
         setIsFlipped(true)
       } else {
-        setError(result.error || 'Failed to send OTP')
+        setError(result.error || t('failed_to_send_otp'))
       }
-    } catch (err) {
-      setError('Something went wrong. Please try again.')
+    } catch (error) {
+      setError(t('something_went_wrong'))
     } finally {
       setLoading(false)
     }
@@ -61,19 +63,21 @@ const LoginForm = () => {
 
   const handleResendOtp = async () => {
     if (countdown > 0) return
+
     setError('')
     setShowModal(false)
     setLoading(true)
+
     try {
       const result = await sendOtp(mobileNumber)
       if (result.success) {
         setCountdown(60)
         setOtp('')
       } else {
-        setError(result.error || 'Failed to resend OTP')
+        setError(result.error || t('failed_to_resend_otp'))
       }
-    } catch (err) {
-      setError('Something went wrong. Please try again.')
+    } catch (error) {
+      setError(t('something_went_wrong'))
     } finally {
       setLoading(false)
     }
@@ -81,28 +85,26 @@ const LoginForm = () => {
 
   const handleVerifyOtp = async (enteredOtp) => {
     if (!enteredOtp || enteredOtp.length !== 6) {
-      setError('Please enter a valid 6-digit OTP')
+      setError(t('please_enter_valid_otp'))
       return
     }
+
     setError('')
     setShowModal(false)
     setLoading(true)
+
     try {
       const result = await verifyOtp(mobileNumber, enteredOtp)
       if (!result.success) {
-        setError(result.error || 'Invalid OTP')
+        setError(result.error || t('invalid_otp'))
       }
-    } catch (err) {
-      setError('Something went wrong. Please try again.')
+    } catch (error) {
+      setError(t('something_went_wrong'))
     } finally {
       setLoading(false)
     }
   }
-  
-  const handleOtpChange = (enteredOtp) => {
-    setOtp(enteredOtp)
-  }
-  
+
   const handleBackToMobile = () => {
     setIsFlipped(false)
     setOtp('')
@@ -110,17 +112,9 @@ const LoginForm = () => {
     setShowModal(false)
   }
 
-  const CardHeader = () => (
-    <div className="text-center mb-8">
-      <h1 className="text-2xl font-bold text-brand-primary mb-2">Customer Portal</h1>
-      <p className="text-gray-700 mb-1">Welcome back</p>
-      <p className="text-sm text-brand-primary">Manage Your Money Seamlessly On One Platform</p>
-    </div>
-  )
-  
   return (
     <div className="w-full">
-      <div className="relative w-full" style={{ perspective: "1000px" }}>
+      <div className="relative w-full" style={{ perspective: '1000px' }}>
         <div
           className="relative w-full transition-transform duration-700"
           style={{
@@ -136,39 +130,42 @@ const LoginForm = () => {
               transform: 'rotateY(0deg)',
             }}
           >
-            <CardHeader />
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-brand-primary mb-2">{t('customer_portal')}</h1>
+              <p className="text-gray-700 mb-1">{t('welcome_back')}</p>
+              <p className="text-sm text-brand-primary">{t('manage_money')}</p>
+            </div>
+
             <form onSubmit={handleSendOtp} className="space-y-6">
               {displayError && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center justify-between">
                   <span>{displayError}</span>
                   {showModal && (
                     <button type="button" onClick={clearError} className="text-red-600 hover:underline ml-2">
-                      Dismiss
+                      {t('dismiss')}
                     </button>
                   )}
                 </div>
               )}
-              
+
               <MobileInput
-                label="Mobile Number"
+                label="mobile_number"
                 value={mobileNumber}
-                onChange={(e) => {
-                  setMobileNumber(e.target.value)
+                onChange={(event) => {
+                  setMobileNumber(event.target.value)
                 }}
-                placeholder="e.g. 998877665"
+                placeholder="mobile_placeholder"
                 required
                 autoFocus
               />
-              
+
               <Button
                 type="submit"
                 fullWidth
-                  disabled={loading || !mobileNumber || mobileNumber.replace(/\D/g, '').length < 10}
+                disabled={loading || !mobileNumber || mobileNumber.replace(/\D/g, '').length < 10}
               >
-                {loading ? 'Sending OTP...' : 'Continue'}
+                {loading ? t('sending_otp') : t('continue')}
               </Button>
-              
-      
             </form>
           </div>
 
@@ -180,54 +177,57 @@ const LoginForm = () => {
               transform: 'rotateY(180deg)',
             }}
           >
-            <CardHeader />
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-brand-primary mb-2">{t('customer_portal')}</h1>
+              <p className="text-gray-700 mb-1">{t('welcome_back')}</p>
+              <p className="text-sm text-brand-primary">{t('manage_money')}</p>
+            </div>
+
             <div className="space-y-6">
               <div className="text-center mb-4">
-                <p className="text-sm text-gray-600 mb-2">
-                  OTP sent to <span className="font-semibold text-brand-dark">{mobileNumber}</span>
-                </p>
-                <p className="text-xs text-gray-500">Enter the 6-digit OTP</p>
+                <p className="text-sm text-gray-600 mb-2">{t('otp_sent_to', { mobile: mobileNumber })}</p>
+                <p className="text-xs text-gray-500">{t('enter_otp')}</p>
               </div>
-              
+
               {displayError && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center justify-between">
                   <span>{displayError}</span>
                   {showModal && (
                     <button type="button" onClick={clearError} className="text-red-600 hover:underline ml-2">
-                      Dismiss
+                      {t('dismiss')}
                     </button>
                   )}
                 </div>
               )}
 
               <OtpInput
-                onComplete={handleOtpChange}
+                onComplete={setOtp}
                 onChange={setOtp}
                 error={error}
                 disabled={loading}
               />
-              
+
               <div className="text-center space-y-3">
                 <Button
                   onClick={() => handleVerifyOtp(otp)}
                   fullWidth
                   disabled={loading || !otp || otp.length !== 6}
                 >
-                  {loading ? 'Verifying...' : 'Submit'}
+                  {loading ? t('verifying') : t('submit')}
                 </Button>
-                
+
                 <button
                   type="button"
                   onClick={handleBackToMobile}
                   className="text-sm text-brand-primary hover:underline"
                 >
-                  ← Change Mobile Number
+                  {t('change_mobile_number')}
                 </button>
-                
+
                 <div className="text-sm text-gray-600">
-                  Didn't receive OTP?{' '}
+                  {t('didnt_receive_otp')}{' '}
                   {countdown > 0 ? (
-                    <span className="text-gray-400">Resend in {countdown}s</span>
+                    <span className="text-gray-400">{t('resend_in', { count: countdown })}</span>
                   ) : (
                     <button
                       type="button"
@@ -235,7 +235,7 @@ const LoginForm = () => {
                       className="text-brand-primary hover:underline font-medium"
                       disabled={loading}
                     >
-                      Resend OTP
+                      {t('resend_otp')}
                     </button>
                   )}
                 </div>
@@ -249,4 +249,3 @@ const LoginForm = () => {
 }
 
 export default LoginForm
-

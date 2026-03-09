@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import THEME_COLORS from '../theme/colors'
 
 const Button = ({
@@ -12,6 +13,7 @@ const Button = ({
   className = '',
 }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const { t, i18n } = useTranslation()
   const buttonColors = THEME_COLORS.button
 
   const baseClasses =
@@ -32,6 +34,9 @@ const Button = ({
     return buttonColors.primary
   }
 
+  const resolvedChildren =
+    typeof children === 'string' && i18n.exists(children) ? t(children) : children
+
   return (
     <button
       type={type}
@@ -47,7 +52,7 @@ const Button = ({
         borderWidth: 0,
       }}
     >
-      {children}
+      {resolvedChildren}
     </button>
   )
 }

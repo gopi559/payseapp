@@ -11,16 +11,16 @@ import ActionTile from './ActionTile'
 
 const ActionGrid = () => {
   const actions = [
-    { icon: <img src={cashInIcon} alt="Cash In" />, label: 'Cash in', route: '/customer/cash-in', isImage: true },
-    { icon: <img src={cashOutIcon} alt="Cash Out" />, label: 'Cash out', route: '/customer/wallet-to-card', isImage: true },
-    { icon: <img src={sendIcon} alt="Send" />, label: 'Send', route: '/customer/send', isImage: true },
-    { icon: <img src={receiveIcon} alt="Receive" />, label: 'Receive', route: '/customer/request-money', isImage: true },
-    { icon: <img src={voucherIcon} alt="Voucher" />, label: 'Voucher', route: '/customer/voucher', isImage: true },
-    { icon: <img src={payBillIcon} alt="Pay Bill" />, label: 'Pay bill', route: '/customer/bill-payment', isImage: true },
-    { icon: <img src={airtimeIcon} alt="Airtime" />, label: 'Airtime', route: '/customer/airtime', isImage: true },
+    { id: 'cash_in', icon: <img src={cashInIcon} alt="Cash In" />, labelKey: 'cash_in', route: '/customer/cash-in', isImage: true },
+    { id: 'cash_out', icon: <img src={cashOutIcon} alt="Cash Out" />, labelKey: 'cash_out', route: '/customer/wallet-to-card', isImage: true },
+    { id: 'send', icon: <img src={sendIcon} alt="Send" />, labelKey: 'send', route: '/customer/send', isImage: true },
+    { id: 'receive', icon: <img src={receiveIcon} alt="Receive" />, labelKey: 'receive', route: '/customer/request-money', isImage: true },
+    { id: 'voucher', icon: <img src={voucherIcon} alt="Voucher" />, labelKey: 'voucher', route: '/customer/voucher', isImage: true },
+    { id: 'bill_payment', icon: <img src={payBillIcon} alt="Bill Payment" />, labelKey: 'pay_bill_short', route: '/customer/bill-payment', isImage: true },
+    { id: 'balance', icon: <img src={airtimeIcon} alt="Balance" />, labelKey: 'airtime', route: '/customer/airtime', isImage: true },
     // { icon: <FaQrcode />, label: 'Scan', route: '/customer/scan', isComponent: true },
 
-    { icon: <FaExchangeAlt />, label: 'C2C', route: '/customer/card-to-card', isComponent: true },
+    { id: 'card_to_card', icon: <FaExchangeAlt />, labelKey: 'c2c', route: '/customer/card-to-card', isComponent: true },
 
 
   ]
@@ -32,8 +32,9 @@ const ActionGrid = () => {
         {actions.map((action, index) => (
           <ActionTile
             key={index}
+            actionId={action.id}
             icon={action.icon}
-            label={action.label}
+            labelKey={action.labelKey}
             route={action.route}
             isComponent={action.isComponent}
             isImage={action.isImage}

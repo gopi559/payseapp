@@ -1,12 +1,13 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import THEME_COLORS from '../../theme/colors'
 
-const ActionTile = ({ icon, label, route, onClick, isComponent = false, isImage = false }) => {
+const ActionTile = ({ actionId, icon, labelKey, route, onClick, isComponent = false, isImage = false }) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const colors = THEME_COLORS.home.actionTile
-  const normalizedLabel = String(label || '').trim().toLowerCase()
-  const isPrimaryCircle = normalizedLabel === 'cash in' || normalizedLabel === 'cash out'
+  const isPrimaryCircle = actionId === 'cash_in' || actionId === 'cash_out'
 
   const handleClick = () => {
     if (onClick) onClick()
@@ -45,7 +46,7 @@ const ActionTile = ({ icon, label, route, onClick, isComponent = false, isImage 
       </div>
 
       <span className="mt-3.5 text-base font-medium text-center leading-tight" style={{ color: colors.labelText }}>
-        {label}
+        {t(labelKey)}
       </span>
     </button>
   )

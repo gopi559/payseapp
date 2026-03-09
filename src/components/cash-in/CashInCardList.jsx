@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
 import Button from '../../Reusable/Button'
@@ -21,16 +22,14 @@ import { generateStan } from '../../utils/generateStan'
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
 const CashInCardList = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const scrollRef = useRef(null)
 
   const [cards, setCards] = useState([])
   const [activeIndex, setActiveIndex] = useState(0)
   const [amount, setAmount] = useState('')
-
-  // null | 'CVV' | 'CONFIRM' | 'OTP'
   const [step, setStep] = useState(null)
-
   const [selectedCard, setSelectedCard] = useState(null)
   const [cvvData, setCvvData] = useState(null)
   const [txnMeta, setTxnMeta] = useState(null)
@@ -44,7 +43,7 @@ const CashInCardList = () => {
   const fetchCards = async () => {
     try {
       const userId = getCurrentUserId()
-      if (!userId) throw new Error('User not found')
+      if (!userId) throw new Error(t('user'))
 
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
@@ -72,7 +71,7 @@ const CashInCardList = () => {
 
       setCards(data.data || [])
     } catch (e) {
-      toast.error(e.message || 'Failed to load cards')
+      toast.error(e.message || t('failed_to_load_cards'))
     }
   }
 
@@ -119,19 +118,18 @@ const CashInCardList = () => {
             )
       )
     } catch (e) {
-      toast.error(e.message || 'Failed to fetch balance')
+      toast.error(e.message || t('failed_to_fetch_balance'))
     }
   }
 
   const handleContinue = () => {
     if (!amount || Number(amount) <= 0) {
-      toast.error('Enter a valid amount')
+      toast.error(t('enter_valid_amount'))
       return
     }
 
-    // (optional safety)
     if (!cards?.length || !cards[activeIndex]) {
-      toast.error('Please select a card')
+      toast.error(t('please_select_card'))
       return
     }
 
@@ -164,9 +162,9 @@ const CashInCardList = () => {
       })
 
       setStep('OTP')
-      toast.success('OTP sent')
+      toast.success(t('otp_sent'))
     } catch (e) {
-      toast.error(e.message || 'Failed to send OTP')
+      toast.error(e.message || t('failed_to_send_otp'))
     } finally {
       setLoading(false)
     }
@@ -174,7 +172,7 @@ const CashInCardList = () => {
 
   const handleConfirmOtp = async (otp) => {
     if (!txnMeta?.rrn || !txnMeta?.stan) {
-      toast.error('Session expired. Please try again.')
+      toast.error(t('session_expired_try_again'))
       resetFlow()
       return
     }
@@ -194,30 +192,24 @@ const CashInCardList = () => {
       sessionStorage.setItem(
         'cashInSuccess',
         JSON.stringify({
-          // ---- BACKEND RESPONSE ----
           txn_id: data.txn_id,
           rrn: data.rrn,
           txn_amount: data.txn_amount,
           txn_time: data.txn_time,
-
-          // ---- FRONTEND CONTEXT (REQUIRED) ----
           txn_type: 'CARD_TO_WALLET',
-          txn_desc: 'Card To Wallet',
+          txn_desc: t('card_to_wallet'),
           channel_type: 'WEB',
           status: 1,
-
-          // from (source card)
           from_card_number: selectedCard.card_number,
           from_card_name: selectedCard.cardholder_name || selectedCard.card_name,
-
-          to: 'Wallet',
+          to: t('wallet'),
         })
       )
 
       resetFlow()
       navigate('/customer/cash-in/success')
     } catch (e) {
-      toast.error(e.message || 'Transaction failed')
+      toast.error(e.message || t('something_went_wrong'))
     } finally {
       setLoading(false)
     }
@@ -238,17 +230,16 @@ const CashInCardList = () => {
             type="button"
             onClick={() => navigate('/customer/cash-in')}
             className="w-9 h-9 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center text-[#357219]"
-            aria-label="Go back"
+            aria-label={t('go_back')}
           >
             <IoArrowBack size={18} />
           </button>
 
           <h1 className="absolute left-1/2 -translate-x-1/2 text-lg font-semibold text-[#357219] pointer-events-none">
-            Cash In By Card
+            {t('cash_in_by_card')}
           </h1>
         </div>
 
-        {/* Card carousel */}
         <div
           ref={scrollRef}
           onScroll={() => {
@@ -274,12 +265,11 @@ const CashInCardList = () => {
             onClick={() => setIsAddNewOpen(true)}
             className="text-sm font-semibold text-[#357219] cursor-pointer no-underline"
           >
-            Add New
+            {t('add_new')}
           </button>
         </div>
 
-        {/* Amount */}
-        <AmountInput label="Add Amount" value={amount} onChange={setAmount} />
+        <AmountInput label={t('add_amount')} value={amount} onChange={setAmount} />
 
         <div className="grid grid-cols-5 gap-2 mt-4">
           {QUICK_AMOUNTS.map((a) => (
@@ -295,12 +285,11 @@ const CashInCardList = () => {
 
         <div className="mt-6">
           <Button fullWidth onClick={handleContinue} disabled={!amount || Number(amount) <= 0}>
-            Continue
+            {t('continue')}
           </Button>
         </div>
       </div>
 
-      {/* CVV POPUP */}
       <CvvPopup
         open={step === 'CVV'}
         loading={loading}
@@ -308,19 +297,17 @@ const CashInCardList = () => {
         onConfirm={handleCvvConfirm}
       />
 
-      {/* CONFIRM POPUP */}
       <ConfirmTransactionPopup
         open={step === 'CONFIRM'}
         card={selectedCard}
         amount={amount}
-        to="Wallet"
-        description="Add money to wallet"
+        to={t('wallet')}
+        description={t('add_money_to_wallet')}
         loading={loading}
         onSendOtp={handleSendOtp}
         onCancel={resetFlow}
       />
 
-      {/* OTP POPUP */}
       <OtpPopup
         open={step === 'OTP'}
         loading={loading}

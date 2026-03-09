@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { MdPerson, MdLogout, MdRefresh } from 'react-icons/md'
 import { formatAmount } from '../utils/formatAmount'
 import authService from '../Login/auth.service.jsx'
@@ -8,8 +9,10 @@ import profileService from '../components/profile/profile.service'
 import { setProfileImage } from '../Redux/store.jsx'
 import THEME_COLORS from '../theme/colors'
 import AfganCurrency from '../assets/afgan_currency.svg'
+import LanguageSwitcher from '../Reusable/LanguageSwitcher'
 
 const Header = ({ onMenuClick, onToggleSidebar }) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const dropdownRef = useRef(null)
@@ -28,13 +31,13 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
   const displayName =
     userKyc?.first_name || userKyc?.last_name
       ? [userKyc.first_name, userKyc.last_name].filter(Boolean).join(' ')
-      : regInfo?.mobile || regInfo?.email || 'User'
+      : regInfo?.mobile || regInfo?.email || t('user')
 
   const getGreeting = () => {
     const hour = new Date().getHours()
-    if (hour < 12) return 'Good Morning'
-    if (hour < 18) return 'Good Afternoon'
-    return 'Good Evening'
+    if (hour < 12) return t('good_morning')
+    if (hour < 18) return t('good_afternoon')
+    return t('good_evening')
   }
 
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev)
@@ -102,7 +105,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
             onClick={onMenuClick}
             className="p-2 rounded-lg lg:hidden"
             style={{ backgroundColor: headerColors.overlaySoft }}
-            aria-label="Menu"
+            aria-label={t('menu')}
           >
             <span className="text-xl">|||</span>
           </button>
@@ -112,7 +115,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
               onClick={onToggleSidebar}
               className="hidden lg:block p-2 rounded-lg"
               style={{ backgroundColor: headerColors.overlaySoft }}
-              aria-label="Toggle Sidebar"
+              aria-label={t('toggle_sidebar')}
             >
               <span className="text-xl">|||</span>
             </button>
@@ -128,7 +131,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
         <div className="hidden md:flex items-center gap-4">
           <div className="flex items-center gap-2 text-xl font-bold">
             <span className="text-sm font-medium opacity-80 mr-1">
-              Available Balance
+              {t('available_balance')}
             </span>
 
             <img
@@ -145,7 +148,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
             disabled={isRefreshing}
             className="p-1.5 rounded-full disabled:opacity-50"
             style={{ backgroundColor: headerColors.overlaySoft }}
-            title="Refresh balance"
+            title={t('refresh_balance')}
           >
             <MdRefresh size={20} className={isRefreshing ? 'animate-spin' : ''} />
           </button>
@@ -158,7 +161,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
             onClick={toggleDropdown}
             className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
             style={{ backgroundColor: headerColors.overlayStrong }}
-            aria-label="Profile menu"
+            aria-label={t('profile_menu')}
           >
             {profileImage ? (
               <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
@@ -202,7 +205,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
                     style={{ backgroundColor: THEME_COLORS.common.transparent }}
                   >
                     <MdPerson size={18} />
-                    Profile Details
+                    {t('profile_details')}
                   </button>
                 </li>
 
@@ -212,7 +215,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
                     className="w-full flex items-center gap-2 px-4 py-2 text-sm"
                     style={{ backgroundColor: THEME_COLORS.common.transparent }}
                   >
-                    Profile
+                    {t('profile')}
                   </button>
                 </li>
 
@@ -229,13 +232,16 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
                     }}
                   >
                     <MdLogout size={18} />
-                    Logout
+                    {t('logout')}
                   </button>
                 </li>
               </ul>
             </div>
           )}
         </div>
+      </div>
+      <div className="mt-3 flex justify-end">
+        <LanguageSwitcher />
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import THEME_COLORS from '../theme/colors'
 
 const Input = ({
@@ -13,20 +14,24 @@ const Input = ({
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false)
+  const { t, i18n } = useTranslation()
   const inputColors = THEME_COLORS.input
+  const resolvedLabel = typeof label === 'string' && i18n.exists(label) ? t(label) : label
+  const resolvedPlaceholder =
+    typeof placeholder === 'string' && i18n.exists(placeholder) ? t(placeholder) : placeholder
 
   return (
     <div className="w-full">
       {label && (
         <label className="block text-xs font-medium mb-1.5" style={{ color: inputColors.text }}>
-          {label}
+          {resolvedLabel}
         </label>
       )}
       <input
         type={type}
         value={value}
         onChange={onChange}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         disabled={disabled}
         onFocus={(e) => {
           setIsFocused(true)

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { IoHome } from 'react-icons/io5'
 import { FaCreditCard } from 'react-icons/fa'
 import { CiLogout } from 'react-icons/ci'
@@ -23,6 +24,7 @@ import THEME_COLORS from '../theme/colors'
 import { IoChevronDown } from 'react-icons/io5'
 
 const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
+  const { t } = useTranslation()
   const [activeLink, setActiveLink] = useState('')
   const [isMobile, setIsMobile] = useState(false)
   const [cardsOpen, setCardsOpen] = useState(false)
@@ -68,7 +70,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
   const menuItems = [
     {
       icon: <IoHome style={{ color: '#357219' }} />,
-      label: 'Home',
+      label: t('home'),
       route: '/customer/home',
       isComponent: true,
     },
@@ -81,7 +83,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           alt="Cash In"
         />
       ),
-      label: 'Cash In',
+      label: t('cash_in'),
       route: '/customer/cash-in',
       isImage: true,
     },
@@ -94,31 +96,31 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           alt="Cash Out"
         />
       ),
-      label: 'Cash Out',
+      label: t('cash_out'),
       route: '/customer/wallet-to-card',
       isImage: true,
     },
     {
       icon: <img src={sendIcon} className="w-7 h-7 object-contain" alt="Send Money" />,
-      label: 'Send Money',
+      label: t('send_money'),
       route: '/customer/send',
       isImage: true,
     },
     {
       icon: <img src={receiveIcon} className="w-7 h-7 object-contain" alt="Request Money" />,
-      label: 'Request Money',
+      label: t('request_money'),
       route: '/customer/request-money',
       isImage: true,
     },
     {
       icon: <img src={voucherIcon} className="w-7 h-7 object-contain" alt="Voucher" />,
-      label: 'Voucher',
+      label: t('voucher'),
       route: '/customer/voucher',
       isImage: true,
     },
     {
       icon: <img src={airtimeIcon} className="w-7 h-7 object-contain" alt="Airtime" />,
-      label: 'Airtime',
+      label: t('airtime'),
       route: '/customer/airtime',
       isImage: true,
     },
@@ -131,7 +133,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           alt="Pay Bill"
         />
       ),
-      label: 'Pay Bill',
+      label: t('pay_bill'),
       route: '/customer/bill-payment',
       isImage: true,
     },
@@ -144,7 +146,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           alt="Card to Card"
         />
       ),
-      label: 'Card to Card',
+      label: t('card_to_card'),
       route: '/customer/card-to-card',
       isImage: true,
     },
@@ -157,7 +159,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           alt="Transactions"
         />
       ),
-      label: 'Transactions',
+      label: t('transactions'),
       route: '/customer/transactions',
       isImage: true,
     },
@@ -170,7 +172,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           alt="Disputes"
         />
       ),
-      label: 'Disputes',
+      label: t('disputes'),
       route: '/customer/disputes',
       isImage: true,
     },
@@ -333,7 +335,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
             </span>
             {!isCollapsed && (
               <>
-                <span className="flex-1 truncate text-sm font-medium">Cards</span>
+                <span className="flex-1 truncate text-sm font-medium">{t('cards')}</span>
                 <span
                   className={`flex items-center justify-center transition-transform duration-200 ${cardsOpen ? 'rotate-180' : 'rotate-0'
                     }`}
@@ -379,7 +381,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                   style={{ filter: primaryGreenIconFilter }}
                   alt="Paysey Card"
                 />
-                <span className="flex-1 truncate text-sm font-medium" style={{ color: 'inherit' }}>Paysepe Card</span>
+                <span className="flex-1 truncate text-sm font-medium" style={{ color: 'inherit' }}>{t('paysepe_card')}</span>
               </button>
               <button
                 type="button"
@@ -411,7 +413,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                   style={{ filter: primaryGreenIconFilter }}
                   alt="Other Card"
                 />
-                <span className="flex-1 truncate text-sm font-medium" style={{ color: 'inherit' }}>Other Card</span>
+                <span className="flex-1 truncate text-sm font-medium" style={{ color: 'inherit' }}>{t('other_card')}</span>
               </button>
             </div>
           )}
@@ -442,7 +444,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
           <span className={`flex-none ${isCollapsed ? 'text-xl' : 'text-lg'} flex items-center justify-center`}>
             <CiLogout />
           </span>
-          {!isCollapsed && <span className="flex-1 text-sm">Logout</span>}
+          {!isCollapsed && <span className="flex-1 text-sm">{t('logout')}</span>}
         </button>
       </div>
     </div>
@@ -472,7 +474,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                   ? sidebarColors.closeButtonHoverBackground
                   : THEME_COLORS.common.transparent,
               }}
-              aria-label="Close sidebar to view content"
+              aria-label={t('close_sidebar')}
             >
               <MdClose size={22} />
             </button>

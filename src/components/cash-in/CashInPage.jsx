@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { IoArrowBack } from 'react-icons/io5'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
@@ -10,6 +11,7 @@ import cashInService from './cashIn.service'
 import THEME_COLORS from '../../theme/colors'
 
 const CashInPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [cardNumber, setCardNumber] = useState('')
   const [cvv, setCvv] = useState('')
@@ -36,12 +38,12 @@ const CashInPage = () => {
     try {
       const { data } = await cashInService.verifyCard(card)
       setCardVerified(true)
-      setCardName(data?.card_holder_name || 'Card verified')
+      setCardName(data?.card_holder_name || t('card_verified'))
       setCardNumber(card)
     } catch (err) {
       setCardVerified(false)
       setCardName('')
-      const msg = err?.message || 'Card not found or invalid. Please check the card number.'
+      const msg = err?.message || t('card_not_found_invalid')
       setError(msg)
       toast.error(msg)
     } finally {
@@ -63,12 +65,12 @@ const CashInPage = () => {
           try {
             const { data } = await cashInService.verifyCard(cardValue)
             setCardVerified(true)
-            setCardName(data?.card_holder_name || 'Card verified')
+            setCardName(data?.card_holder_name || t('card_verified'))
             setCardNumber(cardValue)
           } catch (err) {
             setCardVerified(false)
             setCardName('')
-            const msg = err?.message || 'Card not found or invalid. Please check the card number.'
+            const msg = err?.message || t('card_not_found_invalid')
             setError(msg)
             toast.error(msg)
           } finally {
@@ -82,34 +84,34 @@ const CashInPage = () => {
         clearTimeout(verifyTimeoutRef.current)
       }
     }
-  }, [cardNumber, cardVerified, validating])
+  }, [cardNumber, cardVerified, validating, t])
 
   const handleContinue = () => {
     const card = cardNumber.trim().replace(/\s/g, '')
     if (!card || card.length !== 16) {
-      setError('Please enter a valid 16-digit card number')
+      setError(t('please_enter_valid_16_digit_card_number'))
       return
     }
     if (!cardVerified) {
-      setError('Please wait for card verification to complete')
+      setError(t('please_wait_for_card_verification'))
       return
     }
     if (!cvv || cvv.length !== 3) {
-      setError('Please enter CVV2')
+      setError(t('please_enter_cvv2'))
       return
     }
     const expiry = expiryDate.trim().replace(/\D/g, '')
     if (expiry.length !== 4) {
-      setError('Please enter expiry as MMYY (e.g. 1030)')
+      setError(t('please_enter_expiry_mmyy'))
       return
     }
     const month = Number(expiry.slice(0, 2))
     if (!Number.isInteger(month) || month < 1 || month > 12) {
-      setError('Please enter a valid expiry month (01-12)')
+      setError(t('please_enter_valid_expiry_month'))
       return
     }
     if (!amount || parseFloat(amount) <= 0) {
-      setError('Please enter a valid amount')
+      setError(t('please_enter_valid_amount'))
       return
     }
     setError('')
@@ -131,13 +133,13 @@ const CashInPage = () => {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          aria-label="Go back"
+          aria-label={t('go_back')}
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#1F2937]"
         >
           <IoArrowBack size={18} />
         </button>
-        <h1 className="text-3xl font-semibold text-[#111827]">Cash In</h1>
+        <h1 className="text-3xl font-semibold text-[#111827]">{t('cash_in')}</h1>
       </div>
     </div>
   )
@@ -154,16 +156,16 @@ const CashInPage = () => {
           </div>
         )}
 
-        <form onSubmit={(e) => { e.preventDefault(); handleContinue(); }} autoComplete="on" className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); handleContinue() }} autoComplete="on" className="space-y-4">
           <section className="bg-white rounded-2xl p-4 shadow-[0_6px_18px_rgba(15,23,42,0.08)] border border-[#E5E7EB] space-y-4">
-            <h3 className="text-lg font-semibold text-[#1F2937]">Cash In Funds</h3>
+            <h3 className="text-lg font-semibold text-[#1F2937]">{t('cash_in_funds')}</h3>
             <p className="text-sm" style={{ color: contentCard.subtitle }}>
-              Enter card details. An OTP will be sent to complete the transaction.
+              {t('enter_card_details_otp')}
             </p>
 
             <div>
               <Input
-                label="Card number"
+                label="card_number"
                 value={cardNumber}
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, '')
@@ -184,7 +186,7 @@ const CashInPage = () => {
                     }
                   }
                 }}
-                placeholder="e.g. 2345543212345432"
+                placeholder="card_number_placeholder"
                 maxLength={16}
                 disabled={cardVerified}
                 autoComplete="cc-number"
@@ -195,32 +197,32 @@ const CashInPage = () => {
                   className="mt-2 rounded-lg px-3 py-2 text-sm"
                   style={{ border: `1px solid ${contentCard.divider}`, backgroundColor: contentCard.accentBackground }}
                 >
-                  <span style={{ color: contentCard.subtitle }}>Card Name: </span>
+                  <span style={{ color: contentCard.subtitle }}>{t('card_name_label')}: </span>
                   <span className="font-medium" style={{ color: contentCard.title }}>{cardName}</span>
                 </div>
               )}
               {validating && (
                 <div className="mt-2 text-sm" style={{ color: contentCard.subtitle }}>
-                  Verifying card...
+                  {t('verifying_card')}
                 </div>
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <Input
-                label="CVV2"
+                label="cvv2"
                 type="password"
                 value={cvv}
                 onChange={(e) => {
                   setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))
                   setError('')
                 }}
-                placeholder="e.g. 234"
+                placeholder="cvv2_placeholder"
                 maxLength={3}
                 autoComplete="cc-csc"
               />
               <Input
-                label="Expiry (MMYY)"
+                label="expiry_mmyy"
                 value={expiryDate}
                 onChange={(e) => {
                   let digits = e.target.value.replace(/\D/g, '').slice(0, 4)
@@ -235,7 +237,7 @@ const CashInPage = () => {
                   setExpiryDate(digits)
                   setError('')
                 }}
-                placeholder="e.g. 1030"
+                placeholder="expiry_placeholder"
                 maxLength={4}
                 autoComplete="cc-exp"
               />
@@ -243,13 +245,13 @@ const CashInPage = () => {
           </section>
 
           <section className="bg-white rounded-2xl p-4 shadow-[0_6px_18px_rgba(15,23,42,0.08)] border border-[#E5E7EB] space-y-3">
-            <h3 className="text-lg font-semibold text-[#1F2937]">Enter Amount</h3>
-            <AmountInput label="Amount" value={amount} onChange={setAmount} />
+            <h3 className="text-lg font-semibold text-[#1F2937]">{t('enter_amount')}</h3>
+            <AmountInput label={t('amount')} value={amount} onChange={setAmount} />
           </section>
 
           <div className="pt-1">
             <Button type="submit" fullWidth size="md">
-              Continue
+              {t('continue')}
             </Button>
           </div>
         </form>

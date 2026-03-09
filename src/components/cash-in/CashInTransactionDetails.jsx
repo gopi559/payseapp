@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
 import { HiOutlineUser, HiOutlinePhone, HiOutlineCreditCard, HiOutlineBuildingOffice } from 'react-icons/hi2'
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
@@ -13,26 +14,32 @@ function escapeHtml(str) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-const downloadTransactionPdf = (details, senderName, senderMobile, senderAccountNumber, cardNumber, cardName) => {
+const downloadTransactionPdf = (
+  details,
+  senderName,
+  senderMobile,
+  senderAccountNumber,
+  cardNumber,
+  cardName,
+  labels
+) => {
   const win = window.open('', '_blank')
   if (!win) {
-    alert('Please allow pop-ups to download PDF.')
+    alert(labels.pleaseAllowPopups)
     return
   }
 
-
-  // Format date and time
   const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '—'
+    if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
-      const options = { 
-        year: 'numeric', 
-        month: 'short', 
+      const options = {
+        year: 'numeric',
+        month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
       }
       return date.toLocaleString('en-US', options).replace(',', ' at')
     } catch {
@@ -40,48 +47,45 @@ const downloadTransactionPdf = (details, senderName, senderMobile, senderAccount
     }
   }
 
-  // Build transaction data rows
   const transactionRows = [
-    { label: 'Transaction ID', value: details?.txn_id != null ? String(details.txn_id) : '—' },
-    { label: 'RRN', value: details?.rrn ?? '—' },
-    { label: 'Transaction Type', value: details?.txn_type ?? 'CARD_TO_WALLET' },
-    { label: 'Description', value: details?.txn_desc ?? details?.txn_short_desc ?? 'Card To Wallet' },
-    { label: 'Date & Time', value: formatDateTime(details?.txn_time ?? details?.created_at ?? '') },
-    { label: 'Amount', value: details?.txn_amount != null ? `${Number(details.txn_amount).toFixed(2)}` : '0.00' },
-    { label: 'Channel', value: details?.channel_type ?? 'WEB' },
-    { label: 'Status', value: details?.status === 1 ? 'Success' : String(details?.status ?? 'SUCCESS') },
-    { label: 'Fee Amount', value: details?.fee_amount != null ? `${Number(details.fee_amount).toFixed(2)}` : '0.00' },
-    { label: 'Remarks', value: details?.remarks ?? '—' },
+    { label: labels.transactionId, value: details?.txn_id != null ? String(details.txn_id) : '-' },
+    { label: labels.rrn, value: details?.rrn ?? '-' },
+    { label: labels.transactionType, value: details?.txn_type ?? 'CARD_TO_WALLET' },
+    { label: labels.description, value: details?.txn_desc ?? details?.txn_short_desc ?? labels.cardToWallet },
+    { label: labels.dateTime, value: formatDateTime(details?.txn_time ?? details?.created_at ?? '') },
+    { label: labels.amount, value: details?.txn_amount != null ? `${Number(details.txn_amount).toFixed(2)}` : '0.00' },
+    { label: labels.channel, value: details?.channel_type ?? 'WEB' },
+    { label: labels.status, value: details?.status === 1 ? labels.success : String(details?.status ?? 'SUCCESS') },
+    { label: labels.feeAmount, value: details?.fee_amount != null ? `${Number(details.fee_amount).toFixed(2)}` : '0.00' },
+    { label: labels.remarks, value: details?.remarks ?? '-' },
   ]
 
-  // Sender Details (Card)
   const senderRows = [
-    { label: 'Card Number', value: cardNumber },
-    { label: 'Card Name', value: cardName || '—' },
-    { label: 'Mobile Number', value: 'NA' },
-    { label: 'Account Number', value: 'NA' },
+    { label: labels.cardNumber, value: cardNumber },
+    { label: labels.cardName, value: cardName || '-' },
+    { label: labels.mobileNumber, value: labels.notAvailable },
+    { label: labels.accountNumber, value: labels.notAvailable },
   ]
 
-  // Receiver Details (Wallet)
   const receiverRows = [
-    { label: 'Name', value: senderName },
-    { label: 'Mobile Number', value: senderMobile || '—' },
-    { label: 'Card Number', value: 'NA' },
-    { label: 'Account Number', value: senderAccountNumber },
+    { label: labels.name, value: senderName },
+    { label: labels.mobileNumber, value: senderMobile || '-' },
+    { label: labels.cardNumber, value: labels.notAvailable },
+    { label: labels.accountNumber, value: senderAccountNumber },
   ]
 
   const formatRows = (rows) => {
     return rows.map(({ label, value }) => {
-      const displayValue = value == null || value === '' ? '—' : String(value)
+      const displayValue = value == null || value === '' ? '-' : String(value)
       return `<tr><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;vertical-align:top;">${escapeHtml(displayValue)}</td></tr>`
     }).join('')
   }
 
-win.document.write(`
+  win.document.write(`
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Transaction ${escapeHtml(String(details?.txn_id ?? ''))}</title>
+  <title>${escapeHtml(labels.transactionDetails)} ${escapeHtml(String(details?.txn_id ?? ''))}</title>
   <style>
     body {
       font-family: system-ui, sans-serif;
@@ -119,16 +123,16 @@ win.document.write(`
 
 <body>
   <div class="header">
-    <h1>Transaction Details</h1>
+    <h1>${escapeHtml(labels.transactionDetails)}</h1>
     <img src="${PAYSEY_LOGO_URL}" class="logo" alt="PayseyPay Logo" />
   </div>
 
   <table><tbody>${formatRows(transactionRows)}</tbody></table>
 
-  <h2>Sender Details</h2>
+  <h2>${escapeHtml(labels.senderDetails)}</h2>
   <table><tbody>${formatRows(senderRows)}</tbody></table>
 
-  <h2>Receiver Details</h2>
+  <h2>${escapeHtml(labels.receiverDetails)}</h2>
   <table><tbody>${formatRows(receiverRows)}</tbody></table>
 </body>
 </html>
@@ -141,6 +145,7 @@ win.document.write(`
 }
 
 const CashInTransactionDetails = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
   const walletId = useSelector((state) => state.wallet?.walletId)
@@ -155,25 +160,23 @@ const CashInTransactionDetails = () => {
         setDetails({})
       }
     } else {
-      // If no data, redirect to home
       navigate('/customer/home')
     }
   }, [navigate])
 
   if (!details) return null
 
-  // Format date and time
   const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '—'
+    if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
-      const options = { 
-        year: 'numeric', 
-        month: 'short', 
+      const options = {
+        year: 'numeric',
+        month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
       }
       return date.toLocaleString('en-US', options).replace(',', ' at')
     } catch {
@@ -181,31 +184,25 @@ const CashInTransactionDetails = () => {
     }
   }
 
-  // Get user display name
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
   const receiverName = userKyc?.first_name || userKyc?.last_name
     ? [userKyc.first_name, userKyc.middle_name, userKyc.last_name].filter(Boolean).join(' ')
-    : regInfo?.first_name || regInfo?.name || 'User'
+    : regInfo?.first_name || regInfo?.name || t('user')
   const receiverMobile = regInfo?.mobile ?? regInfo?.reg_mobile ?? user?.mobile ?? ''
-  const receiverAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || '—'
+  const receiverAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || '-'
 
-  // Transaction data
   const amount = details?.txn_amount != null ? Number(details.txn_amount).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
-  const txnId = details?.txn_id != null ? String(details.txn_id) : ''
   const txnTime = details?.txn_time ?? details?.created_at ?? ''
   const txnTypeRaw = details?.txn_type ?? 'CARD_TO_WALLET'
-  // Format transaction type for display
   const txnType = txnTypeRaw === 'CARD_TO_WALLET' ? 'C2W' : txnTypeRaw
-  const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? 'Card To Wallet'
+  const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? t('card_to_wallet')
   const channel = details?.channel_type ?? 'WEB'
-  const remarks = details?.remarks ?? ''
 
-  // Card data
   const cardNumber = details?.card_number ?? ''
-  const maskedCard = cardNumber ? `${cardNumber.slice(0, 4)} **** **** ${cardNumber.slice(-4)}` : '—'
-  const cardName = details?.card_name ?? '—'
+  const maskedCard = cardNumber ? `${cardNumber.slice(0, 4)} **** **** ${cardNumber.slice(-4)}` : '-'
+  const cardName = details?.card_name ?? '-'
 
   const handleDownloadPdf = () => {
     downloadTransactionPdf(
@@ -214,7 +211,31 @@ const CashInTransactionDetails = () => {
       receiverMobile,
       receiverAccountNumber,
       maskedCard,
-      cardName
+      cardName,
+      {
+        pleaseAllowPopups: t('please_allow_popups_to_download_pdf'),
+        transactionId: t('transaction_id'),
+        rrn: t('rrn'),
+        transactionType: t('transaction_type'),
+        description: t('description'),
+        dateTime: t('date_time'),
+        amount: t('amount'),
+        channel: t('channel'),
+        status: t('status'),
+        success: t('success'),
+        feeAmount: t('fee_amount'),
+        remarks: t('remarks'),
+        cardNumber: t('card_number'),
+        cardName: t('card_name'),
+        mobileNumber: t('mobile_number_label'),
+        accountNumber: t('account_number'),
+        name: t('name'),
+        notAvailable: t('not_available'),
+        transactionDetails: t('transaction_details'),
+        senderDetails: t('sender_details'),
+        receiverDetails: t('receiver_details'),
+        cardToWallet: t('card_to_wallet'),
+      }
     )
   }
 
@@ -225,7 +246,6 @@ const CashInTransactionDetails = () => {
 
   return (
     <MobileScreenContainer>
-      {/* Green Header */}
       <div className="bg-brand-secondary text-white px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => navigate('/customer/home')}
@@ -233,182 +253,177 @@ const CashInTransactionDetails = () => {
         >
           <IoArrowBack className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-bold flex-1">Transaction Details</h1>
+        <h1 className="text-lg font-bold flex-1">{t('transaction_details')}</h1>
         <button className="text-white hover:opacity-80 transition-opacity">
           <IoInformationCircleOutline className="w-6 h-6" />
         </button>
       </div>
 
       <div className="px-4 py-6 max-w-2xl mx-auto">
-        {/* Success Confirmation Box */}
         <div className="bg-brand-secondary rounded-2xl p-6 mb-6 text-white">
           <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-              <span className="text-3xl text-brand-secondary">✓</span>
+              <span className="text-3xl text-brand-secondary">V</span>
             </div>
-            <h2 className="text-2xl font-bold mb-2">Transaction Completed</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
             <p className="text-3xl font-bold mb-4">{amount}</p>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <span className="text-sm font-medium">Money Added</span>
+              <span className="text-sm font-medium">{t('money_added')}</span>
             </div>
           </div>
         </div>
 
-        {/* Transaction Details Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <IoInformationCircleOutline className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">Transaction Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('transaction_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             {rrn && (
               <div className="flex items-start gap-3">
                 <FaFingerprint className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">RRN</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('rrn')}</p>
                   <p className="text-sm font-medium text-gray-800 font-mono">{rrn}</p>
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-start gap-3">
               <FaExchangeAlt className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Transaction Type</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('transaction_type')}</p>
                 <p className="text-sm font-medium text-gray-800">{txnType}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Description</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('description')}</p>
                 <p className="text-sm font-medium text-gray-800">{txnDesc}</p>
               </div>
             </div>
-            
+
             {txnTime && (
               <div className="flex items-start gap-3">
                 <FaClock className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">Date & Time</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('date_time')}</p>
                   <p className="text-sm font-medium text-gray-800">{formatDateTime(txnTime)}</p>
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-start gap-3">
               <FaMoneyBillWave className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Amount</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('amount')}</p>
                 <p className="text-sm font-medium text-gray-800">{amount}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <FaDesktop className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Channel</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('channel')}</p>
                 <p className="text-sm font-medium text-gray-800">{channel}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sender Details Section (Card) */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <HiOutlineCreditCard className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">Sender Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('sender_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
                 <p className="text-sm font-medium text-gray-800 font-mono">{maskedCard}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Name</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
                 <p className="text-sm font-medium text-gray-800">{cardName}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <HiOutlinePhone className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Mobile Number</p>
-                <p className="text-sm font-medium text-gray-800">NA</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number_label')}</p>
+                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Account Number</p>
-                <p className="text-sm font-medium text-gray-800">NA</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
+                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Receiver Details Section (Wallet) */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <HiOutlineUser className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">Receiver Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('receiver_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Name</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('name')}</p>
                 <p className="text-sm font-medium text-gray-800">{receiverName}</p>
               </div>
             </div>
-            
+
             {receiverMobile && (
               <div className="flex items-start gap-3">
                 <HiOutlinePhone className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">Mobile Number</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number_label')}</p>
                   <p className="text-sm font-medium text-gray-800 font-mono">{receiverMobile}</p>
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
-                <p className="text-sm font-medium text-gray-800">NA</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Account Number</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
                 <p className="text-sm font-medium text-gray-800 font-mono">{receiverAccountNumber}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Download PDF Button */}
         <div className="mb-4">
           <Button
             onClick={handleDownloadPdf}
@@ -416,14 +431,13 @@ const CashInTransactionDetails = () => {
             fullWidth
             className="border-brand-secondary text-brand-secondary hover:bg-brand-secondary hover:text-white"
           >
-            Download PDF
+            {t('download_pdf')}
           </Button>
         </div>
 
-        {/* Done Button */}
         <div>
           <Button onClick={handleDone} fullWidth size="md">
-            Done
+            {t('done')}
           </Button>
         </div>
       </div>
@@ -432,5 +446,3 @@ const CashInTransactionDetails = () => {
 }
 
 export default CashInTransactionDetails
-
-

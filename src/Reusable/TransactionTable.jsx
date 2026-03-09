@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatTableDateTime } from '../utils/formatDate'
 import THEME_COLORS from '../theme/colors'
 
@@ -21,6 +22,7 @@ const DataTable = ({
   tableMaxHeight = '280px',
   fillHeight = false,
 }) => {
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
   const [pageSize, setPageSize] = useState(propPageSize)
   const [quickJumpPage, setQuickJumpPage] = useState('')
@@ -71,14 +73,17 @@ const DataTable = ({
   }
 
   const displayTotal = totalForPagination > 0 ? totalForPagination : (filteredData?.length ?? 0)
-  const totalLabel = totalRowsLabel.replace('{count}', String(displayTotal))
+  const totalLabel = t('total_rows', {
+    count: displayTotal,
+    defaultValue: totalRowsLabel.replace('{count}', String(displayTotal)),
+  })
 
   return (
     <div className={`flex flex-col gap-4 w-full min-h-0 ${fillHeight ? 'flex-1 min-h-0' : ''}`}>
       <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
         <input
           type="search"
-          placeholder={searchPlaceholder}
+          placeholder={t(searchPlaceholder, { defaultValue: searchPlaceholder })}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-xs w-full rounded-lg border px-3 py-2 text-sm"
@@ -87,9 +92,11 @@ const DataTable = ({
       </div>
 
       {loading ? (
-        <p className="text-center py-8" style={{ color: tableColors.text }}>Loading...</p>
+        <p className="text-center py-8" style={{ color: tableColors.text }}>{t('loading')}</p>
       ) : filteredData.length === 0 ? (
-        <p className="text-center py-8" style={{ color: tableColors.text }}>{emptyMessage}</p>
+        <p className="text-center py-8" style={{ color: tableColors.text }}>
+          {t(emptyMessage, { defaultValue: emptyMessage })}
+        </p>
       ) : (
         <>
           <div
@@ -105,7 +112,7 @@ const DataTable = ({
                   <tr>
                     {headers.map((h) => (
                       <th key={h.key} className="p-3 whitespace-nowrap" style={{ backgroundColor: tableColors.headerBackground }}>
-                        {h.label}
+                        {t(h.label, { defaultValue: h.label })}
                       </th>
                     ))}
                   </tr>
@@ -133,7 +140,7 @@ const DataTable = ({
             <span className="text-xs font-medium whitespace-nowrap" style={{ color: tableColors.text }}>{totalLabel}</span>
 
             <div className="flex items-center gap-0.5 flex-shrink-0">
-              <button type="button" disabled={currentPage <= 1 || !onPageChange} onClick={() => onPageChange && handlePageChange(currentPage - 1, effectivePageSize)} className="min-w-[26px] h-6 rounded border text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }} aria-label="Previous page">{'<'}</button>
+              <button type="button" disabled={currentPage <= 1 || !onPageChange} onClick={() => onPageChange && handlePageChange(currentPage - 1, effectivePageSize)} className="min-w-[26px] h-6 rounded border text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }} aria-label={t('previous_page')}>{'<'}</button>
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter((p) => {
                   if (totalPages <= 7) return true
@@ -156,20 +163,20 @@ const DataTable = ({
                     </button>
                   )
                 )}
-              <button type="button" disabled={currentPage >= totalPages || !onPageChange} onClick={() => onPageChange && handlePageChange(currentPage + 1, effectivePageSize)} className="min-w-[26px] h-6 rounded border text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }} aria-label="Next page">{'>'}</button>
+              <button type="button" disabled={currentPage >= totalPages || !onPageChange} onClick={() => onPageChange && handlePageChange(currentPage + 1, effectivePageSize)} className="min-w-[26px] h-6 rounded border text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }} aria-label={t('next_page')}>{'>'}</button>
             </div>
 
             <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
-              <select value={effectivePageSize} onChange={(e) => onPageChange && handlePageSizeChange(e)} className="rounded border px-1.5 py-1 text-xs" style={{ borderColor: tableColors.border, backgroundColor: tableColors.rowBackground, color: tableColors.text }} aria-label="Rows per page">
+              <select value={effectivePageSize} onChange={(e) => onPageChange && handlePageSizeChange(e)} className="rounded border px-1.5 py-1 text-xs" style={{ borderColor: tableColors.border, backgroundColor: tableColors.rowBackground, color: tableColors.text }} aria-label={t('rows_per_page')}>
                 {pageSizeOptions.map((size) => (
-                  <option key={size} value={size}>{size} / page</option>
+                  <option key={size} value={size}>{size}{t('per_page')}</option>
                 ))}
               </select>
               <form onSubmit={handleQuickJump} className="flex items-center gap-1">
-                <span className="text-xs" style={{ color: tableColors.text }}>Go to</span>
+                <span className="text-xs" style={{ color: tableColors.text }}>{t('go_to')}</span>
                 <input type="number" min={1} max={totalPages} placeholder={String(currentPage)} value={quickJumpPage} onChange={(e) => setQuickJumpPage(e.target.value)} className="w-9 rounded border px-1 py-1 text-xs text-center" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }} />
                 <button type="submit" className="rounded border px-2 py-1 text-xs font-medium" style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }}>
-                  Page
+                  {t('page')}
                 </button>
               </form>
             </div>
