@@ -1,11 +1,13 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { HiChevronRight } from 'react-icons/hi2'
 import THEME_COLORS from '../../theme/colors'
-import { BILL_SERVICES } from './billPayment.constants'
+import { BILL_SERVICES, getBillServiceName } from './billPayment.constants'
 
 const BillPaymentMenu = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const menuCard = THEME_COLORS.menuCard
 
@@ -17,10 +19,10 @@ const BillPaymentMenu = () => {
             className="text-2xl font-semibold mb-1"
             style={{ color: menuCard.screenTitle }}
           >
-            Bill Payment
+            {t('bill_payment')}
           </h1>
           <p className="text-base mb-8" style={{ color: menuCard.screenSubtitle }}>
-            Select Bill Type To Continue
+            {t('select_bill_type_to_continue')}
           </p>
 
           <div className="space-y-4">
@@ -41,10 +43,10 @@ const BillPaymentMenu = () => {
                       className="text-xl font-semibold"
                       style={{ color: menuCard.cardTitle }}
                     >
-                      {service.name}
+                      {getBillServiceName(service.id, t)}
                     </h2>
                     <p className="text-base mt-2" style={{ color: menuCard.cardSubtitle }}>
-                      Pay Your {service.name} Bill Securely
+                      {t('pay_your_service_bill_securely', { service: getBillServiceName(service.id, t) })}
                     </p>
                   </div>
 

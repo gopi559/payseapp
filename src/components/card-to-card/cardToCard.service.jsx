@@ -22,10 +22,10 @@ const cardToCardService = {
     })
     const res = await response.json().catch(() => null)
     if (!response.ok) {
-      throw new Error(res?.message || 'Failed to verify card')
+      throw new Error(res?.message || '')
     }
     if (!isSuccess(res)) {
-      throw new Error(res?.message || 'Card verification failed')
+      throw new Error(res?.message || '')
     }
     return {
       data: res?.data,
@@ -57,8 +57,8 @@ expiry_date: String(expiry_date).replace('/', '').trim(),
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Send OTP failed')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Send OTP failed')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? res,
@@ -101,8 +101,8 @@ expiry_date: String(expiry_date).replace('/', '').trim(),
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Card to card transfer failed')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Card to card transfer failed')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     authService.fetchCustomerBalance().catch(() => {})
 
@@ -114,4 +114,3 @@ expiry_date: String(expiry_date).replace('/', '').trim(),
 }
 
 export default cardToCardService
-

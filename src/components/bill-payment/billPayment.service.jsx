@@ -45,7 +45,7 @@ const billPaymentService = {
 
     const res = await response.json().catch(() => null)
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'Failed to fetch bill details')
+      throw new Error(res?.message || '')
     }
 
     return { data: res?.data ?? res, message: res?.message }
@@ -89,7 +89,7 @@ const billPaymentService = {
 
     const res = await response.json().catch(() => null)
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'Bill payment failed')
+      throw new Error(res?.message || '')
     }
 
     authService.fetchCustomerBalance().catch(() => {})

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { FiArrowLeft, FiSearch } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
@@ -10,6 +11,7 @@ import { getCustomerId, sortByAddedOnDesc } from './requestMoney.utils'
 import THEME_COLORS from '../../theme/colors'
 
 const MyRequests = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
   const currentUserId = getCustomerId(user)
@@ -26,7 +28,7 @@ const MyRequests = () => {
       const { data } = await requestMoneyService.getMyRequests(currentUserId)
       setRequests(sortByAddedOnDesc(data))
     } catch (error) {
-      toast.error(error?.message || 'Failed to load your requests')
+      toast.error(error?.message || t('failed_to_load_your_requests'))
     } finally {
       setLoading(false)
     }
@@ -55,11 +57,11 @@ const MyRequests = () => {
             onClick={() => navigate('/customer/request-money')}
             className="absolute left-0"
             style={{ color: menuGreen }}
-            aria-label="Back"
+            aria-label={t('go_back')}
           >
             <FiArrowLeft size={26} />
           </button>
-          <h1 className="text-2xl font-bold" style={{ color: menuGreen }}>My Request</h1>
+          <h1 className="text-2xl font-bold" style={{ color: menuGreen }}>{t('my_requests')}</h1>
         </div>
 
         <div className="rounded-2xl bg-white/80 h-14 px-4 flex items-center gap-3 shadow-sm">
@@ -68,15 +70,15 @@ const MyRequests = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by amount..."
+            placeholder={t('search_by_amount')}
             className="w-full bg-transparent outline-none text-lg text-gray-700 placeholder:text-gray-400"
           />
         </div>
 
         <div className="mt-5 space-y-4">
-          {loading && <p className="text-center text-sm text-gray-500">Loading requests...</p>}
+          {loading && <p className="text-center text-sm text-gray-500">{t('loading_requests')}</p>}
           {!loading && filteredRequests.length === 0 && (
-            <p className="text-center text-sm text-gray-500">No requests found.</p>
+            <p className="text-center text-sm text-gray-500">{t('no_requests_found')}</p>
           )}
 
           {filteredRequests.map((item) => (

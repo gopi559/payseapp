@@ -25,7 +25,7 @@ const normalizeBeneficiaryData = (data) => {
   }
 }
 
-const postJson = async (url, body, defaultError) => {
+const postJson = async (url, body) => {
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -40,8 +40,8 @@ const postJson = async (url, body, defaultError) => {
   })
 
   const res = await response.json().catch(() => null)
-  if (!response.ok) throw new Error(res?.message || defaultError)
-  if (!isSuccess(res)) throw new Error(res?.message || defaultError)
+  if (!response.ok) throw new Error(res?.message || '')
+  if (!isSuccess(res)) throw new Error(res?.message || '')
   return res
 }
 
@@ -49,11 +49,10 @@ const requestMoneyService = {
   validateBeneficiary: async (mobile) => {
     const res = await postJson(
       VALIDATE_SENDMONEY_BEN,
-      { mobile: String(mobile).trim() },
-      'Failed to validate beneficiary'
+      { mobile: String(mobile).trim() }
     )
 
-    if (!res?.data) throw new Error( 'Beneficiary Not Found')
+    if (!res?.data) throw new Error('')
 
     return {
       data: normalizeBeneficiaryData(res.data),
@@ -68,8 +67,7 @@ const requestMoneyService = {
         cust_id: Number(cust_id),
         amount: Number(amount),
         remarks: String(remarks || '').trim() || undefined,
-      },
-      'Request money failed'
+      }
     )
 
     authService.fetchCustomerBalance().catch(() => {})
@@ -86,8 +84,7 @@ const requestMoneyService = {
       {
         get_cust_data: true,
         recv_cust_id: Number(custId),
-      },
-      'Failed to load received requests'
+      }
     )
 
     return {
@@ -102,8 +99,7 @@ const requestMoneyService = {
       {
         get_cust_data: true,
         req_cust_id: Number(custId),
-      },
-      'Failed to load your requests'
+      }
     )
 
     return {
@@ -119,8 +115,7 @@ const requestMoneyService = {
         money_reqid: Number(money_reqid),
         amount: Number(amount),
         remarks: String(remarks || 'Paid'),
-      },
-      'Pay request failed'
+      }
     )
 
     authService.fetchCustomerBalance().catch(() => {})
@@ -136,8 +131,7 @@ const requestMoneyService = {
       DECLINE_REQUEST_MONEY,
       {
         money_reqid: Number(money_reqid),
-      },
-      'Decline request failed'
+      }
     )
 
     return {

@@ -95,7 +95,7 @@ const RequestSuccess = () => {
           <div className="flex justify-between items-center pt-2 border-t" style={{ borderColor: THEME_COLORS.contentCard.border }}>
             <span className="text-lg font-semibold text-gray-800">{t('amount')}</span>
             <div className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-              <img src={AfganCurrency} alt="Currency" className="h-7 w-7" />
+              <img src={AfganCurrency} alt={t('currency')} className="h-7 w-7" />
               <span>{amount}</span>
             </div>
           </div>

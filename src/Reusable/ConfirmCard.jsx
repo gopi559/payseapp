@@ -1,14 +1,17 @@
-﻿import React from 'react'
+import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatAmount } from '../utils/formatAmount'
 import THEME_COLORS from '../theme/colors'
 
 const ConfirmCard = ({
-  title = 'Confirm Transaction',
+  title,
   items = [],
   total,
   className = '',
 }) => {
+  const { t } = useTranslation()
   const contentCard = THEME_COLORS.contentCard
+  const resolvedTitle = title || t('confirm_transaction')
 
   return (
     <div
@@ -18,7 +21,9 @@ const ConfirmCard = ({
         border: `1px solid ${contentCard.border}`,
       }}
     >
-      <h3 className="text-lg font-semibold mb-4" style={{ color: contentCard.title }}>{title}</h3>
+      <h3 className="text-lg font-semibold mb-4" style={{ color: contentCard.title }}>
+        {resolvedTitle}
+      </h3>
 
       <div className="space-y-3">
         {items.map((item, index) => (
@@ -36,7 +41,7 @@ const ConfirmCard = ({
       {total && (
         <div className="mt-4 pt-4 border-t-2" style={{ borderColor: contentCard.border }}>
           <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold" style={{ color: contentCard.title }}>Total</span>
+            <span className="text-lg font-semibold" style={{ color: contentCard.title }}>{t('total')}</span>
             <span className="text-2xl font-bold" style={{ color: contentCard.accentText }}>
               {typeof total === 'number' ? formatAmount(total) : total}
             </span>

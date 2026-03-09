@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { FaCarSide, FaShoppingBag } from 'react-icons/fa'
 import { MdFastfood } from 'react-icons/md'
 import { BsBasketFill, BsThreeDots } from 'react-icons/bs'
@@ -12,14 +13,15 @@ import requestMoneyService from './requestMoney.service'
 import { buildRemarks } from './requestMoney.utils'
 
 const categories = [
-  { label: 'Food', icon: <MdFastfood size={20} /> },
-  { label: 'Travel', icon: <FaCarSide size={18} /> },
-  { label: 'Grocery', icon: <BsBasketFill size={18} /> },
-  { label: 'Shopping', icon: <FaShoppingBag size={18} /> },
-  { label: 'Others', icon: <BsThreeDots size={20} /> },
+  { key: 'food', icon: <MdFastfood size={20} /> },
+  { key: 'travel', icon: <FaCarSide size={18} /> },
+  { key: 'grocery', icon: <BsBasketFill size={18} /> },
+  { key: 'shopping', icon: <FaShoppingBag size={18} /> },
+  { key: 'others', icon: <BsThreeDots size={20} /> },
 ]
 
 const RequestAmount = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const beneficiary = location.state?.beneficiary
@@ -29,7 +31,7 @@ const RequestAmount = () => {
 
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('Others')
+  const [selectedCategory, setSelectedCategory] = useState('others')
   const [autoDescription, setAutoDescription] = useState(true)
   const [loading, setLoading] = useState(false)
 
@@ -45,18 +47,22 @@ const RequestAmount = () => {
 
   useEffect(() => {
     if (!autoDescription) return
-    setDescription(selectedCategory === 'Others' ? '' : selectedCategory)
-  }, [selectedCategory, autoDescription])
+    setDescription(selectedCategory === 'others' ? '' : t(`request_category_${selectedCategory}`))
+  }, [selectedCategory, autoDescription, t])
 
   const handleSubmit = async () => {
     if (!amount || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-      toast.error('Please enter a valid amount')
+      toast.error(t('please_enter_valid_amount'))
       return
     }
 
     setLoading(true)
     try {
-      const remarks = buildRemarks({ category: selectedCategory, note: description })
+      const remarks = buildRemarks({
+        category: t(`request_category_${selectedCategory}`),
+        note: description,
+        isOther: selectedCategory === 'others',
+      })
       const { data } = await requestMoneyService.createRequestMoney({
         cust_id: beneficiary.user_id,
         amount: parsedAmount,
@@ -75,7 +81,7 @@ const RequestAmount = () => {
       sessionStorage.setItem('requestMoneySuccess', JSON.stringify(successPayload))
       navigate('/customer/request-money/success')
     } catch (error) {
-      toast.error(error?.message || 'Failed to create request')
+      toast.error(error?.message || t('failed_to_create_request'))
     } finally {
       setLoading(false)
     }
@@ -85,7 +91,7 @@ const RequestAmount = () => {
     <MobileScreenContainer>
       <div className="max-w-md mx-auto px-4 py-6 space-y-5">
         <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>
-          Request Money
+          {t('request_money')}
         </h1>
 
         <div
@@ -96,40 +102,40 @@ const RequestAmount = () => {
             color: contentCard.subtitle,
           }}
         >
-          Beneficiary Name: <strong>{beneficiary.name}</strong>
+          {t('beneficiary_name')}: <strong>{beneficiary.name}</strong>
           <div className="mt-1">{beneficiary.reg_mobile}</div>
         </div>
 
         <AmountInput
-          label="Amount"
+          label={t('amount')}
           value={amount}
           onChange={setAmount}
         />
 
         <Input
-          label="Description"
+          label={t('description')}
           value={description}
           onChange={(e) => {
             const value = e.target.value
             setDescription(value)
             setAutoDescription(value.trim() === '')
           }}
-          placeholder="Add description"
+          placeholder={t('add_description')}
         />
 
         <div>
           <p className="text-xs font-medium mb-2" style={{ color: contentCard.subtitle }}>
-            Category
+            {t('category')}
           </p>
           <div className="grid grid-cols-2 gap-2">
             {categories.map((category) => {
-              const active = selectedCategory === category.label
+              const active = selectedCategory === category.key
               return (
                 <button
-                  key={category.label}
+                  key={category.key}
                   type="button"
                   onClick={() => {
-                    setSelectedCategory(category.label)
+                    setSelectedCategory(category.key)
                     setAutoDescription(true)
                   }}
                   className="h-10 rounded-md text-sm font-medium flex items-center justify-center gap-2"
@@ -140,7 +146,7 @@ const RequestAmount = () => {
                   }}
                 >
                   {category.icon}
-                  <span>{category.label}</span>
+                  <span>{t(`request_category_${category.key}`)}</span>
                 </button>
               )
             })}
@@ -161,7 +167,7 @@ const RequestAmount = () => {
               if (!loading) e.currentTarget.style.backgroundColor = menuGreen
             }}
           >
-            {loading ? 'Processing...' : 'Continue'}
+            {loading ? t('processing') : t('continue')}
           </button>
           <button
             type="button"
@@ -173,7 +179,7 @@ const RequestAmount = () => {
               color: contentCard.title,
             }}
           >
-            Back
+            {t('back')}
           </button>
         </div>
       </div>

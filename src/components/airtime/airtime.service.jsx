@@ -32,7 +32,7 @@ const airtimeService = {
 
     const res = await response.json().catch(() => null)
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'Send OTP failed')
+      throw new Error(res?.message || '')
     }
 
     return { data: res?.data ?? res, message: res?.message }
@@ -76,7 +76,7 @@ const airtimeService = {
 
     const res = await response.json().catch(() => null)
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'Airtime transaction failed')
+      throw new Error(res?.message || '')
     }
 
     authService.fetchCustomerBalance().catch(() => {})

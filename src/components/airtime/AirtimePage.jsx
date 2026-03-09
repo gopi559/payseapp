@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
@@ -20,6 +21,7 @@ import { sendService } from '../send/send.service'
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200]
 
 const AirtimePage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const scrollRef = useRef(null)
 
@@ -63,7 +65,7 @@ const AirtimePage = () => {
       } catch (e) {
         if (isCancelled) return
         setBeneficiary(null)
-        setBeneficiaryError(e?.message || 'Beneficiary validation failed')
+        setBeneficiaryError(e?.message || t('beneficiary_validation_failed'))
       } finally {
         if (!isCancelled) setIsBeneficiaryValidating(false)
       }
@@ -73,14 +75,14 @@ const AirtimePage = () => {
       isCancelled = true
       clearTimeout(timer)
     }
-  }, [mobileNo])
+  }, [mobileNo, t])
 
   const fetchCards = async () => {
     setCardsLoading(true)
     setCardsError('')
     try {
       const userId = getCurrentUserId()
-      if (!userId) throw new Error('User not found')
+      if (!userId) throw new Error(t('user_not_found'))
 
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
@@ -102,7 +104,7 @@ const AirtimePage = () => {
 
       const data = await res.json()
       if (!res.ok || Number(data?.code) !== 1) {
-        throw new Error(data?.message || 'Failed to load cards')
+        throw new Error(data?.message || t('failed_to_load_cards'))
       }
 
       const list = Array.isArray(data?.data) ? data.data : []
@@ -110,10 +112,10 @@ const AirtimePage = () => {
       setActiveIndex(0)
 
       if (!list.length) {
-        setCardsError('No beneficiary cards found for this account.')
+        setCardsError(t('no_beneficiary_cards_found_for_account'))
       }
     } catch (e) {
-      const msg = e?.message || 'Failed to load cards'
+      const msg = e?.message || t('failed_to_load_cards')
       setCardsError(msg)
       toast.error(msg)
     } finally {
@@ -123,19 +125,19 @@ const AirtimePage = () => {
 
   const validateInput = () => {
     if (!amount || Number(amount) <= 0) {
-      toast.error('Enter a valid amount')
+      toast.error(t('enter_valid_amount'))
       return false
     }
 
     const normalizedMobile = String(mobileNo || '').trim()
     const digits = normalizedMobile.replace(/\D/g, '')
     if (!normalizedMobile || digits.length !== 11) {
-      toast.error('Enter a valid mobile number')
+      toast.error(t('please_enter_valid_mobile_number'))
       return false
     }
 
     if (!cards[activeIndex]) {
-      toast.error('Select a card')
+      toast.error(t('please_select_card'))
       return false
     }
 
@@ -161,7 +163,7 @@ const AirtimePage = () => {
       setStep('CVV')
     } catch (e) {
       setBeneficiary(null)
-      toast.error(e.message || 'Validation failed')
+      toast.error(e.message || t('validation_failed'))
     } finally {
       setLoading(false)
     }
@@ -189,9 +191,9 @@ const AirtimePage = () => {
       })
 
       setStep('OTP')
-      toast.success('OTP sent')
+      toast.success(t('otp_sent'))
     } catch (e) {
-      toast.error(e.message || 'Failed to send OTP')
+      toast.error(e.message || t('failed_to_send_otp'))
     } finally {
       setLoading(false)
     }
@@ -200,7 +202,7 @@ const AirtimePage = () => {
   const handleConfirmOtp = async (otp) => {
     if (!selectedCard || !cvvData) return
     if (!txnMeta?.rrn || !txnMeta?.stan) {
-      toast.error('Session expired. Please try again.')
+      toast.error(t('session_expired_try_again'))
       resetFlow()
       return
     }
@@ -235,7 +237,7 @@ const AirtimePage = () => {
           fee_amount: data?.fee_amount ?? 0,
           remarks: data?.remarks ?? null,
           txn_type: 'AIRTIME',
-          txn_desc: 'Airtime purchase',
+          txn_desc: t('airtime_purchase'),
           from_card: selectedCard.card_number,
           from_card_name: selectedCard.cardholder_name || selectedCard.card_name || null,
           to_mobile: beneficiary?.reg_mobile || mobileNo,
@@ -246,7 +248,7 @@ const AirtimePage = () => {
       resetFlow()
       navigate('/customer/airtime/success')
     } catch (e) {
-      toast.error(e.message || 'Transaction failed')
+      toast.error(e.message || t('transaction_failed'))
     } finally {
       setLoading(false)
     }
@@ -263,15 +265,15 @@ const AirtimePage = () => {
   return (
     <MobileScreenContainer>
       <div className="px-4 py-4 max-w-md mx-auto">
-        <h1 className="text-2xl font-semibold mb-1">Airtime</h1>
-        <p className="text-sm mb-5 text-gray-500">Buy airtime with your card</p>
+        <h1 className="text-2xl font-semibold mb-1">{t('airtime')}</h1>
+        <p className="text-sm mb-5 text-gray-500">{t('buy_airtime_with_your_card')}</p>
 
         {cardsLoading ? (
-          <p className="text-sm text-gray-500 mb-4">Loading cards...</p>
+          <p className="text-sm text-gray-500 mb-4">{t('loading_cards')}</p>
         ) : cards.length === 0 ? (
           <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
             <p className="text-sm text-gray-600">
-              {cardsError || 'No cards available.'}
+              {cardsError || t('no_cards_available')}
             </p>
           </div>
         ) : (
@@ -296,7 +298,7 @@ const AirtimePage = () => {
           </div>
         )}
 
-        <AmountInput label="Amount" value={amount} onChange={setAmount} />
+        <AmountInput label={t('amount')} value={amount} onChange={setAmount} />
 
         <div className="grid grid-cols-5 gap-2 mt-3">
           {QUICK_AMOUNTS.map((a) => (
@@ -311,22 +313,22 @@ const AirtimePage = () => {
         </div>
 
         <div className="mt-4">
-          <MobileInput
-            label="Mobile Number"
+            <MobileInput
+            label={t('mobile_number')}
             value={mobileNo}
             onChange={(e) => {
               setMobileNo(e.target.value)
               setBeneficiary(null)
               setBeneficiaryError('')
             }}
-            placeholder="e.g. 998877665"
+            placeholder={t('mobile_placeholder')}
           />
           {isBeneficiaryValidating && (
-            <p className="mt-2 text-xs text-gray-500">Validating beneficiary...</p>
+            <p className="mt-2 text-xs text-gray-500">{t('validating_beneficiary')}</p>
           )}
           {!isBeneficiaryValidating && beneficiary && (
             <p className="mt-2 text-sm text-green-600 font-medium">
-              Beneficiary: {[beneficiary?.first_name, beneficiary?.middle_name, beneficiary?.last_name]
+              {t('beneficiary')}: {[beneficiary?.first_name, beneficiary?.middle_name, beneficiary?.last_name]
                 .filter(Boolean)
                 .join(' ')
                 .trim() || beneficiary?.reg_mobile}
@@ -343,7 +345,7 @@ const AirtimePage = () => {
             onClick={handleContinue}
             disabled={!amount || Number(amount) <= 0 || !mobileNo || cardsLoading || cards.length === 0}
           >
-            Continue
+            {t('continue')}
           </Button>
         </div>
       </div>
@@ -360,7 +362,7 @@ const AirtimePage = () => {
         card={selectedCard}
         amount={amount}
         to={mobileNo}
-        description="Airtime purchase"
+        description={t('airtime_purchase')}
         loading={loading}
         onSendOtp={handleSendOtp}
         onCancel={resetFlow}

@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
@@ -8,6 +9,7 @@ import { formatTableDateTime } from '../../utils/formatDate'
 import THEME_COLORS from '../../theme/colors'
 
 const DisputeList = () => {
+  const { t } = useTranslation()
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
@@ -22,7 +24,7 @@ const DisputeList = () => {
       setCurrentPage(1)
     } catch (err) {
       console.error(err)
-      toast.error(err?.message || 'Failed to load disputes')
+      toast.error(err?.message || t('failed_to_load_disputes'))
       setData([])
     } finally {
       setLoading(false)
@@ -43,15 +45,15 @@ const DisputeList = () => {
   const totalItems = data.length
 
   const headers = [
-    { key: 'transaction_id', label: 'Transaction ID' },
-    { key: 'user_id', label: 'User ID' },
-    { key: 'dispute_type_id', label: 'Dispute Type ID' },
-    { key: 'details', label: 'Details' },
-    { key: 'status', label: 'Status' },
-    { key: 'assigned_to', label: 'Assigned To' },
+    { key: 'transaction_id', label: 'transaction_id_label' },
+    { key: 'user_id', label: 'user_id' },
+    { key: 'dispute_type_id', label: 'dispute_type_id' },
+    { key: 'details', label: 'details' },
+    { key: 'status', label: 'status' },
+    { key: 'assigned_to', label: 'assigned_to' },
     {
       key: 'created_at',
-      label: 'Created At',
+      label: 'created_at',
       content: (row) => formatTableDateTime(row.created_at),
     },
   ]
@@ -65,8 +67,8 @@ const DisputeList = () => {
               <HiExclamationTriangle className="w-6 h-6" style={{ color: contentCard.iconColor }} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>Disputes</h2>
-              <p className="text-sm" style={{ color: contentCard.subtitle }}>View all raised disputes</p>
+              <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>{t('disputes')}</h2>
+              <p className="text-sm" style={{ color: contentCard.subtitle }}>{t('view_all_raised_disputes')}</p>
             </div>
           </div>
         </div>
@@ -82,14 +84,14 @@ const DisputeList = () => {
               data={data}
               headers={headers}
               loading={loading}
-              searchPlaceholder="Search in table..."
+              searchPlaceholder="search_in_table"
               totalItems={totalItems}
               currentPage={currentPage}
               pageSize={pageSize}
               onPageChange={handlePageChange}
               pageSizeOptions={[10, 20, 50, 100]}
-              totalRowsLabel="Total Rows: {count}"
-              emptyMessage="No disputes yet."
+              totalRowsLabel={t('total_rows_pattern')}
+              emptyMessage="no_disputes_yet"
               fillHeight
             />
           </div>

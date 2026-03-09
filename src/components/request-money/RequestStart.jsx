@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import MobileInput from '../../Reusable/MobileInput'
@@ -9,6 +10,7 @@ import requestMoneyService from './requestMoney.service'
 import { getCustomerId, normalizeMobile } from './requestMoney.utils'
 
 const RequestStart = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
   const contentCard = THEME_COLORS.contentCard
@@ -28,7 +30,7 @@ const RequestStart = () => {
 
   const handleContinue = async () => {
     if (digitCount !== 11) {
-      toast.error('Please enter a valid mobile number')
+      toast.error(t('please_enter_valid_mobile_number'))
       return
     }
 
@@ -42,7 +44,7 @@ const RequestStart = () => {
         Number(beneficiaryId) === Number(currentUserId) ||
         beneficiaryMobile === currentUserMobile
       ) {
-        toast.error('You cannot request money from yourself')
+        toast.error(t('cannot_request_money_from_yourself'))
         return
       }
 
@@ -62,7 +64,7 @@ const RequestStart = () => {
         },
       })
     } catch (error) {
-      toast.error(error?.message || 'Validation failed')
+      toast.error(error?.message || t('validation_failed'))
     } finally {
       setLoading(false)
     }
@@ -72,7 +74,7 @@ const RequestStart = () => {
     <MobileScreenContainer>
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
         <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>
-          Request Money
+          {t('request_money')}
         </h1>
 
         <div className="grid grid-cols-2 gap-2">
@@ -86,7 +88,7 @@ const RequestStart = () => {
               color: contentCard.title,
             }}
           >
-            Receive Requests
+            {t('receive_requests')}
           </button>
           <button
             type="button"
@@ -98,13 +100,13 @@ const RequestStart = () => {
               color: contentCard.title,
             }}
           >
-            Requested Money
+            {t('requested_money')}
           </button>
         </div>
 
         <div className="space-y-4">
           <MobileInput
-            label="Beneficiary Mobile Number"
+            label={t('beneficiary_mobile_number')}
             value={mobile}
             onChange={(e) => setMobile(e.target.value)}
             placeholder="e.g. 998877665"
@@ -123,12 +125,12 @@ const RequestStart = () => {
               if (!loading) e.currentTarget.style.backgroundColor = menuGreen
             }}
           >
-            {loading ? 'Validating...' : 'Continue'}
+            {loading ? t('validating') : t('continue')}
           </button>
         </div>
 
         <p className="text-sm" style={{ color: contentCard.subtitle }}>
-          Enter Recipient Mobile Number And Continue.
+          {t('enter_recipient_mobile_and_continue')}
         </p>
       </div>
     </MobileScreenContainer>

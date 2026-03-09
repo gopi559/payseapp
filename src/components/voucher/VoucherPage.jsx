@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { HiTicket, HiEye } from 'react-icons/hi2'
 import PageContainer from '../../Reusable/PageContainer'
@@ -10,6 +11,7 @@ import { formatTableDateTime } from '../../utils/formatDate'
 import THEME_COLORS from '../../theme/colors'
 
 const VoucherPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(false)
@@ -26,7 +28,7 @@ const VoucherPage = () => {
       setCurrentPage(1)
     } catch (err) {
       console.error(err)
-      toast.error(err?.message || 'Failed to load cash codes')
+      toast.error(err?.message || t('failed_to_load_cash_codes'))
       setData([])
     } finally {
       setLoading(false)
@@ -50,19 +52,21 @@ const VoucherPage = () => {
     'Amount',
     'ReceiverName',
     'ReceiverMobile',
-    // 'ReceiverIDNumber',
-    // 'ReceiverFatherName',
-    // 'ProvinceName',
-    // 'DistrictName',
-    // 'VillageName',
     'CreatedAt',
   ]
 
+  const tableHeaderMap = {
+    Cashcode: t('voucher_code'),
+    Channel: t('channel'),
+    Amount: t('amount'),
+    ReceiverName: t('receiver_name'),
+    ReceiverMobile: t('phone_number'),
+    CreatedAt: t('created_at'),
+  }
+
   const headers = [
     ...allowedKeys.map((key) => {
-      const label = key === 'CreatedAt'
-        ? 'Created At'
-        : key.replace(/([A-Z])/g, ' $1').trim()
+      const label = tableHeaderMap[key] || key.replace(/([A-Z])/g, ' $1').trim()
 
       if (key === 'CreatedAt' || key.includes('At')) {
         return {
@@ -77,19 +81,19 @@ const VoucherPage = () => {
           label,
           content: (row) => {
             const amount = row[key] || row[key.toLowerCase()] || row.amount
-            return amount != null ? `${Number(amount).toFixed(2)}` : '—'
+            return amount != null ? `${Number(amount).toFixed(2)}` : '-'
           },
         }
       }
       return {
         key,
         label,
-        content: (row) => row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()] || '—',
+        content: (row) => row[key] || row[key.toLowerCase()] || row[key.replace(/([A-Z])/g, '_$1').toLowerCase()] || '-',
       }
     }),
     {
       key: 'actions',
-      label: 'Actions',
+      label: t('actions'),
       content: (row) => (
         <button
           type="button"
@@ -99,10 +103,10 @@ const VoucherPage = () => {
           }}
           className="p-2 rounded-lg inline-flex items-center gap-1"
           style={{ color: contentCard.subtitle }}
-          aria-label="View"
+          aria-label={t('view')}
         >
           <HiEye className="w-5 h-5" />
-          <span className="text-xs">View</span>
+          <span className="text-xs">{t('view')}</span>
         </button>
       ),
     },
@@ -117,12 +121,12 @@ const VoucherPage = () => {
               <HiTicket className="w-6 h-6" style={{ color: contentCard.iconColor }} />
             </div>
             <div>
-              <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>Voucher (Cash Code)</h2>
-              <p className="text-sm" style={{ color: contentCard.subtitle }}>View And Create Cash Codes</p>
+              <h2 className="text-lg font-semibold" style={{ color: contentCard.title }}>{t('voucher_cash_code')}</h2>
+              <p className="text-sm" style={{ color: contentCard.subtitle }}>{t('view_and_create_cash_codes')}</p>
             </div>
           </div>
           <Button type="button" onClick={() => navigate('/customer/voucher/create')}>
-            Create Cash Code
+            {t('create_cash_code')}
           </Button>
         </div>
       </div>
@@ -137,14 +141,14 @@ const VoucherPage = () => {
               data={data}
               headers={headers}
               loading={loading}
-              searchPlaceholder="Search in table..."
+              searchPlaceholder={t('search_in_table')}
               totalItems={totalItems}
               currentPage={currentPage}
               pageSize={pageSize}
               onPageChange={handlePageChange}
               pageSizeOptions={[10, 20, 50, 100]}
-              totalRowsLabel="Total Rows: {count}"
-              emptyMessage="No cash codes yet."
+              totalRowsLabel={t('total_rows_pattern')}
+              emptyMessage={t('no_cash_codes_yet')}
               fillHeight
             />
           </div>
@@ -155,5 +159,3 @@ const VoucherPage = () => {
 }
 
 export default VoucherPage
-
-

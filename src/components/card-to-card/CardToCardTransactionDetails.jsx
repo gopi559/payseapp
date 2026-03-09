@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
 import { HiOutlineCreditCard } from 'react-icons/hi2'
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
@@ -9,13 +10,13 @@ import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 
 function escapeHtml(str) {
   const s = String(str ?? '')
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;')
 }
 
-const downloadTransactionPdf = (details) => {
+const downloadTransactionPdf = (details, t, language) => {
   const win = window.open('', '_blank')
   if (!win) {
-    alert('Please allow pop-ups to download PDF.')
+    alert(t('please_allow_popups_to_download_pdf'))
     return
   }
 
@@ -23,7 +24,7 @@ const downloadTransactionPdf = (details) => {
     if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
-      return date.toLocaleString('en-US', {
+      return date.toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -44,38 +45,35 @@ const downloadTransactionPdf = (details) => {
     ? `${details.to_card.slice(0, 4)} **** **** ${details.to_card.slice(-4)}`
     : '-'
 
-  /* ---------------- TRANSACTION ---------------- */
   const transactionRows = [
-    { label: 'Transaction ID', value: details?.txn_id ?? '-' },
-    { label: 'RRN', value: details?.rrn ?? '-' },
-    { label: 'Transaction Type', value: details?.txn_type ?? 'CARD_TO_CARD' },
-    { label: 'Description', value: details?.txn_desc ?? 'Card To Card' },
-    { label: 'Date & Time', value: formatDateTime(details?.txn_time) },
-    { label: 'Amount', value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
-    { label: 'Channel', value: details?.channel_type ?? 'WEB' },
-    { label: 'Status', value: details?.status === 1 ? 'Success' : 'SUCCESS' },
-    { label: 'Fee Amount', value: `${Number(details?.fee_amount ?? 0).toFixed(2)}` },
-    { label: 'Remarks', value: details?.remarks ?? '-' },
+    { label: t('transaction_id'), value: details?.txn_id ?? '-' },
+    { label: t('rrn'), value: details?.rrn ?? '-' },
+    { label: t('transaction_type'), value: details?.txn_type ?? 'CARD_TO_CARD' },
+    { label: t('description'), value: details?.txn_desc ?? t('card_to_card_transfer') },
+    { label: t('date_time'), value: formatDateTime(details?.txn_time) },
+    { label: t('amount'), value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
+    { label: t('channel'), value: details?.channel_type ?? 'WEB' },
+    { label: t('status'), value: details?.status === 1 ? t('success') : t('success') },
+    { label: t('fee_amount'), value: `${Number(details?.fee_amount ?? 0).toFixed(2)}` },
+    { label: t('remarks'), value: details?.remarks ?? '-' },
   ]
 
-  /* ---------------- FROM CARD ---------------- */
   const fromCardRows = [
-    { label: 'Card Number', value: maskedFromCard },
-    { label: 'Card Name', value: details?.from_card_name ?? '-' },
-    { label: 'Mobile Number', value: 'NA' },
-    { label: 'Account Number', value: 'NA' },
+    { label: t('card_number'), value: maskedFromCard },
+    { label: t('card_name'), value: details?.from_card_name ?? '-' },
+    { label: t('mobile_number'), value: t('not_available') },
+    { label: t('account_number'), value: t('not_available') },
   ]
 
-  /* ---------------- TO CARD ---------------- */
   const toCardRows = [
-    { label: 'Card Number', value: maskedToCard },
-    { label: 'Card Name', value: details?.to_card_name ?? '-' },
-    { label: 'Mobile Number', value: 'NA' },
-    { label: 'Account Number', value: 'NA' },
+    { label: t('card_number'), value: maskedToCard },
+    { label: t('card_name'), value: details?.to_card_name ?? '-' },
+    { label: t('mobile_number'), value: t('not_available') },
+    { label: t('account_number'), value: t('not_available') },
   ]
 
   const formatRows = (rows) =>
-    rows.map(r => `
+    rows.map((r) => `
       <tr>
         <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;">
           ${escapeHtml(r.label)}
@@ -90,7 +88,7 @@ const downloadTransactionPdf = (details) => {
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Transaction ${escapeHtml(details?.txn_id)}</title>
+      <title>${escapeHtml(t('transaction'))} ${escapeHtml(details?.txn_id)}</title>
       <style>
         body { font-family: system-ui, sans-serif; padding: 24px; }
         .header {
@@ -109,16 +107,16 @@ const downloadTransactionPdf = (details) => {
     </head>
     <body>
       <div class="header">
-        <h1>Transaction Details</h1>
+        <h1>${escapeHtml(t('transaction_details'))}</h1>
         <img src="${PAYSEY_LOGO_URL}" />
       </div>
 
       <table><tbody>${formatRows(transactionRows)}</tbody></table>
 
-      <h2>From Card Details</h2>
+      <h2>${escapeHtml(t('from_card_details'))}</h2>
       <table><tbody>${formatRows(fromCardRows)}</tbody></table>
 
-      <h2>To Card Details</h2>
+      <h2>${escapeHtml(t('to_card_details'))}</h2>
       <table><tbody>${formatRows(toCardRows)}</tbody></table>
     </body>
     </html>
@@ -130,8 +128,8 @@ const downloadTransactionPdf = (details) => {
   win.onafterprint = () => win.close()
 }
 
-
 const CardToCardTransactionDetails = () => {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
 
@@ -144,44 +142,38 @@ const CardToCardTransactionDetails = () => {
         setDetails({})
       }
     } else {
-      // If no data, redirect to home
       navigate('/customer/home')
     }
   }, [navigate])
 
   if (!details) return null
 
-  // Format date and time
   const formatDateTime = (dateTimeStr) => {
     if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
-      const options = { 
-        year: 'numeric', 
-        month: 'short', 
+      const options = {
+        year: 'numeric',
+        month: 'short',
         day: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-        hour12: true
+        hour12: true,
       }
-      return date.toLocaleString('en-US', options).replace(',', ' at')
+      return date.toLocaleString(i18n.language === 'ar' ? 'ar-SA' : 'en-US', options).replace(',', ' at')
     } catch {
       return dateTimeStr
     }
   }
 
-  // Transaction data
   const amount = details?.txn_amount != null ? Number(details.txn_amount).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
-  const txnId = details?.txn_id != null ? String(details.txn_id) : ''
   const txnTime = details?.txn_time ?? details?.created_at ?? ''
   const txnTypeRaw = details?.txn_type ?? 'CARD_TO_CARD'
-  // Format transaction type for display
   const txnType = txnTypeRaw === 'CARD_TO_CARD' ? 'C2C' : txnTypeRaw
-  const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? 'Card To Card'
+  const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? t('card_to_card_transfer')
   const channel = details?.channel_type ?? 'WEB'
 
-  // Card data
   const fromCard = details?.from_card ?? ''
   const maskedFromCard = fromCard ? `${fromCard.slice(0, 4)} **** **** ${fromCard.slice(-4)}` : '-'
   const fromCardName = details?.from_card_name ?? '-'
@@ -190,7 +182,7 @@ const CardToCardTransactionDetails = () => {
   const toCardName = details?.to_card_name ?? '-'
 
   const handleDownloadPdf = () => {
-    downloadTransactionPdf(details)
+    downloadTransactionPdf(details, t, i18n.language)
   }
 
   const handleDone = () => {
@@ -200,7 +192,6 @@ const CardToCardTransactionDetails = () => {
 
   return (
     <MobileScreenContainer>
-      {/* Green Header */}
       <div className="bg-brand-secondary text-white px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => navigate('/customer/home')}
@@ -208,148 +199,143 @@ const CardToCardTransactionDetails = () => {
         >
           <IoArrowBack className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-bold flex-1">Transaction Details</h1>
+        <h1 className="text-lg font-bold flex-1">{t('transaction_details')}</h1>
         <button className="text-white hover:opacity-80 transition-opacity">
           <IoInformationCircleOutline className="w-6 h-6" />
         </button>
       </div>
 
       <div className="px-4 py-6 max-w-2xl mx-auto">
-        {/* Success Confirmation Box */}
         <div className="bg-brand-secondary rounded-2xl p-6 mb-6 text-white">
           <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-              <span className="text-3xl text-brand-secondary">✓</span>
+              <span className="text-3xl text-brand-secondary">&#10003;</span>
             </div>
-            <h2 className="text-2xl font-bold mb-2">Transaction Completed</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
             <p className="text-3xl font-bold mb-4">{amount}</p>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <span className="text-sm font-medium">Card to Card Transfer</span>
+              <span className="text-sm font-medium">{t('card_to_card_transfer')}</span>
             </div>
           </div>
         </div>
 
-        {/* Transaction Details Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <IoInformationCircleOutline className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">Transaction Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('transaction_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             {rrn && (
               <div className="flex items-start gap-3">
                 <FaFingerprint className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">RRN</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('rrn')}</p>
                   <p className="text-sm font-medium text-gray-800 font-mono">{rrn}</p>
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-start gap-3">
               <FaExchangeAlt className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Transaction Type</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('transaction_type')}</p>
                 <p className="text-sm font-medium text-gray-800">{txnType}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Description</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('description')}</p>
                 <p className="text-sm font-medium text-gray-800">{txnDesc}</p>
               </div>
             </div>
-            
+
             {txnTime && (
               <div className="flex items-start gap-3">
                 <FaClock className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">Date & Time</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('date_time')}</p>
                   <p className="text-sm font-medium text-gray-800">{formatDateTime(txnTime)}</p>
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-start gap-3">
               <FaMoneyBillWave className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Amount</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('amount')}</p>
                 <p className="text-sm font-medium text-gray-800">{amount}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <FaDesktop className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Channel</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('channel')}</p>
                 <p className="text-sm font-medium text-gray-800">{channel}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* From Card Details Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <HiOutlineCreditCard className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">From Card Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('from_card_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
                 <p className="text-sm font-medium text-gray-800 font-mono">{maskedFromCard}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Name</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
                 <p className="text-sm font-medium text-gray-800">{fromCardName}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* To Card Details Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <HiOutlineCreditCard className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">To Card Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('to_card_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
                 <p className="text-sm font-medium text-gray-800 font-mono">{maskedToCard}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Name</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
                 <p className="text-sm font-medium text-gray-800">{toCardName}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Download PDF Button */}
         <div className="mb-4">
           <Button
             onClick={handleDownloadPdf}
@@ -357,14 +343,13 @@ const CardToCardTransactionDetails = () => {
             fullWidth
             className="border-brand-secondary text-brand-secondary hover:bg-brand-secondary hover:text-white"
           >
-            Download PDF
+            {t('download_pdf')}
           </Button>
         </div>
 
-        {/* Done Button */}
         <div>
           <Button onClick={handleDone} fullWidth size="md">
-            Done
+            {t('done')}
           </Button>
         </div>
       </div>
@@ -373,15 +358,3 @@ const CardToCardTransactionDetails = () => {
 }
 
 export default CardToCardTransactionDetails
-
-
-
-
-
-
-
-
-
-
-
-

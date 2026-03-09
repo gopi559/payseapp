@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { formatTableDateTime } from '../utils/formatDate'
 import THEME_COLORS from '../theme/colors'
 
@@ -21,6 +22,7 @@ const DataTable = ({
   tableMaxHeight = '280px',
   fillHeight = false,
 }) => {
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
   const [pageSize, setPageSize] = useState(propPageSize)
   const [quickJumpPage, setQuickJumpPage] = useState('')
@@ -79,14 +81,20 @@ const DataTable = ({
   }
 
   const displayTotal = totalForPagination > 0 ? totalForPagination : (filteredData?.length ?? 0)
-  const totalLabel = totalRowsLabel.replace('{count}', String(displayTotal))
+  const totalLabelRaw = t(totalRowsLabel, {
+    count: displayTotal,
+    defaultValue: totalRowsLabel,
+  })
+  const totalLabel = String(totalLabelRaw)
+    .replace('{count}', String(displayTotal))
+    .replace('{{count}}', String(displayTotal))
 
   return (
     <div className={`flex flex-col gap-4 w-full min-h-0 ${fillHeight ? 'flex-1 min-h-0' : ''}`}>
       <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
         <input
           type="search"
-          placeholder={searchPlaceholder}
+          placeholder={t(searchPlaceholder, { defaultValue: searchPlaceholder })}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setFocusedControl('search')}
@@ -101,9 +109,11 @@ const DataTable = ({
       </div>
 
       {loading ? (
-        <p className="text-center py-8" style={{ color: tableColors.text }}>Loading...</p>
+        <p className="text-center py-8" style={{ color: tableColors.text }}>{t('loading')}</p>
       ) : filteredData.length === 0 ? (
-        <p className="text-center py-8" style={{ color: tableColors.text }}>{emptyMessage}</p>
+        <p className="text-center py-8" style={{ color: tableColors.text }}>
+          {t(emptyMessage, { defaultValue: emptyMessage })}
+        </p>
       ) : (
         <>
           <div
@@ -130,7 +140,7 @@ const DataTable = ({
                         className="p-3 whitespace-nowrap"
                         style={{ backgroundColor: tableColors.headerBackground }}
                       >
-                        {h.label}
+                        {t(h.label, { defaultValue: h.label })}
                       </th>
                     ))}
                   </tr>
@@ -191,7 +201,7 @@ const DataTable = ({
                   backgroundColor:
                     hoveredControl === 'prev' ? tableColors.rowHover : tableColors.rowBackground,
                 }}
-                aria-label="Previous page"
+                aria-label={t('previous_page')}
               >
                 {'<'}
               </button>
@@ -247,7 +257,7 @@ const DataTable = ({
                   backgroundColor:
                     hoveredControl === 'next' ? tableColors.rowHover : tableColors.rowBackground,
                 }}
-                aria-label="Next page"
+                aria-label={t('next_page')}
               >
                 {'>'}
               </button>
@@ -265,16 +275,16 @@ const DataTable = ({
                   backgroundColor: tableColors.rowBackground,
                   color: tableColors.text,
                 }}
-                aria-label="Rows per page"
+                aria-label={t('rows_per_page')}
               >
                 {pageSizeOptions.map((size) => (
                   <option key={size} value={size}>
-                    {size} / page
+                    {size}{t('per_page')}
                   </option>
                 ))}
               </select>
               <form onSubmit={handleQuickJump} className="flex items-center gap-1">
-                <span className="text-xs" style={{ color: tableColors.text }}>Go to</span>
+                <span className="text-xs" style={{ color: tableColors.text }}>{t('go_to')}</span>
                 <input
                   type="number"
                   min={1}
@@ -303,7 +313,7 @@ const DataTable = ({
                       hoveredControl === 'submit' ? tableColors.rowHover : tableColors.rowBackground,
                   }}
                 >
-                  Page
+                  {t('page')}
                 </button>
               </form>
             </div>

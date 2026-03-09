@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
 
 const BillPaymentSuccess = () => {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
 
@@ -34,12 +36,12 @@ const BillPaymentSuccess = () => {
   const txnId = details.txn_id ?? '-'
   const formattedFromCardNumber = details.from_card ? formatCardNumber(details.from_card) : '-'
   const fromCardholderName = details.from_card_name || '-'
-  const serviceName = details.service_name || 'Bill Payment'
+  const serviceName = details.service_name || t('bill_payment')
   const billNumber = details.bill_number || '-'
   const amount = details.txn_amount != null ? String(details.txn_amount) : '0.00'
 
   const dateTime = details.txn_time
-    ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString('en-IN', {
+    ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString(i18n.language === 'ar' ? 'ar-SA' : 'en-IN', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
@@ -63,18 +65,18 @@ const BillPaymentSuccess = () => {
           </svg>
         </div>
 
-        <h1 className="mt-6 text-2xl font-semibold text-gray-900">Transaction Successful</h1>
+        <h1 className="mt-6 text-2xl font-semibold text-gray-900">{t('transaction_successful')}</h1>
 
         <p className="mt-1 text-sm text-gray-500">{dateTime}</p>
 
         <div className="mt-6 w-full bg-green-100 rounded-2xl px-5 py-4 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Transaction ID:</span>
+            <span className="text-gray-600">{t('transaction_id')}</span>
             <span className="font-medium text-gray-900">{txnId}</span>
           </div>
 
           <div className="flex justify-between items-start text-sm">
-            <span className="text-gray-600">From:</span>
+            <span className="text-gray-600">{t('from')}</span>
             <div className="text-right">
               <div className="font-medium text-gray-900 font-mono">{formattedFromCardNumber}</div>
               {fromCardholderName && fromCardholderName !== '-' && (
@@ -84,7 +86,7 @@ const BillPaymentSuccess = () => {
           </div>
 
           <div className="flex justify-between items-start text-sm">
-            <span className="text-gray-600">Bill:</span>
+            <span className="text-gray-600">{t('bill')}:</span>
             <div className="text-right">
               <div className="font-medium text-gray-900">{serviceName}</div>
               <div className="text-xs text-gray-600 mt-0.5">#{billNumber}</div>
@@ -92,9 +94,9 @@ const BillPaymentSuccess = () => {
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-green-200">
-            <span className="text-lg font-semibold text-gray-800">Amount:</span>
+            <span className="text-lg font-semibold text-gray-800">{t('amount')}:</span>
             <div className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-              <img src={AfganCurrency} alt="Currency" className="h-7 w-7" />
+              <img src={AfganCurrency} alt={t('currency')} className="h-7 w-7" />
               <span>{amount}</span>
             </div>
           </div>
@@ -106,7 +108,7 @@ const BillPaymentSuccess = () => {
             className="w-full flex items-center justify-center gap-2 py-3 rounded-full border-2 border-green-500 text-green-600 font-medium"
           >
             <IoInformationCircleOutline className="w-5 h-5" />
-            View more
+            {t('view_more')}
           </button>
         </div>
 
@@ -115,7 +117,7 @@ const BillPaymentSuccess = () => {
             onClick={handleDone}
             className="w-full py-3 rounded-full bg-green-600 text-white font-medium"
           >
-            Done
+            {t('done')}
           </button>
         </div>
       </div>

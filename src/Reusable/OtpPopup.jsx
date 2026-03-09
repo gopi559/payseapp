@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Button from './Button'
 import THEME_COLORS from '../theme/colors'
 
@@ -9,6 +10,7 @@ const OtpPopup = ({
   loading,
   length = 4,
 }) => {
+  const { t } = useTranslation()
   const [otp, setOtp] = useState(Array(length).fill(''))
   const popupColors = THEME_COLORS.popup
 
@@ -52,14 +54,14 @@ const OtpPopup = ({
           className="text-lg font-semibold mb-2"
           style={{ color: popupColors.title }}
         >
-          Enter OTP
+          {t('enter_otp')}
         </h2>
 
         <p
           className="text-sm mb-4"
           style={{ color: popupColors.subtitle }}
         >
-          Enter The {length}-Digit OTP Sent To Your Registered Mobile Number
+          {t('enter_otp_sent_registered_mobile', { length })}
         </p>
 
         <div className="flex justify-center gap-3 mb-5">
@@ -89,14 +91,14 @@ const OtpPopup = ({
             onClick={() => onConfirm(otpValue)}
             className="w-[300px]"
           >
-            {loading ? 'Processing...' : 'Complete Transaction'}
+            {loading ? t('processing') : t('complete_transaction')}
           </Button>
 
           <Button
             onClick={onCancel}
             className="w-[300px]"
           >
-            Cancel
+            {t('cancel')}
           </Button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { FiPhone } from 'react-icons/fi'
 import { HiOutlineCurrencyDollar } from 'react-icons/hi2'
 import { getStatusConfig, formatShortDate, REQUEST_STATUS } from './requestMoney.utils'
@@ -12,6 +13,7 @@ const RequestCard = ({
   loadingAction = false,
   onDecline,
 }) => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const statusConfig = getStatusConfig(item?.status)
   const canTakeAction = Number(item?.status) === REQUEST_STATUS.pending
@@ -28,7 +30,7 @@ const RequestCard = ({
       .join(' ')
       .trim() ||
     (isSent ? item?.recv_cust_mobile : item?.req_cust_mobile) ||
-    'Unknown'
+    t('unknown')
 
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm" style={{ border: `1px solid ${contentCard.border}` }}>
@@ -61,7 +63,7 @@ const RequestCard = ({
           <span
             className={`mt-2 px-3 py-1 rounded-lg text-[13px] font-semibold ${statusConfig.bgClass} ${statusConfig.textClass}`}
           >
-            {statusConfig.label}
+            {t(statusConfig.labelKey)}
           </span>
         </div>
       </div>
@@ -87,7 +89,7 @@ const RequestCard = ({
                 : undefined
             }
           >
-            Decline
+            {t('decline')}
           </button>
 
           {/* Pay */}
@@ -109,7 +111,7 @@ const RequestCard = ({
             `}
             style={canTakeAction ? { backgroundColor: menuGreen } : undefined}
           >
-            Pay
+            {t('pay')}
           </button>
         </div>
       )}

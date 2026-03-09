@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { IoArrowBack } from 'react-icons/io5'
 import { FaSearch } from 'react-icons/fa'
 import { toast } from 'react-toastify'
@@ -45,6 +46,7 @@ const resolveMobileNo = () => {
 }
 
 const BillPaymentPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { serviceId } = useParams()
   const scrollRef = useRef(null)
@@ -65,7 +67,7 @@ const BillPaymentPage = () => {
   const [cvvData, setCvvData] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const serviceName = getBillServiceName(serviceId)
+  const serviceName = getBillServiceName(serviceId, t)
 
   useEffect(() => {
     if (!serviceId) {
@@ -73,14 +75,14 @@ const BillPaymentPage = () => {
       return
     }
     fetchCards()
-  }, [serviceId])
+  }, [serviceId, navigate, t])
 
   const fetchCards = async () => {
     setCardsLoading(true)
     setCardsError('')
     try {
       const userId = getCurrentUserId()
-      if (!userId) throw new Error('User not found')
+      if (!userId) throw new Error(t('user_not_found'))
 
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
@@ -102,15 +104,15 @@ const BillPaymentPage = () => {
 
       const data = await res.json().catch(() => null)
       if (!res.ok || Number(data?.code) !== 1) {
-        throw new Error(data?.message || 'Failed to load cards')
+        throw new Error(data?.message || t('failed_to_load_cards'))
       }
 
       const list = Array.isArray(data?.data) ? data.data : []
       setCards(list)
       setActiveIndex(0)
-      if (!list.length) setCardsError('No beneficiary cards found for this account.')
+      if (!list.length) setCardsError(t('no_beneficiary_cards_found_for_account'))
     } catch (e) {
-      const msg = e?.message || 'Failed to load cards'
+      const msg = e?.message || t('failed_to_load_cards')
       setCardsError(msg)
       toast.error(msg)
     } finally {
@@ -120,15 +122,15 @@ const BillPaymentPage = () => {
 
   const validateBase = (silent = false) => {
     if (!cards[activeIndex]) {
-      if (!silent) toast.error('Select a source card')
+      if (!silent) toast.error(t('select_source_card'))
       return false
     }
     if (!billNumber.trim()) {
-      if (!silent) toast.error('Enter bill number')
+      if (!silent) toast.error(t('enter_bill_number'))
       return false
     }
     if (!amount || Number(amount) <= 0) {
-      if (!silent) toast.error('Enter valid amount')
+      if (!silent) toast.error(t('enter_valid_amount'))
       return false
     }
     return true
@@ -161,10 +163,10 @@ const BillPaymentPage = () => {
         stan: String(data?.stan ?? fallbackStan),
       })
 
-      toast.success('Bill details fetched. OTP sent.')
+      toast.success(t('bill_details_fetched_otp_sent'))
     } catch (e) {
       if (!silent) {
-        toast.error(e?.message || 'Failed to fetch bill details')
+        toast.error(e?.message || t('failed_to_fetch_bill_details'))
       }
     } finally {
       setLoading(false)
@@ -173,7 +175,7 @@ const BillPaymentPage = () => {
 
   const handleContinue = () => {
     if (!txnMeta?.rrn || !txnMeta?.stan || !selectedCard) {
-      toast.error('Fetch bill details first')
+      toast.error(t('fetch_bill_details_first'))
       return
     }
     setStep('CVV')
@@ -190,7 +192,7 @@ const BillPaymentPage = () => {
 
   const handleConfirmOtp = async (otp) => {
     if (!selectedCard || !cvvData || !txnMeta?.rrn || !txnMeta?.stan) {
-      toast.error('Session expired. Please try again.')
+      toast.error(t('session_expired_try_again'))
       resetFlow()
       return
     }
@@ -221,7 +223,7 @@ const BillPaymentPage = () => {
           fee_amount: data?.fee_amount ?? 0,
           remarks: data?.remarks ?? null,
           txn_type: 'BILL_PAYMENT',
-          txn_desc: `${serviceName} bill payment`,
+          txn_desc: t('bill_payment_for_service', { service: serviceName }),
           from_card: selectedCard.card_number,
           from_card_name: selectedCard.cardholder_name || selectedCard.card_name || null,
           service_id: String(serviceId),
@@ -236,7 +238,7 @@ const BillPaymentPage = () => {
       resetFlow()
       navigate('/customer/bill-payment/success')
     } catch (e) {
-      toast.error(e?.message || 'Bill payment failed')
+      toast.error(e?.message || t('bill_payment_failed'))
     } finally {
       setLoading(false)
     }
@@ -252,7 +254,7 @@ const BillPaymentPage = () => {
     <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
       <div className="max-w-md mx-auto">
         <Button fullWidth onClick={handleContinue} disabled={!txnMeta?.rrn || !txnMeta?.stan || loading}>
-          Continue
+          {t('continue')}
         </Button>
       </div>
     </div>
@@ -272,13 +274,13 @@ const BillPaymentPage = () => {
           <h1 className="text-2xl font-semibold">{serviceName}</h1>
         </div>
 
-        <p className="text-sm mb-5 text-gray-500">Pay your bill with your card</p>
+        <p className="text-sm mb-5 text-gray-500">{t('pay_your_bill_with_your_card')}</p>
 
         {cardsLoading ? (
-          <p className="text-sm text-gray-500 mb-4">Loading cards...</p>
+          <p className="text-sm text-gray-500 mb-4">{t('loading_cards')}</p>
         ) : cards.length === 0 ? (
           <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
-            <p className="text-sm text-gray-600">{cardsError || 'No cards available.'}</p>
+            <p className="text-sm text-gray-600">{cardsError || t('no_cards_available')}</p>
           </div>
         ) : (
           <div
@@ -303,10 +305,10 @@ const BillPaymentPage = () => {
         )}
 
         <div className="mt-6">
-          <h3 className="text-sm font-medium mb-2">Bill Detail</h3>
+          <h3 className="text-sm font-medium mb-2">{t('bill_detail')}</h3>
 
           <div className="mt-3">
-            <label className="text-sm text-gray-700">Bill Number</label>
+            <label className="text-sm text-gray-700">{t('bill_number')}</label>
             <input
               type="text"
               value={billNumber}
@@ -316,27 +318,27 @@ const BillPaymentPage = () => {
                   handleFetchBillDetails(true)
                 }
               }}
-              placeholder="Enter Bill Number"
+              placeholder={t('enter_bill_number')}
               className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
           <div className="mt-4">
-            <AmountInput label="Amount" value={amount} onChange={setAmount} />
+            <AmountInput label={t('amount')} value={amount} onChange={setAmount} />
           </div>
 
           <div className="mt-6">
             <Button fullWidth onClick={handleFetchBillDetails} disabled={loading || cards.length === 0}>
               <span className="flex items-center justify-center gap-2">
                 <FaSearch className="w-4 h-4" />
-                {loading ? 'Fetching...' : 'Fetch Bill Details'}
+                {loading ? t('fetching') : t('fetch_bill_details')}
               </span>
             </Button>
           </div>
 
           {txnMeta?.rrn && (
             <p className="text-xs text-green-700 mt-3">
-              Bill details fetched. RRN: <span className="font-mono">{txnMeta.rrn}</span>
+              {t('bill_details_fetched_rrn')} <span className="font-mono">{txnMeta.rrn}</span>
             </p>
           )}
         </div>
@@ -354,8 +356,8 @@ const BillPaymentPage = () => {
         open={step === 'CONFIRM'}
         card={selectedCard}
         amount={amount}
-        to={`${serviceName} - Bill #${billNumber}`}
-        description={`${serviceName} bill payment`}
+        to={`${serviceName} - ${t('bill')} #${billNumber}`}
+        description={t('bill_payment_for_service', { service: serviceName })}
         loading={loading}
         onSendOtp={handleOpenOtp}
         onCancel={resetFlow}

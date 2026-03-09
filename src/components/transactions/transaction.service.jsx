@@ -40,8 +40,8 @@ const transactionService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Failed to load transactions')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Failed to load transactions')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? [],
@@ -51,7 +51,7 @@ const transactionService = {
   },
 
   fetchByRrn: async (rrn) => {
-    if (!rrn || !String(rrn).trim()) throw new Error('RRN is required')
+    if (!rrn || !String(rrn).trim()) throw new Error('')
 
     const response = await fetch(FETCH_BY_RRN, {
       method: 'POST',
@@ -67,8 +67,8 @@ const transactionService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Failed to fetch by RRN')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Failed to fetch by RRN')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? null,
@@ -91,8 +91,8 @@ const transactionService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Failed to load dispute types')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Failed to load dispute types')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? [],
@@ -119,8 +119,8 @@ const transactionService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Failed to submit dispute')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Failed to submit dispute')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data,
@@ -143,8 +143,8 @@ const transactionService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || 'Failed to load disputes')
-    if (!isSuccess(res)) throw new Error(res?.message || 'Failed to load disputes')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? [],

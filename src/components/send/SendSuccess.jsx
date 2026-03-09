@@ -1,10 +1,12 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import PageContainer from '../../Reusable/PageContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
 
 const SendSuccess = () => {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
   const [isPayRequestFlow, setIsPayRequestFlow] = useState(false)
@@ -42,7 +44,7 @@ const SendSuccess = () => {
   }
 
   const txnId = details?.txn_id ?? '-'
-  const from = details?.sender_name ?? 'Your Wallet'
+  const from = details?.sender_name ?? t('your_wallet')
   const to = details?.beneficiary_name ?? '-'
   const transactionType = isPayRequestFlow
     ? 'W2W'
@@ -52,14 +54,14 @@ const SendSuccess = () => {
 
   const amount = details?.amount ? Number(details.amount).toFixed(2) : '0.00'
   const dateTime = details?.txn_time
-    ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString('en-IN', {
+    ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString(i18n.language === 'ar' ? 'ar' : 'en-IN', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
       })
-    : new Date().toLocaleString('en-IN', {
+    : new Date().toLocaleString(i18n.language === 'ar' ? 'ar' : 'en-IN', {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
@@ -82,39 +84,37 @@ const SendSuccess = () => {
           </svg>
         </div>
 
-        <h1 className="mt-6 text-2xl font-semibold text-gray-900">Payment Successful</h1>
-        {isPayRequestFlow && (
-          <p className="mt-1 text-sm font-medium text-green-600">Paid Request</p>
-        )}
+        <h1 className="mt-6 text-2xl font-semibold text-gray-900">{t('payment_successful')}</h1>
+        {isPayRequestFlow && <p className="mt-1 text-sm font-medium text-green-600">{t('paid_request')}</p>}
 
         <p className="mt-1 text-sm text-gray-500">{dateTime}</p>
 
         <div className="mt-6 w-full bg-green-100 rounded-2xl px-5 py-4 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Transaction ID:</span>
+            <span className="text-gray-600">{t('transaction_id')}</span>
             <span className="font-medium text-gray-900">{txnId}</span>
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">From:</span>
+            <span className="text-gray-600">{t('from')}</span>
             <span className="font-medium text-gray-900">{from}</span>
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">To:</span>
+            <span className="text-gray-600">{t('to')}</span>
             <span className="font-medium text-gray-900">{to}</span>
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Transaction Type:</span>
+            <span className="text-gray-600">{t('transaction_type')}</span>
             <span className="font-medium text-gray-900">{transactionType}</span>
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-green-200">
-            <span className="text-lg font-semibold text-gray-800">Amount:</span>
+            <span className="text-lg font-semibold text-gray-800">{t('amount')}</span>
 
             <div className="flex items-center gap-2 text-2xl font-bold text-gray-900">
-              <img src={AfganCurrency} alt="Currency" className="h-7 w-7" />
+              <img src={AfganCurrency} alt={t('currency')} className="h-7 w-7" />
               <span>{amount}</span>
             </div>
           </div>
@@ -126,7 +126,7 @@ const SendSuccess = () => {
             className="w-full flex items-center justify-center gap-2 py-3 rounded-full border-2 border-green-500 text-green-600 font-medium"
           >
             <IoInformationCircleOutline className="w-5 h-5" />
-            View more
+            {t('view_more')}
           </button>
         </div>
 
@@ -135,7 +135,7 @@ const SendSuccess = () => {
             onClick={handleDone}
             className="w-full py-4 rounded-full bg-green-500 text-white font-semibold text-lg"
           >
-            Done
+            {t('done')}
           </button>
         </div>
       </div>

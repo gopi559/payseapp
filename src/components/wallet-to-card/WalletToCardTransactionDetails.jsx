@@ -1,18 +1,27 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
-import { HiOutlineUser, HiOutlinePhone, HiOutlineCreditCard, HiOutlineBuildingOffice } from 'react-icons/hi2'
+import {
+  HiOutlineUser,
+  HiOutlinePhone,
+  HiOutlineCreditCard,
+  HiOutlineBuildingOffice,
+} from 'react-icons/hi2'
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 
-
 function escapeHtml(str) {
   const s = String(str ?? '')
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
 }
 
 const downloadTransactionPdf = (
@@ -21,16 +30,18 @@ const downloadTransactionPdf = (
   senderMobile,
   senderAccountNumber,
   cardNumber,
-  cardName
+  cardName,
+  walletNumber,
+  labels
 ) => {
   const win = window.open('', '_blank')
   if (!win) {
-    alert('Please allow pop-ups to download PDF.')
+    alert(labels.pleaseAllowPopups)
     return
   }
 
   const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '—'
+    if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
       return date
@@ -49,27 +60,28 @@ const downloadTransactionPdf = (
   }
 
   const transactionRows = [
-    { label: 'Transaction ID', value: details?.txn_id ?? '—' },
-    { label: 'RRN', value: details?.rrn ?? '—' },
-    { label: 'Transaction Type', value: details?.txn_type ?? 'WALLET_TO_CARD' },
-    { label: 'Description', value: details?.txn_desc ?? 'Wallet To Card' },
-    { label: 'Date & Time', value: formatDateTime(details?.txn_time) },
-    { label: 'Amount', value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
-    { label: 'Channel', value: details?.channel_type ?? 'WEB' },
-    { label: 'Status', value: details?.status === 1 ? 'Success' : 'SUCCESS' },
-    { label: 'Remarks', value: details?.remarks ?? '—' },
+    { label: labels.transactionId, value: details?.txn_id ?? '-' },
+    { label: labels.rrn, value: details?.rrn ?? '-' },
+    { label: labels.transactionType, value: details?.txn_type ?? labels.walletToCard },
+    { label: labels.description, value: details?.txn_desc ?? labels.walletToCard },
+    { label: labels.dateTime, value: formatDateTime(details?.txn_time) },
+    { label: labels.amount, value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
+    { label: labels.channel, value: details?.channel_type ?? 'WEB' },
+    { label: labels.status, value: details?.status === 1 ? labels.success : labels.success },
+    { label: labels.remarks, value: details?.remarks ?? '-' },
   ]
 
   const senderRows = [
-    { label: 'Name', value: senderName },
-    { label: 'Mobile Number', value: senderMobile || '—' },
-    { label: 'Account Number', value: senderAccountNumber },
+    { label: labels.name, value: senderName },
+    { label: labels.mobileNumber, value: senderMobile || '-' },
+    { label: labels.cardNumber, value: labels.notAvailable },
+    { label: labels.accountNumber, value: senderAccountNumber },
   ]
 
   const receiverRows = [
-    { label: 'Card Number', value: cardNumber },
-    { label: 'Card Name', value: cardName || '—' },
-    { label: 'Wallet Number', value: details?.wallet_number ?? '—' },
+    { label: labels.cardNumber, value: cardNumber },
+    { label: labels.cardName, value: cardName || '-' },
+    { label: labels.walletNumber, value: walletNumber || '-' },
   ]
 
   const formatRows = (rows) =>
@@ -81,7 +93,7 @@ const downloadTransactionPdf = (
           ${escapeHtml(label)}
         </td>
         <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;">
-          ${escapeHtml(value ?? '—')}
+          ${escapeHtml(value ?? '-')}
         </td>
       </tr>
     `
@@ -92,7 +104,7 @@ const downloadTransactionPdf = (
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Transaction ${escapeHtml(details?.txn_id)}</title>
+      <title>${escapeHtml(labels.transactionDetails)} ${escapeHtml(details?.txn_id)}</title>
       <style>
         body { font-family: system-ui, sans-serif; padding: 24px; }
         .header {
@@ -111,16 +123,16 @@ const downloadTransactionPdf = (
     </head>
     <body>
       <div class="header">
-        <h1>Transaction Details</h1>
+        <h1>${escapeHtml(labels.transactionDetails)}</h1>
         <img src="${PAYSEY_LOGO_URL}" />
       </div>
 
       <table><tbody>${formatRows(transactionRows)}</tbody></table>
 
-      <h2>Sender Details</h2>
+      <h2>${escapeHtml(labels.senderDetails)}</h2>
       <table><tbody>${formatRows(senderRows)}</tbody></table>
 
-      <h2>Receiver Details</h2>
+      <h2>${escapeHtml(labels.receiverDetails)}</h2>
       <table><tbody>${formatRows(receiverRows)}</tbody></table>
     </body>
     </html>
@@ -132,8 +144,8 @@ const downloadTransactionPdf = (
   win.onafterprint = () => win.close()
 }
 
-
 const WalletToCardTransactionDetails = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
   const walletId = useSelector((state) => state.wallet?.walletId)
@@ -144,62 +156,55 @@ const WalletToCardTransactionDetails = () => {
     if (raw) {
       try {
         setDetails(JSON.parse(raw))
-      } catch (_) {
+      } catch {
         setDetails({})
       }
     } else {
-      // If no data, redirect to home
       navigate('/customer/home')
     }
   }, [navigate])
 
   if (!details) return null
 
-  // Format date and time
   const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '—'
+    if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
-      const options = { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      }
-      return date.toLocaleString('en-US', options).replace(',', ' at')
+      return date
+        .toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        })
+        .replace(',', ' at')
     } catch {
       return dateTimeStr
     }
   }
 
-  // Get user display name
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
   const senderName = userKyc?.first_name || userKyc?.last_name
     ? [userKyc.first_name, userKyc.middle_name, userKyc.last_name].filter(Boolean).join(' ')
-    : regInfo?.first_name || regInfo?.name || 'User'
+    : regInfo?.first_name || regInfo?.name || t('user')
   const senderMobile = regInfo?.mobile ?? regInfo?.reg_mobile ?? user?.mobile ?? ''
-  const senderAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || '—'
+  const senderAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || '-'
 
-  // Transaction data
   const amount = details?.txn_amount != null ? Number(details.txn_amount).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
-  const txnId = details?.txn_id != null ? String(details.txn_id) : ''
   const txnTime = details?.txn_time ?? details?.created_at ?? ''
   const txnTypeRaw = details?.txn_type ?? 'WALLET_TO_CARD'
-  // Format transaction type for display
   const txnType = txnTypeRaw === 'WALLET_TO_CARD' ? 'W2C' : txnTypeRaw
-  const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? 'Wallet To Card'
+  const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? t('wallet_to_card')
   const channel = details?.channel_type ?? 'WEB'
-  const remarks = details?.remarks ?? ''
 
-  // Card data
   const cardNumber = details?.card_number ?? ''
-  const formattedCardNumber = formatCardNumber(cardNumber)
-  const cardName = details?.card_name ?? '—'
-  const walletNumber = details?.wallet_number ?? '—'
+  const formattedCardNumber = cardNumber ? formatCardNumber(cardNumber) : '-'
+  const cardName = details?.card_name ?? t('not_available')
+  const walletNumber = details?.wallet_number ?? '-'
 
   const handleDownloadPdf = () => {
     downloadTransactionPdf(
@@ -208,7 +213,32 @@ const WalletToCardTransactionDetails = () => {
       senderMobile,
       senderAccountNumber,
       formattedCardNumber,
-      cardName
+      cardName,
+      walletNumber,
+      {
+        pleaseAllowPopups: t('please_allow_popups_to_download_pdf'),
+        transactionId: t('transaction_id'),
+        rrn: t('rrn'),
+        transactionType: t('transaction_type'),
+        description: t('description'),
+        dateTime: t('date_time'),
+        amount: t('amount'),
+        channel: t('channel'),
+        status: t('status'),
+        success: t('success'),
+        remarks: t('remarks'),
+        cardNumber: t('card_number'),
+        cardName: t('card_name'),
+        walletNumber: t('wallet_number'),
+        mobileNumber: t('mobile_number_label'),
+        accountNumber: t('account_number'),
+        name: t('name'),
+        notAvailable: t('not_available'),
+        transactionDetails: t('transaction_details'),
+        senderDetails: t('sender_details'),
+        receiverDetails: t('receiver_details'),
+        walletToCard: t('wallet_to_card'),
+      }
     )
   }
 
@@ -219,7 +249,6 @@ const WalletToCardTransactionDetails = () => {
 
   return (
     <MobileScreenContainer>
-      {/* Green Header */}
       <div className="bg-brand-secondary text-white px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => navigate('/customer/home')}
@@ -227,168 +256,164 @@ const WalletToCardTransactionDetails = () => {
         >
           <IoArrowBack className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-bold flex-1">Transaction Details</h1>
+        <h1 className="text-lg font-bold flex-1">{t('transaction_details')}</h1>
         <button className="text-white hover:opacity-80 transition-opacity">
           <IoInformationCircleOutline className="w-6 h-6" />
         </button>
       </div>
 
       <div className="px-4 py-6 max-w-2xl mx-auto">
-        {/* Success Confirmation Box */}
         <div className="bg-brand-secondary rounded-2xl p-6 mb-6 text-white">
           <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
-              <span className="text-3xl text-brand-secondary">✓</span>
+              <span className="text-3xl text-brand-secondary">V</span>
             </div>
-            <h2 className="text-2xl font-bold mb-2">Transaction Completed</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
             <p className="text-3xl font-bold mb-4">{amount}</p>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <span className="text-sm font-medium">Money Sent</span>
+              <span className="text-sm font-medium">{t('money_sent')}</span>
             </div>
           </div>
         </div>
 
-        {/* Transaction Details Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <IoInformationCircleOutline className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">Transaction Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('transaction_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             {rrn && (
               <div className="flex items-start gap-3">
                 <FaFingerprint className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">RRN</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('rrn')}</p>
                   <p className="text-sm font-medium text-gray-800 font-mono">{rrn}</p>
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-start gap-3">
               <FaExchangeAlt className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Transaction Type</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('transaction_type')}</p>
                 <p className="text-sm font-medium text-gray-800">{txnType}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Description</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('description')}</p>
                 <p className="text-sm font-medium text-gray-800">{txnDesc}</p>
               </div>
             </div>
-            
+
             {txnTime && (
               <div className="flex items-start gap-3">
                 <FaClock className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">Date & Time</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('date_time')}</p>
                   <p className="text-sm font-medium text-gray-800">{formatDateTime(txnTime)}</p>
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-start gap-3">
               <FaMoneyBillWave className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Amount</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('amount')}</p>
                 <p className="text-sm font-medium text-gray-800">{amount}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <FaDesktop className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Channel</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('channel')}</p>
                 <p className="text-sm font-medium text-gray-800">{channel}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sender Details Section */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <HiOutlineUser className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">Sender Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('sender_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Name</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('name')}</p>
                 <p className="text-sm font-medium text-gray-800">{senderName}</p>
               </div>
             </div>
-            
+
             {senderMobile && (
               <div className="flex items-start gap-3">
                 <HiOutlinePhone className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">Mobile Number</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number_label')}</p>
                   <p className="text-sm font-medium text-gray-800 font-mono">{senderMobile}</p>
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
-                <p className="text-sm font-medium text-gray-800">NA</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Account Number</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
                 <p className="text-sm font-medium text-gray-800 font-mono">{senderAccountNumber}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Receiver Details Section (Card) */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <HiOutlineCreditCard className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">Receiver Details</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('receiver_details')}</h3>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex items-start gap-3">
               <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Number</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
                 <p className="text-sm font-medium text-gray-800 font-mono">{formattedCardNumber}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-3">
               <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">Card Name</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
                 <p className="text-sm font-medium text-gray-800">{cardName}</p>
               </div>
             </div>
-            
-            {walletNumber && walletNumber !== '—' && (
+
+            {walletNumber && walletNumber !== '-' && (
               <div className="flex items-start gap-3">
                 <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">Wallet Number</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('wallet_number')}</p>
                   <p className="text-sm font-medium text-gray-800 font-mono">{walletNumber}</p>
                 </div>
               </div>
@@ -396,7 +421,6 @@ const WalletToCardTransactionDetails = () => {
           </div>
         </div>
 
-        {/* Download PDF Button */}
         <div className="mb-4">
           <Button
             onClick={handleDownloadPdf}
@@ -404,14 +428,13 @@ const WalletToCardTransactionDetails = () => {
             fullWidth
             className="border-brand-secondary text-brand-secondary hover:bg-brand-secondary hover:text-white"
           >
-            Download PDF
+            {t('download_pdf')}
           </Button>
         </div>
 
-        {/* Done Button */}
         <div>
           <Button onClick={handleDone} fullWidth size="md">
-            Done
+            {t('done')}
           </Button>
         </div>
       </div>
@@ -420,13 +443,3 @@ const WalletToCardTransactionDetails = () => {
 }
 
 export default WalletToCardTransactionDetails
-
-
-
-
-
-
-
-
-
-

@@ -36,8 +36,8 @@ const cardService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error('Failed to fetch card list')
-    if (!isSuccess(res)) throw new Error('Failed to fetch card list')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? [],
@@ -61,8 +61,8 @@ const cardService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error('Failed to fetch card details')
-    if (!isSuccess(res)) throw new Error('Failed to fetch card details')
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? null,

@@ -25,7 +25,6 @@ const normalizeBeneficiaryData = (data) => {
 }
 
 const sendService = {
-
   validateBeneficiary: async (mobile) => {
     const response = await fetch(VALIDATE_SENDMONEY_BEN, {
       method: 'POST',
@@ -33,7 +32,7 @@ const sendService = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
         deviceInfo: JSON.stringify({
-          device_type: "WEB",
+          device_type: 'WEB',
           device_id: deviceId,
         }),
       },
@@ -41,10 +40,10 @@ const sendService = {
     })
     const res = await response.json().catch(() => null)
     if (!response.ok) {
-      throw new Error(res?.message || 'Failed to validate beneficiary')
+      throw new Error(res?.message || '')
     }
     if (!isSuccess(res) || !res?.data) {
-      throw new Error(res?.message || 'Beneficiary validation failed')
+      throw new Error(res?.message || '')
     }
     return {
       data: normalizeBeneficiaryData(res.data),
@@ -64,7 +63,7 @@ const sendService = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
         deviceInfo: JSON.stringify({
-          device_type: "WEB",
+          device_type: 'WEB',
           device_id: deviceId,
         }),
       },
@@ -72,10 +71,10 @@ const sendService = {
     })
     const res = await response.json().catch(() => null)
     if (!response.ok) {
-      throw new Error(res?.message || 'Send money failed')
+      throw new Error(res?.message || '')
     }
     if (!isSuccess(res)) {
-      throw new Error(res?.message || 'Send money failed')
+      throw new Error(res?.message || '')
     }
     authService.fetchCustomerBalance().catch(() => {})
     return {
@@ -91,7 +90,7 @@ const sendService = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
         deviceInfo: JSON.stringify({
-          device_type: "WEB",
+          device_type: 'WEB',
           device_id: deviceId,
         }),
       },
@@ -102,10 +101,10 @@ const sendService = {
     })
     const res = await response.json().catch(() => null)
     if (!response.ok) {
-      throw new Error(res?.message || 'Generate OTP failed')
+      throw new Error(res?.message || '')
     }
     if (!isSuccess(res)) {
-      throw new Error(res?.message || 'Generate OTP failed')
+      throw new Error(res?.message || '')
     }
     return {
       data: res?.data ?? null,
@@ -120,7 +119,7 @@ const sendService = {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${getAuthToken()}`,
         deviceInfo: JSON.stringify({
-          device_type: "WEB",
+          device_type: 'WEB',
           device_id: deviceId,
         }),
       },
@@ -132,10 +131,10 @@ const sendService = {
     })
     const res = await response.json().catch(() => null)
     if (!response.ok) {
-      throw new Error(res?.message || 'OTP verification failed')
+      throw new Error(res?.message || '')
     }
     if (!isSuccess(res)) {
-      throw new Error(res?.message || 'OTP verification failed')
+      throw new Error(res?.message || '')
     }
     return {
       data: res?.data,

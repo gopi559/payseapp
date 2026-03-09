@@ -1,5 +1,6 @@
-﻿import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
@@ -15,7 +16,7 @@ import {
 import { fetchWithBasicAuth } from '../../services/basicAuth.service.js'
 
 const VoucherCreate = () => {
-
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const [lists, setLists] = useState({
@@ -50,8 +51,8 @@ const VoucherCreate = () => {
       .then(([nationalities, provinces, idTypes]) =>
         setLists((p) => ({ ...p, nationalities, provinces, idTypes }))
       )
-      .catch((e) => toast.error(e.message))
-  }, [])
+      .catch((e) => toast.error(e.message || t('something_went_wrong')))
+  }, [t])
 
   useEffect(() => {
     if (!form.province_id) {
@@ -65,12 +66,10 @@ const VoucherCreate = () => {
         setLists((p) => ({ ...p, districts, villages: [] }))
         setForm((f) => ({ ...f, district_id: '', village_id: '' }))
       })
-      .catch((e) => toast.error(e.message))
-
-  }, [form.province_id])
+      .catch((e) => toast.error(e.message || t('something_went_wrong')))
+  }, [form.province_id, t])
 
   useEffect(() => {
-
     if (!form.district_id) {
       setLists((p) => ({ ...p, villages: [] }))
       setForm((f) => ({ ...f, village_id: '' }))
@@ -79,13 +78,10 @@ const VoucherCreate = () => {
 
     fetchWithBasicAuth(VILLAGE_LIST, { district_id: Number(form.district_id) })
       .then((villages) => setLists((p) => ({ ...p, villages })))
-      .catch((e) => toast.error(e.message))
-
-  }, [form.district_id])
-
+      .catch((e) => toast.error(e.message || t('something_went_wrong')))
+  }, [form.district_id, t])
 
   const handleSubmit = async (e) => {
-
     e.preventDefault()
 
     const mobileDigits = form.receiver_mobile.replace(/\D/g, '').replace(/^93/, '')
@@ -97,12 +93,12 @@ const VoucherCreate = () => {
       !form.receiver_id_number ||
       !form.receiver_id_type
     ) {
-      toast.error('Please fill all required fields')
+      toast.error(t('please_fill_all_required_fields'))
       return
     }
 
     if (mobileDigits.length !== 9) {
-      toast.error('Receiver mobile must be exactly 9 digits')
+      toast.error(t('receiver_mobile_must_be_9_digits'))
       return
     }
 
@@ -123,19 +119,19 @@ const VoucherCreate = () => {
 
     try {
       await voucherService.createCashcode(payload)
-      toast.success('Cash code created successfully')
+      toast.success(t('cash_code_created_successfully'))
       navigate('/customer/voucher')
     } catch (e) {
-      toast.error(e.message)
+      toast.error(e.message || t('failed_to_create_cash_code'))
     } finally {
       setSubmitting(false)
     }
-
   }
 
-  const inputStyle = "w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+  const inputStyle = 'w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none'
   const selectStyle = `${inputStyle} voucher-select text-gray-900 bg-white`
   const optionStyle = { color: '#111827', backgroundColor: '#ffffff' }
+
   const getOptionLabel = (item, keys) => {
     for (const key of keys) {
       const value = item?.[key]
@@ -148,36 +144,29 @@ const VoucherCreate = () => {
 
   return (
     <PageContainer>
-
       <div className="max-w-4xl mx-auto p-6">
-
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold">Create Voucher</h2>
+          <h2 className="text-xl font-semibold">{t('create_voucher')}</h2>
           <Button variant="outline" onClick={() => navigate('/customer/voucher')}>
-            Back
+            {t('back')}
           </Button>
         </div>
 
         <div className="bg-white shadow-md rounded-xl p-6 border">
-
           <form onSubmit={handleSubmit} className="space-y-6">
-
-            {/* Amount */}
             <div>
-              <label className="text-sm font-medium">Amount</label>
+              <label className="text-sm font-medium">{t('amount')}</label>
               <input
                 className={inputStyle}
-                placeholder="Enter Amount"
+                placeholder={t('enter_amount')}
                 value={form.amount}
                 onChange={(e) => setForm({ ...form, amount: e.target.value })}
               />
             </div>
 
-            {/* Receiver Details */}
             <div className="grid md:grid-cols-2 gap-4">
-
               <div>
-                <label className="text-sm font-medium">Receiver Name</label>
+                <label className="text-sm font-medium">{t('receiver_name')}</label>
                 <input
                   className={inputStyle}
                   value={form.receiver_name}
@@ -186,33 +175,29 @@ const VoucherCreate = () => {
               </div>
 
               <div>
-                <label className="text-sm font-medium">Father Name</label>
+                <label className="text-sm font-medium">{t('father_name')}</label>
                 <input
                   className={inputStyle}
                   value={form.receiver_father_name}
                   onChange={(e) => setForm({ ...form, receiver_father_name: e.target.value })}
                 />
               </div>
-
             </div>
 
-            {/* Mobile */}
             <MobileInput
-              label="Receiver Mobile"
+              label={t('receiver_mobile')}
               value={form.receiver_mobile}
               onChange={(e) => setForm({ ...form, receiver_mobile: e.target.value })}
             />
 
-            {/* Location */}
             <div className="grid md:grid-cols-2 gap-4">
-
               <select
                 className={selectStyle}
                 style={optionStyle}
                 value={form.nationality_id}
                 onChange={(e) => setForm({ ...form, nationality_id: e.target.value })}
               >
-                <option value="" style={optionStyle}>Select Nationality</option>
+                <option value="" style={optionStyle}>{t('select_nationality')}</option>
                 {lists.nationalities.map((n) => (
                   <option key={n.id} value={n.id} style={optionStyle}>
                     {getOptionLabel(n, ['nationality_name', 'type_name', 'name', 'title'])}
@@ -226,7 +211,7 @@ const VoucherCreate = () => {
                 value={form.province_id}
                 onChange={(e) => setForm({ ...form, province_id: e.target.value })}
               >
-                <option value="" style={optionStyle}>Select Province</option>
+                <option value="" style={optionStyle}>{t('select_province')}</option>
                 {lists.provinces.map((p) => (
                   <option key={p.id} value={p.id} style={optionStyle}>
                     {getOptionLabel(p, ['province_name', 'type_name', 'name', 'title'])}
@@ -241,7 +226,7 @@ const VoucherCreate = () => {
                 disabled={!lists.districts.length}
                 onChange={(e) => setForm({ ...form, district_id: e.target.value })}
               >
-                <option value="" style={optionStyle}>Select District</option>
+                <option value="" style={optionStyle}>{t('select_district')}</option>
                 {lists.districts.map((d) => (
                   <option key={d.id} value={d.id} style={optionStyle}>
                     {getOptionLabel(d, ['type_name', 'district_name', 'name', 'title'])}
@@ -256,26 +241,23 @@ const VoucherCreate = () => {
                 disabled={!lists.villages.length}
                 onChange={(e) => setForm({ ...form, village_id: e.target.value })}
               >
-                <option value="" style={optionStyle}>Select Village</option>
+                <option value="" style={optionStyle}>{t('select_village')}</option>
                 {lists.villages.map((v) => (
                   <option key={v.id} value={v.id} style={optionStyle}>
                     {getOptionLabel(v, ['type_name', 'village_name', 'name', 'title'])}
                   </option>
                 ))}
               </select>
-
             </div>
 
-            {/* ID Section */}
             <div className="grid md:grid-cols-2 gap-4">
-
               <select
                 className={selectStyle}
                 style={optionStyle}
                 value={form.receiver_id_type}
                 onChange={(e) => setForm({ ...form, receiver_id_type: e.target.value })}
               >
-                <option value="" style={optionStyle}>Select ID Type</option>
+                <option value="" style={optionStyle}>{t('select_id_type')}</option>
                 {lists.idTypes.map((i) => (
                   <option key={i.id} value={i.id} style={optionStyle}>
                     {getOptionLabel(i, ['type_name', 'id_type_name', 'name', 'title'])}
@@ -285,23 +267,18 @@ const VoucherCreate = () => {
 
               <input
                 className={inputStyle}
-                placeholder="ID Number"
+                placeholder={t('id_number')}
                 value={form.receiver_id_number}
                 onChange={(e) => setForm({ ...form, receiver_id_number: e.target.value })}
               />
-
             </div>
 
             <Button type="submit" disabled={submitting} className="w-full">
-              {submitting ? 'Creating…' : 'Create Voucher'}
+              {submitting ? t('creating') : t('create_voucher')}
             </Button>
-
           </form>
-
         </div>
-
       </div>
-
     </PageContainer>
   )
 }

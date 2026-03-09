@@ -1,40 +1,41 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
 import KeyValueDisplay from '../../Reusable/KeyValueDisplay'
 import { formatTableDateTime } from '../../utils/formatDate'
 import THEME_COLORS from '../../theme/colors'
 
-const LABELS = {
-  Cashcode: 'Voucher Code',
-  Channel: 'Channel',
-  Amount: 'Amount',
-  Currency: 'Currency',
-  ReceiverName: 'Receiver Name',
-  ReceiverMobile: 'Phone Number',
-  ReceiverFatherName: 'Father Name',
-  ProvinceName: 'Province',
-  DistrictName: 'District',
-  VillageName: 'Village',
-  NationalityName: 'Nationality',
-  ReceiverIDType: 'ID Type',
-  ReceiverIDNumber: 'ID Number',
-  FullAddress: 'Full Address',
-  CreatedAt: 'Created At',
-}
-
 const ViewVoucher = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const row = location.state?.row
   const contentCard = THEME_COLORS.contentCard
+  const labels = {
+    Cashcode: t('voucher_code'),
+    Channel: t('channel'),
+    Amount: t('amount'),
+    Currency: t('currency'),
+    ReceiverName: t('receiver_name'),
+    ReceiverMobile: t('phone_number'),
+    ReceiverFatherName: t('father_name'),
+    ProvinceName: t('province'),
+    DistrictName: t('district'),
+    VillageName: t('village'),
+    NationalityName: t('nationality'),
+    ReceiverIDType: t('id_type'),
+    ReceiverIDNumber: t('id_number'),
+    FullAddress: t('full_address'),
+    CreatedAt: t('created_at'),
+  }
 
   if (!row) {
     return (
       <PageContainer>
-        <p>No data available</p>
-        <Button onClick={() => navigate('/customer/voucher')}>Back</Button>
+        <p>{t('no_data_available')}</p>
+        <Button onClick={() => navigate('/customer/voucher')}>{t('back')}</Button>
       </PageContainer>
     )
   }
@@ -68,10 +69,10 @@ const ViewVoucher = () => {
         <div className="max-w-2xl mx-auto">
           <div className="flex justify-between mb-4">
             <h2 className="text-xl font-bold" style={{ color: contentCard.title }}>
-              View Voucher
+              {t('view_voucher')}
             </h2>
             <Button variant="outline" onClick={() => navigate('/customer/voucher')}>
-              Back
+              {t('back')}
             </Button>
           </div>
 
@@ -84,7 +85,7 @@ const ViewVoucher = () => {
           >
             <KeyValueDisplay
               data={data}
-              labels={LABELS}
+              labels={labels}
               formatters={formatters}
             />
           </div>
@@ -95,4 +96,3 @@ const ViewVoucher = () => {
 }
 
 export default ViewVoucher
-

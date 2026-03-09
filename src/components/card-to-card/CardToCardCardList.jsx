@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
@@ -23,6 +24,7 @@ import { formatCardNumber } from '../../utils/formatCardNumber'
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
 const CardToCardCardList = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const sourceScrollRef = useRef(null)
   const destScrollRef = useRef(null)
@@ -54,7 +56,7 @@ const CardToCardCardList = () => {
   const fetchSourceCards = async () => {
     try {
       const userId = getCurrentUserId()
-      if (!userId) throw new Error('User not found')
+      if (!userId) throw new Error(t('user_not_found'))
 
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
@@ -82,14 +84,14 @@ const CardToCardCardList = () => {
 
       setSourceCards(data.data || [])
     } catch (e) {
-      toast.error(e.message || 'Failed to load source cards')
+      toast.error(e.message || t('failed_to_load_source_cards'))
     }
   }
 
   const fetchDestinationCards = async () => {
     try {
       const userId = getCurrentUserId()
-      if (!userId) throw new Error('User not found')
+      if (!userId) throw new Error(t('user_not_found'))
 
       const res = await fetch(BENIFICIARY_LIST, {
         method: 'POST',
@@ -117,7 +119,7 @@ const CardToCardCardList = () => {
 
       setDestCards(data.data || [])
     } catch (e) {
-      toast.error(e.message || 'Failed to load destination cards')
+      toast.error(e.message || t('failed_to_load_destination_cards'))
     }
   }
 
@@ -168,7 +170,7 @@ const CardToCardCardList = () => {
             )
       )
     } catch (e) {
-      toast.error(e.message || 'Failed to fetch source card balance')
+      toast.error(e.message || t('failed_to_fetch_source_card_balance'))
     }
   }
 
@@ -218,26 +220,26 @@ const CardToCardCardList = () => {
             )
       )
     } catch (e) {
-      toast.error(e.message || 'Failed to fetch destination card balance')
+      toast.error(e.message || t('failed_to_fetch_destination_card_balance'))
     }
   }
 
   /* ---------------- STEP 1 → CVV ---------------- */
   const handleContinue = () => {
     if (!amount || Number(amount) <= 0) {
-      toast.error('Enter valid amount')
+      toast.error(t('enter_valid_amount'))
       return
     }
 
     if (activeDestIndex === null) {
-      toast.error('Select destination card')
+      toast.error(t('please_select_destination_card'))
       return
     }
 
     const fromCard = sourceCard?.card_number
     const toCard = destCard?.card_number
     if (fromCard === toCard) {
-      toast.error('From and To card cannot be same')
+      toast.error(t('from_and_to_card_cannot_be_same'))
       return
     }
 
@@ -273,9 +275,9 @@ const CardToCardCardList = () => {
       })
 
       setStep('OTP')
-      toast.success('OTP sent')
+      toast.success(t('otp_sent'))
     } catch (e) {
-      toast.error(e.message || 'Failed to send OTP')
+      toast.error(e.message || t('failed_to_send_otp'))
     } finally {
       setLoading(false)
     }
@@ -284,7 +286,7 @@ const CardToCardCardList = () => {
   /* ---------------- STEP 4 → CONFIRM OTP ---------------- */
   const handleConfirmOtp = async (otp) => {
     if (!txnMeta?.rrn || !txnMeta?.stan) {
-      toast.error('Session expired. Please try again.')
+      toast.error(t('session_expired_try_again'))
       resetFlow()
       return
     }
@@ -313,7 +315,7 @@ const CardToCardCardList = () => {
 
           // frontend context
           txn_type: 'CARD_TO_CARD',
-          txn_desc: 'Card to Card transfer',
+          txn_desc: t('card_to_card_transfer'),
           channel_type: 'WEB',
           status: 1,
 
@@ -330,7 +332,7 @@ const CardToCardCardList = () => {
       resetFlow()
       navigate('/customer/card-to-card/success')
     } catch (e) {
-      toast.error(e.message || 'Transaction failed')
+      toast.error(e.message || t('transaction_failed'))
     } finally {
       setLoading(false)
     }
@@ -354,7 +356,7 @@ const CardToCardCardList = () => {
               onClick={handleContinue}
               disabled={!amount || activeDestIndex === null}
             >
-              Continue
+              {t('continue')}
             </Button>
           </div>
         </div>
@@ -366,7 +368,7 @@ const CardToCardCardList = () => {
           {/* Source Card carousel */}
           {sourceCards.length > 0 && (
             <>
-              <div className="text-sm font-medium mb-2 text-brand-dark">Source Card</div>
+              <div className="text-sm font-medium mb-2 text-brand-dark">{t('source_card')}</div>
               <div
                 ref={sourceScrollRef}
                 onScroll={() => {
@@ -396,7 +398,7 @@ const CardToCardCardList = () => {
             </>
           )}
 
-          <AmountInput label="Amount" value={amount} onChange={setAmount} />
+          <AmountInput label={t('amount')} value={amount} onChange={setAmount} />
 
           <div className="grid grid-cols-5 gap-2 mt-3">
             {QUICK_AMOUNTS.map((a) => (
@@ -411,7 +413,7 @@ const CardToCardCardList = () => {
           </div>
 
           {/* Destination Card carousel */}
-          <div className="mt-8 text-sm font-medium text-brand-dark">Select Destination Card</div>
+          <div className="mt-8 text-sm font-medium text-brand-dark">{t('select_destination_card')}</div>
           <div
             ref={destScrollRef}
             onScroll={() => {
@@ -466,7 +468,7 @@ const CardToCardCardList = () => {
             </div>
           ) : null
         }
-        description="Card to Card transfer"
+        description={t('card_to_card_transfer')}
         loading={loading}
         onSendOtp={handleSendOtp}
         onCancel={resetFlow}

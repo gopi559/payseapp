@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
@@ -13,6 +14,7 @@ import { sendService } from '../send/send.service'
 import requestMoneyService from './requestMoney.service'
 
 const PayRequestStart = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const user = useSelector((state) => state.auth?.user)
@@ -41,8 +43,8 @@ const PayRequestStart = () => {
     () =>
       [request?.req_cust_fname, request?.req_cust_lname].filter(Boolean).join(' ').trim() ||
       request?.req_cust_mobile ||
-      'Beneficiary',
-    [request?.req_cust_fname, request?.req_cust_lname, request?.req_cust_mobile]
+      t('beneficiary'),
+    [request?.req_cust_fname, request?.req_cust_lname, request?.req_cust_mobile, t]
   )
 
   if (!request?.id) return null
@@ -51,8 +53,14 @@ const PayRequestStart = () => {
   const remarks = request?.remarks || ''
 
   const handleContinue = () => {
-    if (!amount || amount <= 0) return toast.error('Invalid request amount')
-    if (balance > 0 && amount > Number(balance)) return toast.error('Insufficient balance')
+    if (!amount || amount <= 0) {
+      toast.error(t('invalid_request_amount'))
+      return
+    }
+    if (balance > 0 && amount > Number(balance)) {
+      toast.error(t('insufficient_balance'))
+      return
+    }
     setStep('CONFIRM')
   }
 
@@ -60,7 +68,7 @@ const PayRequestStart = () => {
     <MobileScreenContainer>
       <div className="max-w-md mx-auto px-4 py-6 space-y-6">
         <h1 className="text-xl font-semibold" style={{ color: contentCard.title }}>
-          Pay Request
+          {t('pay_request')}
         </h1>
 
         <div className="space-y-3">
@@ -72,12 +80,12 @@ const PayRequestStart = () => {
               color: contentCard.subtitle,
             }}
           >
-            Beneficiary Name: <strong>{beneficiaryName}</strong>
+            {t('beneficiary_name')}: <strong>{beneficiaryName}</strong>
           </div>
 
-          <Input label="Beneficiary Mobile Number" value={request?.req_cust_mobile || ''} disabled />
-          <Input label="Amount" value={amount ? Number(amount).toFixed(2) : '0.00'} disabled />
-          <Input label="Remarks" value={remarks} disabled />
+          <Input label={t('beneficiary_mobile_number')} value={request?.req_cust_mobile || ''} disabled />
+          <Input label={t('amount')} value={amount ? Number(amount).toFixed(2) : '0.00'} disabled />
+          <Input label={t('remarks')} value={remarks} disabled />
 
           <button
             type="button"
@@ -91,7 +99,7 @@ const PayRequestStart = () => {
               e.currentTarget.style.backgroundColor = menuGreen
             }}
           >
-            Continue
+            {t('continue')}
           </button>
         </div>
       </div>
@@ -101,16 +109,16 @@ const PayRequestStart = () => {
         amount={amount}
         to={beneficiaryName}
         mobile={request?.req_cust_mobile}
-        description="Paid Request"
+        description={t('paid_request')}
         loading={loading}
         onSendOtp={async () => {
           setLoading(true)
           try {
             await sendService.generateTransactionOtp('MOBILE', senderMobile)
-            toast.success('OTP sent')
+            toast.success(t('otp_sent'))
             setStep('OTP')
           } catch (e) {
-            toast.error(e.message || 'Failed to send OTP')
+            toast.error(e.message || t('failed_to_send_otp'))
           } finally {
             setLoading(false)
           }
@@ -130,7 +138,7 @@ const PayRequestStart = () => {
             const { data } = await requestMoneyService.payRequestMoney({
               money_reqid: request.id,
               amount,
-              remarks: remarks || 'Request Payment',
+              remarks: remarks || t('request_payment'),
             })
 
             sessionStorage.setItem(
@@ -140,7 +148,7 @@ const PayRequestStart = () => {
                 txn_id: data?.txn_id ?? data?.id ?? data?.money_reqid,
                 rrn: data?.rrn ?? data?.txn_rrn ?? null,
                 amount,
-                remarks: remarks || 'Request Payment',
+                remarks: remarks || t('request_payment'),
                 beneficiary_name: beneficiaryName,
                 beneficiary_mobile: request?.req_cust_mobile,
                 txn_time: data?.txn_time ?? data?.last_modified_on ?? new Date().toISOString(),
@@ -152,7 +160,7 @@ const PayRequestStart = () => {
             setStep(null)
             navigate('/customer/send/success')
           } catch (e) {
-            toast.error(e.message || 'Payment failed')
+            toast.error(e.message || t('payment_failed'))
           } finally {
             setLoading(false)
           }

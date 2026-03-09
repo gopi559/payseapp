@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import Button from './Button'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import THEME_COLORS from '../theme/colors'
 
 const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
+  const { t } = useTranslation()
   const [cvv, setCvv] = useState('')
   const [expiry, setExpiry] = useState('')
   const popupColors = THEME_COLORS.popup
@@ -80,12 +82,12 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
               className="text-lg font-semibold"
               style={{ color: popupColors.title }}
             >
-              Card Security Details
+              {t('card_security_details')}
             </h2>
           </div>
 
           <p className="text-sm mb-4" style={{ color: popupColors.subtitle }}>
-            Enter CVV2 And Expiry Date
+            {t('enter_cvv2_and_expiry_date')}
           </p>
 
           {/* Adjusted Input Layout */}
@@ -98,7 +100,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
               onChange={(e) =>
                 setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))
               }
-              placeholder="CVV2"
+              placeholder={t('cvv2')}
               className="border rounded-xl px-4 py-3 text-lg focus:outline-none w-40"
               style={{
                 backgroundColor: popupColors.inputBackground,
@@ -113,7 +115,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
               maxLength={5}
               value={expiry}
               onChange={(e) => handleExpiryChange(e.target.value)}
-              placeholder="MM/YY"
+              placeholder={t('expiry_mm_yy')}
               className="border rounded-xl px-4 py-3 text-lg focus:outline-none w-40"
               style={{
                 backgroundColor: popupColors.inputBackground,
@@ -128,7 +130,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
             disabled={cvv.length !== 3 || !hasValidExpiry || loading}
             onClick={handleContinue}
           >
-            {loading ? 'Processing...' : 'Continue'}
+            {loading ? t('processing') : t('continue')}
           </Button>
 
           <button
@@ -136,7 +138,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
             style={{ color: popupColors.accent }}
             onClick={onClose}
           >
-            Cancel
+            {t('cancel')}
           </button>
         </div>
       </div>

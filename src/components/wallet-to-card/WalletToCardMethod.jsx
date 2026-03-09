@@ -1,10 +1,12 @@
-﻿import React from 'react'
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { HiChevronRight } from 'react-icons/hi2'
 import THEME_COLORS from '../../theme/colors'
 
 const WalletToCardMethod = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const menuCard = THEME_COLORS.menuCard
 
@@ -16,11 +18,11 @@ const WalletToCardMethod = () => {
             className="text-2xl font-semibold mb-1"
             style={{ color: menuCard.screenTitle }}
           >
-            Choose Your Method
+            {t('withdraw_money_using')}
           </h1>
 
           <p className="text-base mb-8" style={{ color: menuCard.screenSubtitle }}>
-            Select How You Want To Withdraw Money From Your Wallet
+            {t('select_withdraw_method')}
           </p>
 
           <button
@@ -38,11 +40,11 @@ const WalletToCardMethod = () => {
                   className="text-xl font-semibold"
                   style={{ color: menuCard.cardTitle }}
                 >
-                  Wallet to Card
+                  {t('wallet_to_card')}
                 </h2>
 
                 <p className="text-base mt-2" style={{ color: menuCard.cardSubtitle }}>
-                  Withdraw Money To Your Debit Or Credit Card
+                  {t('withdraw_money_to_card')}
                 </p>
 
                 <div
@@ -52,7 +54,7 @@ const WalletToCardMethod = () => {
                     color: menuCard.pillText,
                   }}
                 >
-                  Instant • Convenient • Secure
+                  {t('instant_convenient_secure')}
                 </div>
               </div>
 

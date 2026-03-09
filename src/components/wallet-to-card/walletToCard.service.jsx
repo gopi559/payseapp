@@ -30,7 +30,7 @@ const walletToCardService = {
 
     const res = await response.json().catch(() => null)
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'Failed to send OTP')
+      throw new Error(res?.message || '')
     }
 
     return res
@@ -56,7 +56,7 @@ const walletToCardService = {
 
     const res = await response.json().catch(() => null)
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'OTP verification failed')
+      throw new Error(res?.message || '')
     }
 
     return res
@@ -83,7 +83,7 @@ const walletToCardService = {
 
     const res = await response.json().catch(() => null)
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'Wallet to card failed')
+      throw new Error(res?.message || '')
     }
 
     authService.fetchCustomerBalance().catch(() => {})

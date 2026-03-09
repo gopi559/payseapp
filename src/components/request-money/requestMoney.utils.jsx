@@ -9,19 +9,19 @@ export const getStatusConfig = (status) => {
   const s = Number(status)
 
   if (s === REQUEST_STATUS.pending) {
-    return { label: 'Pending', bgClass: 'bg-sky-100', textClass: 'text-sky-600' }
+    return { labelKey: 'status_pending', bgClass: 'bg-sky-100', textClass: 'text-sky-600' }
   }
   if (s === REQUEST_STATUS.paid) {
-    return { label: 'Paid', bgClass: 'bg-emerald-100', textClass: 'text-emerald-600' }
+    return { labelKey: 'status_paid', bgClass: 'bg-emerald-100', textClass: 'text-emerald-600' }
   }
   if (s === REQUEST_STATUS.expired) {
-    return { label: 'Expired', bgClass: 'bg-amber-100', textClass: 'text-amber-600' }
+    return { labelKey: 'status_expired', bgClass: 'bg-amber-100', textClass: 'text-amber-600' }
   }
   if (s === REQUEST_STATUS.declined) {
-    return { label: 'Declined', bgClass: 'bg-red-100', textClass: 'text-red-500' }
+    return { labelKey: 'status_declined', bgClass: 'bg-red-100', textClass: 'text-red-500' }
   }
 
-  return { label: 'Unknown', bgClass: 'bg-gray-100', textClass: 'text-gray-500' }
+  return { labelKey: 'status_unknown', bgClass: 'bg-gray-100', textClass: 'text-gray-500' }
 }
 export const getCustomerId = (user) =>
   user?.reg_info?.user_id ??
@@ -51,11 +51,11 @@ export const formatShortDate = (date) => {
 export const sortByAddedOnDesc = (list) =>
   [...list].sort((a, b) => new Date(b?.added_on || 0) - new Date(a?.added_on || 0))
 
-export const buildRemarks = ({ category, note }) => {
+export const buildRemarks = ({ category, note, isOther = false }) => {
   const cleanCategory = String(category || '').trim()
   const cleanNote = String(note || '').trim()
 
-  if (cleanCategory && cleanCategory !== 'Others' && cleanNote) {
+  if (cleanCategory && !isOther && cleanNote) {
     return `${cleanCategory} - ${cleanNote}`
   }
   if (cleanNote) return cleanNote

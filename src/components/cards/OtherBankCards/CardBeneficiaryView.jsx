@@ -1,60 +1,62 @@
-import React from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import PageContainer from "../../../Reusable/PageContainer";
-import Button from "../../../Reusable/Button";
-import { formatTableDateTime } from "../../../utils/formatDate";
-import THEME_COLORS from "../../../theme/colors";
+import React from 'react'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import PageContainer from '../../../Reusable/PageContainer'
+import Button from '../../../Reusable/Button'
+import { formatTableDateTime } from '../../../utils/formatDate'
+import THEME_COLORS from '../../../theme/colors'
 
-const KeyValueRow = ({ label, value }) => (
+const KeyValueRow = ({ label, value, t }) => (
   <div className="grid grid-cols-[minmax(140px,auto)_1fr] gap-4 items-center py-3 border-b border-gray-200 last:border-0 min-w-0">
     <span className="text-sm text-gray-600 shrink-0">{label}</span>
     <span className="text-sm font-medium text-gray-800 text-right break-words min-w-0">
-      {value ?? "—"}
+      {value ?? t('not_available')}
     </span>
   </div>
-);
+)
 
 const CardBeneficiaryView = () => {
-  const navigate = useNavigate();
-  const contentCard = THEME_COLORS.contentCard;
-  const { id } = useParams();
-  const location = useLocation();
-  const row = location.state?.row ?? null;
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const contentCard = THEME_COLORS.contentCard
+  const { id } = useParams()
+  const location = useLocation()
+  const row = location.state?.row ?? null
 
   if (!id || !row) {
     return (
       <PageContainer>
         <div className="px-4 py-6 min-h-full">
-          <p style={{ color: contentCard.subtitle }}>No data available</p>
-          <Button className="mt-4" variant="outline" onClick={() => navigate("/customer/other-cards")}>
-            Back
+          <p style={{ color: contentCard.subtitle }}>{t('no_data_available')}</p>
+          <Button className="mt-4" variant="outline" onClick={() => navigate('/customer/other-cards')}>
+            {t('back')}
           </Button>
         </div>
       </PageContainer>
-    );
+    )
   }
 
-  const formatDate = (d) => formatTableDateTime(d);
+  const formatDate = (d) => formatTableDateTime(d)
   const displayData = [
-    { label: "Masked card", value: row.masked_card },
-    { label: "Cardholder name", value: row.cardholder_name },
-    { label: "Nickname", value: row.cardholder_nick_name || "—" },
-    { label: "Added on", value: formatDate(row.created_on) },
-    { label: "Last modified", value: formatDate(row.last_modified_on) },
-  ];
+    { label: t('masked_card'), value: row.masked_card },
+    { label: t('cardholder_name'), value: row.cardholder_name },
+    { label: t('nickname'), value: row.cardholder_nick_name || t('not_available') },
+    { label: t('added_on'), value: formatDate(row.created_on) },
+    { label: t('last_modified'), value: formatDate(row.last_modified_on) },
+  ]
 
   return (
     <PageContainer>
       <div className="min-h-full px-4 py-6 overflow-x-hidden flex flex-col items-center justify-center">
         <div className="w-full max-w-2xl">
           <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-            <h2 className="text-xl font-bold" style={{ color: contentCard.title }}>View Card Beneficiary</h2>
+            <h2 className="text-xl font-bold" style={{ color: contentCard.title }}>{t('view_card_beneficiary')}</h2>
             <div className="flex gap-2 shrink-0">
               <Button type="button" size="sm" onClick={() => navigate(`/customer/other-cards/edit/${id}`, { state: { row } })}>
-                Edit
+                {t('edit')}
               </Button>
-              <Button type="button" variant="outline" onClick={() => navigate("/customer/other-cards")}>
-                Back
+              <Button type="button" variant="outline" onClick={() => navigate('/customer/other-cards')}>
+                {t('back')}
               </Button>
             </div>
           </div>
@@ -64,14 +66,14 @@ const CardBeneficiaryView = () => {
           >
             <div className="min-w-0">
               {displayData.map(({ label, value }) => (
-                <KeyValueRow key={label} label={label} value={value} />
+                <KeyValueRow key={label} label={label} value={value} t={t} />
               ))}
             </div>
           </div>
         </div>
       </div>
     </PageContainer>
-  );
-};
+  )
+}
 
-export default CardBeneficiaryView;
+export default CardBeneficiaryView

@@ -1,24 +1,26 @@
-import React, { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { toast } from "react-toastify"
-import { HiCreditCard } from "react-icons/hi2"
-import PageContainer from "../../../Reusable/PageContainer"
-import Button from "../../../Reusable/Button"
-import { getAuthToken, deviceId } from "../../../services/api"
-import { CARD_REQUEST_TYPE_LIST, CARD_REQUEST } from "../../../utils/constant"
-import cardService from "./card.service"
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
+import { HiCreditCard } from 'react-icons/hi2'
+import PageContainer from '../../../Reusable/PageContainer'
+import Button from '../../../Reusable/Button'
+import { getAuthToken, deviceId } from '../../../services/api'
+import { CARD_REQUEST_TYPE_LIST, CARD_REQUEST } from '../../../utils/constant'
+import cardService from './card.service'
 
 const REFERENCE_CARD_TYPES = [2, 3]
 
 const CardRequest = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const [types, setTypes] = useState([])
   const [cards, setCards] = useState([])
-  const [requestType, setRequestType] = useState("")
-  const [referenceCardId, setReferenceCardId] = useState("")
-  const [nameOnCard, setNameOnCard] = useState("")
-  const [remarks, setRemarks] = useState("")
+  const [requestType, setRequestType] = useState('')
+  const [referenceCardId, setReferenceCardId] = useState('')
+  const [nameOnCard, setNameOnCard] = useState('')
+  const [remarks, setRemarks] = useState('')
   const [loading, setLoading] = useState(false)
   const [loadingCards, setLoadingCards] = useState(false)
   const [errors, setErrors] = useState({})
@@ -27,29 +29,29 @@ const CardRequest = () => {
     const fetchCardRequestTypes = async () => {
       try {
         const response = await fetch(CARD_REQUEST_TYPE_LIST, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${getAuthToken()}`,
             deviceInfo: JSON.stringify({
-              device_type: "WEB",
+              device_type: 'WEB',
               device_id: deviceId,
             }),
           },
           body: JSON.stringify({}),
         })
 
-        if (!response.ok) throw new Error("Failed to load card request types")
+        if (!response.ok) throw new Error(t('failed_to_load_card_request_types'))
 
         const res = await response.json().catch(() => null)
         if (res?.code === 1 && res?.data) setTypes(res.data)
       } catch {
-        toast.error("Failed to load card request types")
+        toast.error(t('failed_to_load_card_request_types'))
       }
     }
 
     fetchCardRequestTypes()
-  }, [])
+  }, [t])
 
   useEffect(() => {
     const fetchCards = async () => {
@@ -70,17 +72,17 @@ const CardRequest = () => {
   const needsReferenceCard = REFERENCE_CARD_TYPES.includes(Number(requestType))
 
   useEffect(() => {
-    if (!needsReferenceCard) setReferenceCardId("")
+    if (!needsReferenceCard) setReferenceCardId('')
   }, [needsReferenceCard])
 
   const validateForm = () => {
     const newErrors = {}
 
-    if (!requestType) newErrors.requestType = "Required"
-    if (!nameOnCard) newErrors.nameOnCard = "Required"
-    if (needsReferenceCard && !referenceCardId) newErrors.referenceCardId = "Required"
+    if (!requestType) newErrors.requestType = t('required')
+    if (!nameOnCard) newErrors.nameOnCard = t('required')
+    if (needsReferenceCard && !referenceCardId) newErrors.referenceCardId = t('required')
 
-    if (Object.keys(newErrors).length) toast.error("Please fill mandatory fields")
+    if (Object.keys(newErrors).length) toast.error(t('please_fill_mandatory_fields'))
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -100,12 +102,12 @@ const CardRequest = () => {
       }
 
       const response = await fetch(CARD_REQUEST, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${getAuthToken()}`,
           deviceInfo: JSON.stringify({
-            device_type: "WEB",
+            device_type: 'WEB',
             device_id: deviceId,
           }),
         },
@@ -113,14 +115,14 @@ const CardRequest = () => {
       })
 
       const res = await response.json().catch(() => null)
-      if (!response.ok) throw new Error("Request failed")
-      if (res?.code !== 1) throw new Error("Request failed")
+      if (!response.ok) throw new Error(t('request_failed'))
+      if (res?.code !== 1) throw new Error(t('request_failed'))
 
-      toast.success("Card request processed successfully")
+      toast.success(t('card_request_processed_successfully'))
 
-      setTimeout(() => navigate("/customer/cards"), 800)
+      setTimeout(() => navigate('/customer/cards'), 800)
     } catch {
-      toast.error("Request failed")
+      toast.error(t('request_failed'))
     } finally {
       setLoading(false)
     }
@@ -135,8 +137,8 @@ const CardRequest = () => {
             <HiCreditCard className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-800">Card Request</h2>
-            <p className="text-sm text-gray-500">Request a new or replacement card</p>
+            <h2 className="text-lg font-semibold text-gray-800">{t('card_request')}</h2>
+            <p className="text-sm text-gray-500">{t('request_new_or_replacement_card')}</p>
           </div>
         </div>
 
@@ -144,34 +146,34 @@ const CardRequest = () => {
           <div className="max-w-2xl grid grid-cols-1 sm:grid-cols-2 gap-6">
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Request Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('request_type')}</label>
               <select
                 value={requestType}
                 onChange={(e) => setRequestType(e.target.value)}
                 className={`w-full border rounded-lg px-3 py-2.5 text-sm ${
-                  errors.requestType ? "border-red-500" : "border-gray-200"
+                  errors.requestType ? 'border-red-500' : 'border-gray-200'
                 }`}
               >
-                <option value="">Select request type</option>
-                {types.map((t) => (
-                  <option key={t.id} value={t.id}>{t.request_type}</option>
+                <option value="">{t('select_request_type')}</option>
+                {types.map((requestTypeItem) => (
+                  <option key={requestTypeItem.id} value={requestTypeItem.id}>{requestTypeItem.request_type}</option>
                 ))}
               </select>
             </div>
 
             {needsReferenceCard && (
               <div className="sm:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reference card</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('reference_card')}</label>
                 <select
                   value={referenceCardId}
                   onChange={(e) => setReferenceCardId(e.target.value)}
                   className="w-full border rounded-lg px-3 py-2.5 text-sm"
                   disabled={loadingCards}
                 >
-                  <option value="">{loadingCards ? "Loading..." : "Select card"}</option>
-                  {cards.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.masked_card} – {c.name_on_card}
+                  <option value="">{loadingCards ? t('loading') : t('select_card')}</option>
+                  {cards.map((card) => (
+                    <option key={card.id} value={card.id}>
+                      {card.masked_card} - {card.name_on_card}
                     </option>
                   ))}
                 </select>
@@ -179,7 +181,7 @@ const CardRequest = () => {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name on Card</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('name_on_card')}</label>
               <input
                 value={nameOnCard}
                 onChange={(e) => setNameOnCard(e.target.value)}
@@ -188,7 +190,7 @@ const CardRequest = () => {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('remarks')}</label>
               <textarea
                 rows={4}
                 value={remarks}
@@ -201,9 +203,9 @@ const CardRequest = () => {
 
           <div className="flex gap-3 mt-6">
             <Button onClick={handleSubmit} disabled={loading}>
-              {loading ? "Submitting..." : "Submit"}
+              {loading ? t('submitting') : t('submit')}
             </Button>
-            <Button onClick={() => navigate("/customer/cards")}>Back</Button>
+            <Button onClick={() => navigate('/customer/cards')}>{t('back')}</Button>
           </div>
 
         </div>

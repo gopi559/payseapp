@@ -346,7 +346,7 @@ const TransactionList = () => {
               pageSize={pageSize}
               onPageChange={handlePageChange}
               pageSizeOptions={[10, 20, 50, 100]}
-              totalRowsLabel="Total Rows: {count}"
+              totalRowsLabel={t('total_rows_pattern')}
               emptyMessage="no_transactions_yet"
               fillHeight
             />

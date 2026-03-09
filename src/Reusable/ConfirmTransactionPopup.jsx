@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import Button from './Button'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import { formatCardNumber } from '../utils/formatCardNumber'
@@ -15,6 +16,7 @@ const ConfirmTransactionPopup = ({
   onSendOtp,
   onCancel,
 }) => {
+  const { t } = useTranslation()
   const popupColors = THEME_COLORS.popup
   const confirmColors = THEME_COLORS.popup.confirmTransaction
 
@@ -52,13 +54,13 @@ const ConfirmTransactionPopup = ({
             className="text-xl font-semibold"
             style={{ color: popupColors.title }}
           >
-            Confirm Transaction
+            {t('confirm_transaction')}
           </h2>
         </div>
 
         <div className="space-y-4 text-sm">
           <div>
-            <p style={{ color: confirmColors.label }}>From</p>
+            <p style={{ color: confirmColors.label }}>{t('from_label')}</p>
 
             {fromCardNumber ? (
               <div>
@@ -80,13 +82,13 @@ const ConfirmTransactionPopup = ({
               </div>
             ) : (
               <p className="font-medium" style={{ color: confirmColors.value }}>
-                Wallet Balance
+                {t('wallet_balance')}
               </p>
             )}
           </div>
 
           <div>
-            <p style={{ color: confirmColors.label }}>To</p>
+            <p style={{ color: confirmColors.label }}>{t('to_label')}</p>
             {typeof to === 'string' ? (
               <p className="font-medium" style={{ color: confirmColors.value }}>
                 {to}
@@ -99,31 +101,31 @@ const ConfirmTransactionPopup = ({
           </div>
 
           <div className="flex justify-between">
-            <span style={{ color: confirmColors.label }}>Mobile</span>
+            <span style={{ color: confirmColors.label }}>{t('mobile_number_label')}</span>
             <span
               className="font-medium font-mono"
               style={{ color: confirmColors.value }}
             >
-              {mobile?.replace(/^\+93\s?/, '')}
+              {mobile ? mobile.replace(/^\+93\s?/, '') : t('not_available')}
             </span>
           </div>
 
           <div className="flex justify-between pt-2">
-            <span style={{ color: confirmColors.label }}>Amount</span>
+            <span style={{ color: confirmColors.label }}>{t('amount')}</span>
             <span className="font-semibold" style={{ color: confirmColors.value }}>
               {Number(amount).toFixed(2)}
             </span>
           </div>
 
           <div className="flex justify-between">
-            <span style={{ color: confirmColors.label }}>Description</span>
+            <span style={{ color: confirmColors.label }}>{t('description')}</span>
             <span style={{ color: confirmColors.value }}>{description}</span>
           </div>
         </div>
 
         <div className="mt-6 space-y-3">
           <Button fullWidth onClick={onSendOtp} disabled={loading}>
-            {loading ? 'Sending OTP...' : 'Confirm Transaction'}
+            {loading ? t('sending_otp') : t('confirm_transaction')}
           </Button>
 
           <Button
@@ -131,7 +133,7 @@ const ConfirmTransactionPopup = ({
             onClick={onCancel}
             disabled={loading}
           >
-            Cancel Transaction
+            {t('cancel_transaction')}
           </Button>
         </div>
       </div>

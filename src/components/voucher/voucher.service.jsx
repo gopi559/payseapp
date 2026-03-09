@@ -26,7 +26,7 @@ const voucherService = {
 
     const res = await response.json()
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'Failed to load cash codes')
+      throw new Error(res?.message || '')
     }
 
     return {
@@ -53,7 +53,7 @@ const voucherService = {
 
     const res = await response.json()
     if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || 'Failed to create cash code')
+      throw new Error(res?.message || '')
     }
 
     return {

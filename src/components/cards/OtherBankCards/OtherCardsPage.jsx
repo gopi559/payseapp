@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { HiCreditCard } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
@@ -10,23 +11,20 @@ import THEME_COLORS from '../../../theme/colors'
 
 const NUM_DATA = 20
 
-// SAME grid-style meta row used in PaysePayCards
-const MetaRow = ({ label, value }) => (
+const MetaRow = ({ label, value, t }) => (
   <>
     <div className="flex items-center gap-2">
       <span className="font-medium text-gray-500 text-sm">{label}</span>
     </div>
-    <span className="font-semibold text-gray-800 text-sm break-words">
-      {value ?? '—'}
-    </span>
+    <span className="font-semibold text-gray-800 text-sm break-words">{value ?? t('not_available')}</span>
   </>
 )
 
 const OtherCardsPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const contentCard = THEME_COLORS.contentCard
-  const getBankName = (card) =>
-    card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || 'Bank'
+  const getBankName = (card) => card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || t('bank')
 
   const [cards, setCards] = useState([])
   const [selectedCard, setSelectedCard] = useState(null)
@@ -42,7 +40,7 @@ const OtherCardsPage = () => {
   const loadList = async (pageNum = 1, append = false) => {
     try {
       const userId = getCurrentUserId()
-      if (!userId) throw new Error('User not found')
+      if (!userId) throw new Error(t('user_not_found'))
 
       pageNum === 1 ? setLoading(true) : setLoadingMore(true)
       setError('')
@@ -68,7 +66,7 @@ const OtherCardsPage = () => {
       const res = await response.json().catch(() => null)
 
       if (!response.ok || res?.code !== 1) {
-        throw new Error(res?.message || 'Failed to load other cards')
+        throw new Error(res?.message || t('failed_to_load_other_cards'))
       }
 
       const list = Array.isArray(res?.data) ? res.data : []
@@ -81,7 +79,7 @@ const OtherCardsPage = () => {
         setSelectedCard(list[0])
       }
     } catch (err) {
-      setError(err?.message || 'Failed to load other cards')
+      setError(err?.message || t('failed_to_load_other_cards'))
       if (!append) setCards([])
     } finally {
       setLoading(false)
@@ -91,7 +89,7 @@ const OtherCardsPage = () => {
 
   useEffect(() => {
     loadList(1, false)
-  }, [])
+  }, [t])
 
   const fetchCardTransactions = async (cardNumber) => {
     try {
@@ -124,8 +122,7 @@ const OtherCardsPage = () => {
       } else {
         setCardTransactions([])
       }
-    } catch (err) {
-      console.error('Txn fetch error', err)
+    } catch {
       setCardTransactions([])
     } finally {
       setTxnLoading(false)
@@ -163,18 +160,15 @@ const OtherCardsPage = () => {
     <PageContainer>
       <div className="px-4 py-6">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
-            {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">{error}</div>
         )}
 
         {loading ? (
-          <p className="text-gray-600 text-center py-8">Loading cards...</p>
+          <p className="text-gray-600 text-center py-8">{t('loading_cards')}</p>
         ) : cards.length === 0 ? (
-          <p className="text-gray-600 text-center py-8">No other bank cards.</p>
+          <p className="text-gray-600 text-center py-8">{t('no_other_bank_cards')}</p>
         ) : (
           <div className="flex flex-col xl:flex-row gap-4 lg:gap-6 w-full min-w-0">
-            {/* LEFT TABLE */}
             <div
               className="flex-1 min-w-0 flex flex-col gap-3 rounded-lg shadow-sm p-3 h-[80vh]"
               style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
@@ -184,14 +178,12 @@ const OtherCardsPage = () => {
                   <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
                     <HiCreditCard className="w-5 h-5" style={{ color: contentCard.iconColor }} />
                   </div>
-                  <h3 className="text-lg font-semibold" style={{ color: contentCard.title }}>
-                    Card Beneficiaries
-                  </h3>
+                  <h3 className="text-lg font-semibold" style={{ color: contentCard.title }}>{t('card_beneficiaries')}</h3>
                 </div>
 
                 <input
                   type="search"
-                  placeholder="Search card"
+                  placeholder={t('search_card')}
                   value={cardSearchQuery}
                   onChange={(e) => setCardSearchQuery(e.target.value)}
                   className="max-w-xs rounded-lg px-3 py-2 text-sm"
@@ -209,9 +201,9 @@ const OtherCardsPage = () => {
                     <thead className="sticky top-0 border-b" style={{ backgroundColor: contentCard.accentBackground, borderColor: contentCard.border }}>
                       <tr>
                         <th className="p-2 w-10"></th>
-                        <th className="p-2">Card</th>
-                        <th className="p-2">Cardholder</th>
-                        <th className="p-2">Nickname</th>
+                        <th className="p-2">{t('card')}</th>
+                        <th className="p-2">{t('cardholder')}</th>
+                        <th className="p-2">{t('nickname')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -220,25 +212,15 @@ const OtherCardsPage = () => {
                         return (
                           <tr
                             key={card.id}
-                            className={`border-b ${
-                              isSelected
-                                ? 'bg-brand-surfaceLight'
-                                : 'hover:bg-gray-50'
-                            }`}
+                            className={`border-b ${isSelected ? 'bg-brand-surfaceLight' : 'hover:bg-gray-50'}`}
                             style={{ borderColor: contentCard.border }}
                           >
                             <td className="p-2">
-                              <input
-                                type="radio"
-                                checked={isSelected}
-                                onChange={() => setSelectedCard(card)}
-                              />
+                              <input type="radio" checked={isSelected} onChange={() => setSelectedCard(card)} />
                             </td>
                             <td className="p-2 font-mono">{card.masked_card}</td>
                             <td className="p-2">{card.cardholder_name}</td>
-                            <td className="p-2">
-                              {card.cardholder_nick_name || '—'}
-                            </td>
+                            <td className="p-2">{card.cardholder_nick_name || t('not_available')}</td>
                           </tr>
                         )
                       })}
@@ -248,96 +230,65 @@ const OtherCardsPage = () => {
               </div>
 
               {hasMore && (
-                <Button
-                  onClick={() => loadList(page + 1, true)}
-                  variant="outline"
-                  size="sm"
-                  disabled={loadingMore}
-                >
-                  {loadingMore ? 'Loading...' : 'Load more'}
+                <Button onClick={() => loadList(page + 1, true)} variant="outline" size="sm" disabled={loadingMore}>
+                  {loadingMore ? t('loading') : t('load_more')}
                 </Button>
               )}
             </div>
 
-            {/* RIGHT PANEL */}
             <div className="w-full xl:w-[480px] flex-shrink-0 flex flex-col gap-4">
               {selectedCard ? (
                 <>
                   <OtherCardPreview card={selectedCard} fullWidth />
 
-                  <div
-                    className="rounded-2xl shadow-xl p-4"
-                    style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
-                  >
+                  <div className="rounded-2xl shadow-xl p-4" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                      <MetaRow label="Bank" value={getBankName(selectedCard)} />
-                      <MetaRow label="Card number" value={selectedCard.masked_card} />
-                      <MetaRow label="Cardholder" value={selectedCard.cardholder_name} />
-                      <MetaRow label="Nickname" value={selectedCard.cardholder_nick_name} />
-                      <MetaRow
-                        label="Status"
-                        value={selectedCard.status === 1 ? 'Active' : 'Inactive'}
-                      />
+                      <MetaRow label={t('bank')} value={getBankName(selectedCard)} t={t} />
+                      <MetaRow label={t('card_number')} value={selectedCard.masked_card} t={t} />
+                      <MetaRow label={t('cardholder')} value={selectedCard.cardholder_name} t={t} />
+                      <MetaRow label={t('nickname')} value={selectedCard.cardholder_nick_name} t={t} />
+                      <MetaRow label={t('status')} value={selectedCard.status === 1 ? t('active') : t('inactive')} t={t} />
                     </div>
 
                     <div className="mt-3 pt-3 border-t flex gap-3">
-                      <Button
-                        onClick={() =>
-                          navigate(`/customer/other-cards/edit/${selectedCard.id}`, {
-                            state: { row: selectedCard },
-                          })
-                        }
-                      >
-                        Edit
+                      <Button onClick={() => navigate(`/customer/other-cards/edit/${selectedCard.id}`, { state: { row: selectedCard } })}>
+                        {t('edit')}
                       </Button>
 
-                      <Button
-                        className="bg-red-600 text-white"
-                        onClick={() =>
-                          navigate(`/customer/other-cards/delete/${selectedCard.id}`, {
-                            state: { row: selectedCard },
-                          })
-                        }
-                      >
-                        Delete
+                      <Button className="bg-red-600 text-white" onClick={() => navigate(`/customer/other-cards/delete/${selectedCard.id}`, { state: { row: selectedCard } })}>
+                        {t('delete')}
                       </Button>
 
-                      <Button
-                        variant="outline"
-                        onClick={() => navigate('/customer/other-cards/add')}
-                      >
-                        Add New
+                      <Button variant="outline" onClick={() => navigate('/customer/other-cards/add')}>
+                        {t('add_new')}
                       </Button>
                     </div>
                   </div>
 
-                  <div
-                    className="rounded-2xl shadow-xl p-4"
-                    style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
-                  >
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">Card Transactions</h3>
+                  <div className="rounded-2xl shadow-xl p-4" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}>
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">{t('card_transactions')}</h3>
                     {txnLoading ? (
-                      <p className="text-sm text-gray-500">Loading transactions...</p>
+                      <p className="text-sm text-gray-500">{t('loading_transactions')}</p>
                     ) : cardTransactions.length === 0 ? (
-                      <p className="text-sm text-gray-500">No transactions found</p>
+                      <p className="text-sm text-gray-500">{t('no_transactions_found')}</p>
                     ) : (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
                           <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-medium">
                             <tr>
-                              <th className="p-2">Date</th>
-                              <th className="p-2">Amount</th>
-                              <th className="p-2">Merchant</th>
-                              <th className="p-2">Status</th>
+                              <th className="p-2">{t('date')}</th>
+                              <th className="p-2">{t('amount')}</th>
+                              <th className="p-2">{t('merchant')}</th>
+                              <th className="p-2">{t('status')}</th>
                             </tr>
                           </thead>
                           <tbody>
                             {cardTransactions.map((txn, index) => (
                               <tr key={txn?.id ?? txn?.txn_id ?? `${txn?.rrn ?? 'txn'}-${index}`} className="border-b border-gray-100 last:border-0">
-                                <td className="p-2 text-gray-800">{txn?.txn_time || txn?.created_on || '—'}</td>
-                                <td className="p-2 text-gray-800">{txn?.txn_amount ?? txn?.amount ?? '—'}</td>
-                                <td className="p-2 text-gray-800">{txn?.merchant_name || txn?.txn_desc || '—'}</td>
-                                <td className="p-2 text-gray-800">{txn?.status_name || txn?.status || '—'}</td>
+                                <td className="p-2 text-gray-800">{txn?.txn_time || txn?.created_on || t('not_available')}</td>
+                                <td className="p-2 text-gray-800">{txn?.txn_amount ?? txn?.amount ?? t('not_available')}</td>
+                                <td className="p-2 text-gray-800">{txn?.merchant_name || txn?.txn_desc || t('not_available')}</td>
+                                <td className="p-2 text-gray-800">{txn?.status_name || txn?.status || t('not_available')}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -347,13 +298,8 @@ const OtherCardsPage = () => {
                   </div>
                 </>
               ) : (
-                <div
-                  className="rounded-xl shadow-sm p-8 text-center"
-                  style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
-                >
-                  <p style={{ color: contentCard.subtitle }}>
-                    Select a card to see preview and actions.
-                  </p>
+                <div className="rounded-xl shadow-sm p-8 text-center" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}>
+                  <p style={{ color: contentCard.subtitle }}>{t('select_card_preview_actions')}</p>
                 </div>
               )}
             </div>

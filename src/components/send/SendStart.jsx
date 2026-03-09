@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import MobileInput from '../../Reusable/MobileInput'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
@@ -14,6 +15,7 @@ import { IoArrowBack } from 'react-icons/io5'
 import { sendService } from './send.service'
 
 const SendStart = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
   const balance = useSelector((state) => state.wallet?.balance ?? 0)
@@ -26,14 +28,11 @@ const SendStart = () => {
   const contentCard = THEME_COLORS.contentCard
 
   const senderMobile =
-    user?.reg_info?.mobile ??
-    user?.reg_info?.reg_mobile ??
-    user?.mobile ??
-    ''
+    user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
 
   const handleValidate = async () => {
     if (!mobile || mobile === '+93') {
-      toast.error('Enter Beneficiary Mobile Number')
+      toast.error(t('enter_beneficiary_mobile_number'))
       return
     }
 
@@ -41,20 +40,29 @@ const SendStart = () => {
     try {
       const { data } = await sendService.validateBeneficiary(mobile)
       setBeneficiary(data)
-      toast.success('Beneficiary validated')
+      toast.success(t('beneficiary_validated'))
     } catch (e) {
       setBeneficiary(null)
-      toast.error(e.message || 'Validation failed')
+      toast.error(e.message || t('validation_failed'))
     } finally {
       setLoading(false)
     }
   }
 
   const handleContinue = () => {
-    if (!beneficiary) return toast.error('Validate beneficiary first')
-    if (!amount || Number(amount) <= 0) return toast.error('Enter valid amount')
+    if (!beneficiary) {
+      toast.error(t('validate_beneficiary_first'))
+      return
+    }
+
+    if (!amount || Number(amount) <= 0) {
+      toast.error(t('enter_valid_amount'))
+      return
+    }
+
     if (balance > 0 && Number(amount) > balance) {
-      return toast.error('Insufficient balance')
+      toast.error(t('insufficient_balance'))
+      return
     }
 
     setStep('CONFIRM')
@@ -64,7 +72,8 @@ const SendStart = () => {
     beneficiary?.displayName ??
     beneficiary?.first_name ??
     beneficiary?.reg_mobile ??
-    'Beneficiary'
+    t('beneficiary')
+
   const beneficiaryNameUpper = String(beneficiaryName || '').toUpperCase()
 
   const header = (
@@ -72,13 +81,13 @@ const SendStart = () => {
       <div className="flex items-center gap-3">
         <button
           type="button"
-          aria-label="Go back"
+          aria-label={t('go_back')}
           onClick={() => navigate(-1)}
           className="w-9 h-9 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#1F2937]"
         >
           <IoArrowBack size={18} />
         </button>
-        <h1 className="text-3xl font-semibold text-[#111827]">Send</h1>
+        <h1 className="text-3xl font-semibold text-[#111827]">{t('send')}</h1>
       </div>
     </div>
   )
@@ -87,13 +96,11 @@ const SendStart = () => {
     <MobileScreenContainer header={header}>
       <div className="p-4 space-y-4 bg-[#F5FAF6] min-h-full">
         <section className="bg-white rounded-2xl p-4 shadow-[0_6px_18px_rgba(15,23,42,0.08)] space-y-4">
-          <h2 className="text-lg font-semibold text-[#1F2937]">Send Funds</h2>
-          <p className="text-sm text-[#4B5563]">
-            To Send Money, First Enter The Phone Number Of The Paysey User You Wish To Transfer Funds.
-          </p>
+          <h2 className="text-lg font-semibold text-[#1F2937]">{t('send_funds')}</h2>
+          <p className="text-sm text-[#4B5563]">{t('send_funds_instructions')}</p>
 
           <MobileInput
-            label="Mobile Number"
+            label={t('mobile_number')}
             value={mobile}
             onChange={(e) => {
               setMobile(e.target.value)
@@ -103,7 +110,7 @@ const SendStart = () => {
           />
 
           <Button type="button" fullWidth onClick={handleValidate} disabled={loading}>
-            {loading ? 'Validating...' : 'Validate Beneficiary'}
+            {loading ? t('validating') : t('validate_beneficiary')}
           </Button>
         </section>
 
@@ -117,20 +124,20 @@ const SendStart = () => {
                 color: contentCard.subtitle,
               }}
             >
-              Beneficiary Name: <strong>{beneficiaryNameUpper}</strong>
+              {t('beneficiary_name')}: <strong>{beneficiaryNameUpper}</strong>
             </div>
 
-            <AmountInput label="Amount" value={amount} onChange={setAmount} />
+            <AmountInput label={t('amount')} value={amount} onChange={setAmount} />
 
             <Input
-              label="Remarks (optional)"
+              label={t('remarks_optional')}
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
             />
 
             <div className="pt-2 flex gap-2">
               <Button type="button" fullWidth onClick={handleContinue}>
-                Continue
+                {t('continue')}
               </Button>
 
               <Button
@@ -142,7 +149,7 @@ const SendStart = () => {
                   setRemarks('')
                 }}
               >
-                Back
+                {t('back')}
               </Button>
             </div>
           </section>
@@ -154,16 +161,16 @@ const SendStart = () => {
         amount={amount}
         to={beneficiaryName}
         mobile={mobile}
-        description="Send Money"
+        description={t('send_money')}
         loading={loading}
         onSendOtp={async () => {
           setLoading(true)
           try {
             await sendService.generateTransactionOtp('MOBILE', senderMobile)
-            toast.success('OTP sent')
+            toast.success(t('otp_sent'))
             setStep('OTP')
           } catch (e) {
-            toast.error(e.message || 'Failed to send OTP')
+            toast.error(e.message || t('failed_to_send_otp'))
           } finally {
             setLoading(false)
           }
@@ -200,7 +207,7 @@ const SendStart = () => {
             setStep(null)
             navigate('/customer/send/success')
           } catch (e) {
-            toast.error(e.message || 'Transaction failed')
+            toast.error(e.message || t('transaction_failed'))
           } finally {
             setLoading(false)
           }

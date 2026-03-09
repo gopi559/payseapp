@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { HiCreditCard, HiUserCircle, HiInformationCircle } from 'react-icons/hi2'
 import { PiCreditCardLight } from 'react-icons/pi'
 import { MdBrowserUpdated } from 'react-icons/md'
@@ -20,7 +21,7 @@ const formatExpiry = (iso) => {
   return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
 }
 
-const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) => (
+const CardPreview = ({ card, onClick, selectable = true, fullWidth = false, t }) => (
   <button
     type="button"
     onClick={() => selectable && onClick?.(card.id)}
@@ -46,7 +47,7 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
           : 'bg-white text-brand-dark'
       }`}
     >
-      {card.card_status_name || 'Personalized'}
+      {card.card_status_name || t('personalized')}
     </span>
 
     <img
@@ -75,32 +76,33 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
     </div>
 
     <div className="absolute left-4 bottom-4 z-20 text-amber-200">
-      <p className="text-xs text-amber-300/90">Cardholder</p>
+      <p className="text-xs text-amber-300/90">{t('cardholder')}</p>
       <p className="font-semibold text-sm sm:text-base text-amber-200 truncate max-w-[140px] sm:max-w-[180px]">
-        {card.name_on_card || '—'}
+        {card.name_on_card || t('not_available')}
       </p>
     </div>
 
     <div className="absolute right-4 bottom-4 z-20 flex flex-col items-end gap-0.5">
       <div className="text-amber-200 text-right">
-        <p className="text-xs text-amber-300/90">Valid Thru</p>
+        <p className="text-xs text-amber-300/90">{t('valid_thru')}</p>
         <p className="font-semibold text-sm sm:text-base text-amber-200">{formatExpiry(card.expiry_on)}</p>
       </div>
     </div>
   </button>
 )
 
-const MetaRow = ({ icon: Icon, label, value }) => (
+const MetaRow = ({ icon: Icon, label, value, t }) => (
   <>
     <div className="flex items-center gap-2">
       {Icon && <Icon className="text-brand-secondary w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
       <span className="font-medium text-gray-500 text-sm">{label}</span>
     </div>
-    <span className="font-semibold text-gray-800 break-words text-sm">{value ?? '—'}</span>
+    <span className="font-semibold text-gray-800 break-words text-sm">{value ?? t('not_available')}</span>
   </>
 )
 
 const CardsPage = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [cards, setCards] = useState([])
   const [selectedCard, setSelectedCard] = useState(null)
@@ -134,7 +136,7 @@ const CardsPage = () => {
         setSelectedCard(first)
       }
     } catch (err) {
-      setError(err?.message || 'Failed to load cards')
+      setError(err?.message || t('failed_to_load_cards'))
       setCards((prev) => (append ? prev : []))
     } finally {
       setLoading(false)
@@ -144,7 +146,7 @@ const CardsPage = () => {
 
   useEffect(() => {
     loadList(1, false)
-  }, [])
+  }, [t])
 
   useEffect(() => {
     let cancelled = false
@@ -224,8 +226,7 @@ const CardsPage = () => {
       } else {
         setCardTransactions([])
       }
-    } catch (err) {
-      console.error('Txn fetch error', err)
+    } catch {
       setCardTransactions([])
     } finally {
       setTxnLoading(false)
@@ -286,13 +287,13 @@ const CardsPage = () => {
       })
 
       const res = await response.json().catch(() => null)
-      if (!response.ok) throw new Error(res?.message || 'Update failed')
-      if (res?.success !== true && res?.code !== 1) throw new Error(res?.message || 'Update failed')
+      if (!response.ok) throw new Error(res?.message || t('update_failed'))
+      if (res?.success !== true && res?.code !== 1) throw new Error(res?.message || t('update_failed'))
 
       setSelectedCardAction(null)
       await loadList(1, false)
     } catch (err) {
-      setError(err?.message || 'Failed to update card status')
+      setError(err?.message || t('failed_to_update_card_status'))
     } finally {
       setIsUpdatingStatus(false)
     }
@@ -340,9 +341,9 @@ const CardsPage = () => {
         )}
 
         {loading ? (
-          <p className="text-gray-600 text-center py-8">Loading cards...</p>
+          <p className="text-gray-600 text-center py-8">{t('loading_cards')}</p>
         ) : cards.length === 0 ? (
-          <p className="text-gray-600 text-center py-8">No cards yet.</p>
+          <p className="text-gray-600 text-center py-8">{t('no_cards_yet')}</p>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-2 xl:auto-rows-[minmax(360px,1fr)] gap-6">
             <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[360px]">
@@ -351,18 +352,18 @@ const CardsPage = () => {
                   <div className="bg-brand-secondary p-2 rounded-lg">
                     <HiCreditCard className="w-5 h-5 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-800">Card information</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">{t('card_information')}</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <input
                     type="search"
-                    placeholder="Search card"
+                    placeholder={t('search_card')}
                     value={cardSearchQuery}
                     onChange={handleCardSearchChange}
                     className="rounded-lg border border-gray-200 px-3 py-2 text-sm max-w-xs focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary"
                   />
                   <Button size="sm" onClick={() => navigate('/customer/card-request')}>
-                    Card Request
+                    {t('card_request')}
                   </Button>
                 </div>
               </div>
@@ -373,10 +374,10 @@ const CardsPage = () => {
                     <tr>
                       <th className="p-2 w-10"></th>
                       <th className="p-2">CHN</th>
-                      <th className="p-2">Name on card</th>
-                      <th className="p-2">Cardholder</th>
-                      <th className="p-2">Status</th>
-                      <th className="p-2">Expiry</th>
+                      <th className="p-2">{t('name_on_card')}</th>
+                      <th className="p-2">{t('cardholder')}</th>
+                      <th className="p-2">{t('status')}</th>
+                      <th className="p-2">{t('expiry')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -400,13 +401,13 @@ const CardsPage = () => {
                               className="h-4 w-4 text-brand-primary focus:ring-brand-primary border-gray-300 cursor-pointer disabled:cursor-not-allowed"
                             />
                           </td>
-                          <td className="p-2 font-mono text-gray-800">{card.masked_card ?? '—'}</td>
-                          <td className="p-2 text-gray-800">{card.name_on_card ?? '—'}</td>
-                          <td className="p-2 text-gray-800">{card.name_on_card ?? '—'}</td>
+                          <td className="p-2 font-mono text-gray-800">{card.masked_card ?? t('not_available')}</td>
+                          <td className="p-2 text-gray-800">{card.name_on_card ?? t('not_available')}</td>
+                          <td className="p-2 text-gray-800">{card.name_on_card ?? t('not_available')}</td>
                           <td className="p-2">
-                            <span className={getStatusColorClass(card.card_status_name)}>{card.card_status_name ?? '—'}</span>
+                            <span className={getStatusColorClass(card.card_status_name)}>{card.card_status_name ?? t('not_available')}</span>
                           </td>
-                          <td className="p-2 text-gray-800">{card.expiry_on ? formatExpiry(card.expiry_on) : '—'}</td>
+                          <td className="p-2 text-gray-800">{card.expiry_on ? formatExpiry(card.expiry_on) : t('not_available')}</td>
                         </tr>
                       )
                     })}
@@ -417,7 +418,7 @@ const CardsPage = () => {
               {hasMore && (
                 <div className="mt-3">
                   <Button onClick={handleLoadMore} variant="outline" fullWidth size="sm" disabled={loadingMore}>
-                    {loadingMore ? 'Loading...' : 'Load more'}
+                    {loadingMore ? t('loading') : t('load_more')}
                   </Button>
                 </div>
               )}
@@ -425,38 +426,38 @@ const CardsPage = () => {
 
             <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[360px] flex items-center justify-center">
               {selectedCard ? (
-                <CardPreview card={selectedCard} selectable={false} fullWidth />
+                <CardPreview card={selectedCard} selectable={false} fullWidth t={t} />
               ) : (
                 <div className="p-8 text-center">
-                  <p className="text-gray-500">Select a card</p>
+                  <p className="text-gray-500">{t('select_card')}</p>
                 </div>
               )}
             </div>
 
             <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[360px]">
-              <h3 className="text-lg font-semibold mb-3 text-gray-800">Card Transactions</h3>
+              <h3 className="text-lg font-semibold mb-3 text-gray-800">{t('card_transactions')}</h3>
               {txnLoading ? (
-                <p className="text-sm text-gray-500">Loading transactions...</p>
+                <p className="text-sm text-gray-500">{t('loading_transactions')}</p>
               ) : cardTransactions.length === 0 ? (
-                <p className="text-sm text-gray-500">No transactions found</p>
+                <p className="text-sm text-gray-500">{t('no_transactions_found')}</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-medium">
                       <tr>
-                        <th className="p-2">Date</th>
-                        <th className="p-2">Amount</th>
-                        <th className="p-2">Merchant</th>
-                        <th className="p-2">Status</th>
+                        <th className="p-2">{t('date')}</th>
+                        <th className="p-2">{t('amount')}</th>
+                        <th className="p-2">{t('merchant')}</th>
+                        <th className="p-2">{t('status')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {cardTransactions.map((txn, index) => (
                         <tr key={txn?.id ?? txn?.txn_id ?? `${txn?.rrn ?? 'txn'}-${index}`} className="border-b border-gray-100 last:border-0">
-                          <td className="p-2 text-gray-800">{txn?.txn_time || txn?.created_on || '—'}</td>
-                          <td className="p-2 text-gray-800">{txn?.txn_amount ?? txn?.amount ?? '—'}</td>
-                          <td className="p-2 text-gray-800">{txn?.merchant_name || txn?.txn_desc || '—'}</td>
-                          <td className="p-2 text-gray-800">{txn?.status_name || txn?.status || '—'}</td>
+                          <td className="p-2 text-gray-800">{txn?.txn_time || txn?.created_on || t('not_available')}</td>
+                          <td className="p-2 text-gray-800">{txn?.txn_amount ?? txn?.amount ?? t('not_available')}</td>
+                          <td className="p-2 text-gray-800">{txn?.merchant_name || txn?.txn_desc || t('not_available')}</td>
+                          <td className="p-2 text-gray-800">{txn?.status_name || txn?.status || t('not_available')}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -469,23 +470,24 @@ const CardsPage = () => {
               {selectedCard ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm sm:text-base">
-                    <MetaRow icon={HiCreditCard} label="Card type" value={selectedCard.card_status_name || 'Card'} />
-                    <MetaRow icon={PiCreditCardLight} label="Card number" value={selectedCard.masked_card} />
-                    <MetaRow icon={HiUserCircle} label="Name on card" value={selectedCard.name_on_card} />
-                    <MetaRow icon={HiUserCircle} label="Cardholder" value={selectedCard.name_on_card} />
-                    <MetaRow icon={HiInformationCircle} label="Card status" value={selectedCard.card_status_name} />
+                    <MetaRow icon={HiCreditCard} label={t('card_type')} value={selectedCard.card_status_name || t('card')} t={t} />
+                    <MetaRow icon={PiCreditCardLight} label={t('card_number')} value={selectedCard.masked_card} t={t} />
+                    <MetaRow icon={HiUserCircle} label={t('name_on_card')} value={selectedCard.name_on_card} t={t} />
+                    <MetaRow icon={HiUserCircle} label={t('cardholder')} value={selectedCard.name_on_card} t={t} />
+                    <MetaRow icon={HiInformationCircle} label={t('card_status')} value={selectedCard.card_status_name} t={t} />
                     <MetaRow
                       icon={HiInformationCircle}
-                      label="Expiration date"
+                      label={t('expiration_date')}
                       value={selectedCard.expiry_on ? formatExpiry(selectedCard.expiry_on) : null}
+                      t={t}
                     />
                     <div className="flex items-center gap-2">
                       <MdBrowserUpdated className="text-brand-secondary w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                      <span className="font-medium text-gray-500">Select Action</span>
+                      <span className="font-medium text-gray-500">{t('select_action')}</span>
                     </div>
                     <div className="font-semibold text-gray-800">
                       {loadingActions ? (
-                        <span className="text-sm text-gray-400">Loading actions...</span>
+                        <span className="text-sm text-gray-400">{t('loading_actions')}</span>
                       ) : (
                         <select
                           value={selectedCardAction ?? ''}
@@ -497,7 +499,7 @@ const CardsPage = () => {
                           }
                           className="w-full h-8 sm:h-10 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-800 focus:border-brand-primary focus:outline-none focus:ring-1 focus:ring-brand-primary disabled:bg-gray-100 disabled:text-gray-400"
                         >
-                          <option value="">Select action</option>
+                          <option value="">{t('select_action')}</option>
                           {getAvailableActions(selectedCard?.card_status_name).map((action) => (
                             <option key={action.id} value={action.id}>
                               {action.action_name}
@@ -531,16 +533,16 @@ const CardsPage = () => {
                       {isUpdatingStatus ? (
                         <span className="flex items-center justify-center gap-2">
                           <span className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          Updating...
+                          {t('updating')}
                         </span>
                       ) : (
-                        'Update'
+                        t('update')
                       )}
                     </button>
                   </div>
                 </>
               ) : (
-                <p className="text-gray-500">No card selected</p>
+                <p className="text-gray-500">{t('no_card_selected')}</p>
               )}
             </div>
           </div>
