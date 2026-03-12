@@ -128,6 +128,7 @@
   "please_enter_cvv2": "يرجى إدخال CVV2",
   "please_enter_expiry_mmyy": "يرجى إدخال تاريخ الانتهاء بصيغة MMYY مثل 1030",
   "please_enter_valid_expiry_month": "يرجى إدخال شهر انتهاء صالح بين 01 و12",
+  "please_enter_valid_expiry_year": "يرجى إدخال سنة انتهاء صالحة (العام الحالي أو أحدث)",
   "please_enter_valid_amount": "يرجى إدخال مبلغ صالح",
   "card_verified": "تم التحقق من البطاقة",
   "card_not_found_invalid": "البطاقة غير موجودة أو غير صالحة. يرجى التحقق من رقم البطاقة.",

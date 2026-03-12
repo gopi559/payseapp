@@ -249,7 +249,7 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
               onChange={(e) =>
                 setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))
               }
-              placeholder="CVV2 (optional)"
+              placeholder="CVV2"
               className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
               style={{
                 backgroundColor: popupColors.inputBackground,
@@ -264,7 +264,7 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
               maxLength={5}
               value={expiryDate}
               onChange={(e) => handleExpiryChange(e.target.value)}
-              placeholder="MM/YY (optional)"
+              placeholder="MM/YY"
               className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
               style={{
                 backgroundColor: popupColors.inputBackground,

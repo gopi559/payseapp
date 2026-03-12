@@ -110,6 +110,12 @@ const CashInPage = () => {
       setError(t('please_enter_valid_expiry_month'))
       return
     }
+    const year = Number(expiry.slice(2, 4))
+    const currentYear = new Date().getFullYear() % 100
+    if (!Number.isInteger(year) || year < currentYear) {
+      setError(t('please_enter_valid_expiry_year'))
+      return
+    }
     if (!amount || parseFloat(amount) <= 0) {
       setError(t('please_enter_valid_amount'))
       return
@@ -225,15 +231,7 @@ const CashInPage = () => {
                 label="expiry_mmyy"
                 value={expiryDate}
                 onChange={(e) => {
-                  let digits = e.target.value.replace(/\D/g, '').slice(0, 4)
-                  if (digits.length >= 2) {
-                    const month = Number(digits.slice(0, 2))
-                    if (month > 12) {
-                      digits = `12${digits.slice(2)}`
-                    } else if (month === 0) {
-                      digits = `01${digits.slice(2)}`
-                    }
-                  }
+                  const digits = e.target.value.replace(/\D/g, '').slice(0, 4)
                   setExpiryDate(digits)
                   setError('')
                 }}

@@ -8,15 +8,25 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
   const { t } = useTranslation()
   const [cvv, setCvv] = useState('')
   const [expiry, setExpiry] = useState('')
+  const [error, setError] = useState('')
   const popupColors = THEME_COLORS.popup
 
   const expiryDigits = expiry.replace(/\D/g, '')
-  const expiryMonth = Number(expiryDigits.slice(0, 2))
-  const hasValidExpiry =
-    expiryDigits.length === 4 &&
-    Number.isInteger(expiryMonth) &&
-    expiryMonth >= 1 &&
-    expiryMonth <= 12
+  const getExpiryErrorKey = (digits) => {
+    if (digits.length !== 4) {
+      return 'please_enter_expiry_mmyy'
+    }
+    const month = Number(digits.slice(0, 2))
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      return 'please_enter_valid_expiry_month'
+    }
+    const year = Number(digits.slice(2, 4))
+    const currentYear = new Date().getFullYear() % 100
+    if (!Number.isInteger(year) || year < currentYear) {
+      return 'please_enter_valid_expiry_year'
+    }
+    return ''
+  }
 
   useEffect(() => {
     if (open) {
@@ -27,35 +37,34 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
       document.body.style.overflow = ''
       setCvv('')
       setExpiry('')
+      setError('')
     }
   }, [open])
 
   if (!open) return null
 
   const handleContinue = () => {
-    if (cvv.length !== 3 || !hasValidExpiry) return
+    if (cvv.length !== 3) return
+    const expiryErrorKey = getExpiryErrorKey(expiryDigits)
+    if (expiryErrorKey) {
+      setError(t(expiryErrorKey))
+      return
+    }
+    setError('')
     onConfirm({ cvv, expiry })
   }
 
   const handleExpiryChange = (value) => {
-    let digits = value.replace(/[^\d]/g, '').slice(0, 4)
-
-    if (digits.length >= 2) {
-      const month = Number(digits.slice(0, 2))
-
-      if (month > 12) {
-        digits = `12${digits.slice(2)}`
-      } else if (month === 0) {
-        digits = `01${digits.slice(2)}`
-      }
-    }
+    const digits = value.replace(/[^\d]/g, '').slice(0, 4)
 
     if (digits.length > 2) {
       setExpiry(`${digits.slice(0, 2)}/${digits.slice(2)}`)
+      setError('')
       return
     }
 
     setExpiry(digits)
+    setError('')
   }
 
   return (
@@ -63,10 +72,8 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
       style={{ backgroundColor: popupColors.backdrop }}
     >
-<div className="relative ml-0 md:ml-[17.75rem]">
-  
-  
-            <div
+      <div className="relative ml-0 md:ml-[17.75rem]">
+        <div
           className="w-full max-w-[409px] rounded-3xl p-5"
           style={{
             backgroundColor: popupColors.panelBackground,
@@ -91,15 +98,17 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
           </p>
 
           {/* Adjusted Input Layout */}
-<div className="grid grid-cols-2 gap-3 mb-6 justify-start w-fit -ml-3">            <input
+          <div className="grid grid-cols-2 gap-3 mb-6 justify-start w-fit -ml-3">
+            <input
               type="password"
               inputMode="numeric"
               maxLength={3}
               autoFocus
               value={cvv}
-              onChange={(e) =>
+              onChange={(e) => {
                 setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))
-              }
+                setError('')
+              }}
               placeholder={t('cvv2')}
               className="border rounded-xl px-4 py-3 text-lg focus:outline-none w-40"
               style={{
@@ -124,10 +133,15 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
               }}
             />
           </div>
+          {error && (
+            <p className="text-sm mb-4" style={{ color: popupColors.cvv.icon }}>
+              {error}
+            </p>
+          )}
 
           <Button
             fullWidth
-            disabled={cvv.length !== 3 || !hasValidExpiry || loading}
+            disabled={cvv.length !== 3 || loading}
             onClick={handleContinue}
           >
             {loading ? t('processing') : t('continue')}

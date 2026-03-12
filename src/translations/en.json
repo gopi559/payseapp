@@ -128,6 +128,7 @@
   "please_enter_cvv2": "Please enter CVV2",
   "please_enter_expiry_mmyy": "Please enter expiry as MMYY (e.g. 1030)",
   "please_enter_valid_expiry_month": "Please enter a valid expiry month (01-12)",
+  "please_enter_valid_expiry_year": "Please enter a valid expiry year (current year or later)",
   "please_enter_valid_amount": "Please enter a valid amount",
   "card_verified": "Card verified",
   "card_not_found_invalid": "Card not found or invalid. Please check the card number.",
