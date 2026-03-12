@@ -127,121 +127,122 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
           </div>
         </div>
 
-        {/* BALANCE SECTION */}
-        <div className="hidden md:flex items-center gap-4">
-          <div className="flex items-center gap-2 text-xl font-bold">
-            <span className="text-sm font-medium opacity-80 mr-1">
-              {t('available_balance')}
-            </span>
+        <div className="flex items-center gap-3">
+          {/* BALANCE SECTION */}
+          <div className="hidden md:flex items-center gap-4">
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <span className="text-sm font-medium opacity-80 mr-1">
+                {t('available_balance')}
+              </span>
 
-            <img
-              src={AfganCurrency}
-              alt="Currency"
-              className="h-6 w-6"
-            />
+              <img
+                src={AfganCurrency}
+                alt="Currency"
+                className="h-6 w-6"
+              />
 
-            <span>{formatAmount(balance)}</span>
+              <span>{formatAmount(balance)}</span>
+            </div>
+
+            <button
+              onClick={handleBalanceRefresh}
+              disabled={isRefreshing}
+              className="p-1.5 rounded-full disabled:opacity-50"
+              style={{ backgroundColor: headerColors.overlaySoft }}
+              title={t('refresh_balance')}
+            >
+              <MdRefresh size={20} className={isRefreshing ? 'animate-spin' : ''} />
+            </button>
           </div>
 
-          <button
-            onClick={handleBalanceRefresh}
-            disabled={isRefreshing}
-            className="p-1.5 rounded-full disabled:opacity-50"
-            style={{ backgroundColor: headerColors.overlaySoft }}
-            title={t('refresh_balance')}
-          >
-            <MdRefresh size={20} className={isRefreshing ? 'animate-spin' : ''} />
-          </button>
-        </div>
+          <LanguageSwitcher />
 
-        {/* PROFILE DROPDOWN */}
-        <div className="relative shrink-0" ref={dropdownRef}>
-          <button
-            type="button"
-            onClick={toggleDropdown}
-            className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-            style={{ backgroundColor: headerColors.overlayStrong }}
-            aria-label={t('profile_menu')}
-          >
-            {profileImage ? (
-              <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-lg">U</span>
-            )}
-          </button>
-
-          {isDropdownOpen && (
-            <div
-              className="absolute right-0 mt-2 w-56 border rounded-lg z-50 overflow-hidden"
-              style={{
-                backgroundColor: headerColors.dropdownBackground,
-                color: headerColors.dropdownText,
-                borderColor: headerColors.dropdownBorder,
-              }}
+          {/* PROFILE DROPDOWN */}
+          <div className="relative shrink-0" ref={dropdownRef}>
+            <button
+              type="button"
+              onClick={toggleDropdown}
+              className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+              style={{ backgroundColor: headerColors.overlayStrong }}
+              aria-label={t('profile_menu')}
             >
+              {profileImage ? (
+                <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-lg">U</span>
+              )}
+            </button>
+
+            {isDropdownOpen && (
               <div
-                className="p-3 border-b"
+                className="absolute right-0 mt-2 w-56 border rounded-lg z-50 overflow-hidden"
                 style={{
-                  backgroundColor: headerColors.dropdownHeaderBackground,
+                  backgroundColor: headerColors.dropdownBackground,
+                  color: headerColors.dropdownText,
                   borderColor: headerColors.dropdownBorder,
                 }}
               >
-                <p className="font-semibold truncate">{displayName}</p>
-                {regInfo?.mobile && (
-                  <p
-                    className="text-xs truncate mt-0.5"
-                    style={{ color: headerColors.mutedText }}
-                  >
-                    {regInfo.mobile}
-                  </p>
-                )}
-              </div>
-
-              <ul className="py-1">
-                <li>
-                  <button
-                    onClick={handleProfileDetails}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm"
-                    style={{ backgroundColor: THEME_COLORS.common.transparent }}
-                  >
-                    <MdPerson size={18} />
-                    {t('profile_details')}
-                  </button>
-                </li>
-
-                <li>
-                  <button
-                    onClick={handleProfile}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm"
-                    style={{ backgroundColor: THEME_COLORS.common.transparent }}
-                  >
-                    {t('profile')}
-                  </button>
-                </li>
-
-                <li
-                  className="border-t"
-                  style={{ borderColor: headerColors.dropdownBorder }}
+                <div
+                  className="p-3 border-b"
+                  style={{
+                    backgroundColor: headerColors.dropdownHeaderBackground,
+                    borderColor: headerColors.dropdownBorder,
+                  }}
                 >
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm"
-                    style={{
-                      color: headerColors.danger,
-                      backgroundColor: THEME_COLORS.common.transparent,
-                    }}
+                  <p className="font-semibold truncate">{displayName}</p>
+                  {regInfo?.mobile && (
+                    <p
+                      className="text-xs truncate mt-0.5"
+                      style={{ color: headerColors.mutedText }}
+                    >
+                      {regInfo.mobile}
+                    </p>
+                  )}
+                </div>
+
+                <ul className="py-1">
+                  <li>
+                    <button
+                      onClick={handleProfileDetails}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm"
+                      style={{ backgroundColor: THEME_COLORS.common.transparent }}
+                    >
+                      <MdPerson size={18} />
+                      {t('profile_details')}
+                    </button>
+                  </li>
+
+                  <li>
+                    <button
+                      onClick={handleProfile}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm"
+                      style={{ backgroundColor: THEME_COLORS.common.transparent }}
+                    >
+                      {t('profile')}
+                    </button>
+                  </li>
+
+                  <li
+                    className="border-t"
+                    style={{ borderColor: headerColors.dropdownBorder }}
                   >
-                    <MdLogout size={18} />
-                    {t('logout')}
-                  </button>
-                </li>
-              </ul>
-            </div>
-          )}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-sm"
+                      style={{
+                        color: headerColors.danger,
+                        backgroundColor: THEME_COLORS.common.transparent,
+                      }}
+                    >
+                      <MdLogout size={18} />
+                      {t('logout')}
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="mt-3 flex justify-end">
-        <LanguageSwitcher />
       </div>
     </div>
   )

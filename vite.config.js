@@ -4,7 +4,15 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   // Vite loads .env from project ROOT only (not from src/)
   const env = loadEnv(mode, process.cwd(), '')
-  const apiBase = (env.VITE_API_BASE_URL || 'https://backend.api-innovitegra.in').trim()
+  const rawApiBase = (env.VITE_API_BASE_URL || 'https://backend.api-innovitegra.in/webcust').trim()
+  let proxyTarget = 'https://backend.api-innovitegra.in'
+
+  try {
+    const parsed = new URL(rawApiBase)
+    proxyTarget = `${parsed.protocol}//${parsed.host}`
+  } catch {
+    proxyTarget = rawApiBase.replace(/\/webcust\/?$/i, '')
+  }
 
   return {
     plugins: [react()],
@@ -17,7 +25,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         '/login': {
-          target: apiBase,
+          target: proxyTarget,
           changeOrigin: true,
           secure: false,
           timeout: 60000,
@@ -28,7 +36,7 @@ export default defineConfig(({ mode }) => {
           },
         },
         '/webcust': {
-          target: apiBase,
+          target: proxyTarget,
           changeOrigin: true,
           secure: false,
           timeout: 60000,

@@ -251,15 +251,15 @@ const OtherCardsPage = () => {
                     </div>
 
                     <div className="mt-3 pt-3 border-t flex gap-3">
-                      <Button onClick={() => navigate(`/customer/other-cards/edit/${selectedCard.id}`, { state: { row: selectedCard } })}>
+                      <Button className="capitalize" onClick={() => navigate(`/customer/other-cards/edit/${selectedCard.id}`, { state: { row: selectedCard } })}>
                         {t('edit')}
                       </Button>
 
-                      <Button className="bg-red-600 text-white" onClick={() => navigate(`/customer/other-cards/delete/${selectedCard.id}`, { state: { row: selectedCard } })}>
+                      <Button className="bg-red-600 text-white capitalize" onClick={() => navigate(`/customer/other-cards/delete/${selectedCard.id}`, { state: { row: selectedCard } })}>
                         {t('delete')}
                       </Button>
 
-                      <Button variant="outline" onClick={() => navigate('/customer/other-cards/add')}>
+                      <Button className="capitalize" variant="outline" onClick={() => navigate('/customer/other-cards/add')}>
                         {t('add_new')}
                       </Button>
                     </div>

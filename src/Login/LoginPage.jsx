@@ -5,6 +5,7 @@ import Lottie from 'lottie-react'
 import LoginForm from './LoginForm.jsx'
 import logoImage from '../assets/PayseyPaymentLogowhite.png'
 import illustrationData from '../assets/login-illstration-payse.json'
+import LanguageSwitcher from '../Reusable/LanguageSwitcher'
 
 const LoginPage = () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
@@ -43,6 +44,10 @@ const LoginPage = () => {
             className="h-10 w-auto"
           />
         </div>
+
+        <div className="absolute top-4 right-4 z-10">
+          <LanguageSwitcher />
+        </div>
         
         <div className="w-full max-w-md relative z-0">
           <LoginForm />
@@ -53,4 +58,3 @@ const LoginPage = () => {
 }
 
 export default LoginPage
-

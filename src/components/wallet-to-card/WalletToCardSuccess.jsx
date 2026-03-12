@@ -48,7 +48,11 @@ const WalletToCardSuccess = () => {
   }
 
   const handleViewDetails = () => {
-    navigate('/customer/wallet-to-card/details')
+    const detailsRoute =
+      details?.txn_type === 'WALLET_TO_WALLET'
+        ? '/customer/wallet-to-wallet/details'
+        : '/customer/wallet-to-card/details'
+    navigate(detailsRoute)
   }
 
   return (

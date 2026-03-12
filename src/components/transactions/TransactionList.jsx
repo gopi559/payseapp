@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
@@ -24,6 +24,7 @@ const TransactionList = () => {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE)
   const [fromDate, setFromDate] = useState('')
   const [toDate, setToDate] = useState('')
+  const [txnType, setTxnType] = useState('ALL')
   const [rrnSearch, setRrnSearch] = useState('')
   const [actionRowId, setActionRowId] = useState(null)
   const [disputeModalRow, setDisputeModalRow] = useState(null)
@@ -73,6 +74,13 @@ const TransactionList = () => {
     fetchList()
   }, [])
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchList()
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [fromDate, toDate])
+
   const handleApplyFilters = () => {
     fetchList()
   }
@@ -80,6 +88,7 @@ const TransactionList = () => {
   const handleClearDates = () => {
     setFromDate('')
     setToDate('')
+    setTxnType('ALL')
     setRrnSearch('')
     fetchList({ start_time: undefined, end_time: undefined })
   }
@@ -105,6 +114,21 @@ const TransactionList = () => {
       setLoading(false)
     }
   }
+
+  const filteredData = useMemo(() => {
+    let rows = Array.isArray(data) ? data : []
+
+    if (txnType !== 'ALL') {
+      rows = rows.filter((row) => String(row?.txn_type ?? '').toUpperCase() === txnType)
+    }
+
+    const rrn = rrnSearch.trim().toLowerCase()
+    if (rrn) {
+      rows = rows.filter((row) => String(row?.rrn ?? '').toLowerCase().includes(rrn))
+    }
+
+    return rows
+  }, [data, txnType, rrnSearch])
 
   const openDisputeModal = async (row) => {
     setActionRowId(null)
@@ -161,7 +185,7 @@ const TransactionList = () => {
     }
   }
 
-  const totalItems = data.length
+  const totalItems = filteredData.length
 
   const headers = [
     { key: 'rrn', label: 'rrn' },
@@ -178,7 +202,20 @@ const TransactionList = () => {
     {
       key: 'status',
       label: 'status',
-      content: (row) => (row.status === 1 ? t('success') : String(row.status ?? '-')),
+      content: (row) => {
+        const isSuccess = row.status === 1
+        return (
+          <span
+            className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
+            style={{
+              backgroundColor: isSuccess ? '#E8F7EC' : '#F3F4F6',
+              color: isSuccess ? '#1F8F45' : '#374151',
+            }}
+          >
+            {isSuccess ? t('success') : String(row.status ?? '-')}
+          </span>
+        )
+      },
     },
     {
       key: 'actions',
@@ -267,8 +304,9 @@ const TransactionList = () => {
           className="w-full h-full rounded-lg p-4 sm:p-6 flex flex-col min-h-0 overflow-hidden"
           style={{ border: `1px solid ${contentCard.border}`, backgroundColor: contentCard.background }}
         >
-          <div className="flex flex-wrap items-end gap-3 mb-3 flex-shrink-0">
-            <div className="flex flex-col gap-1">
+          <div className="mb-3 flex-shrink-0">
+            <div className="flex items-center gap-3 flex-wrap lg:flex-nowrap">
+            <div className="flex flex-col gap-1 min-w-[160px]">
               <label htmlFor="from-date" className="text-xs font-medium" style={{ color: contentCard.subtitle }}>
                 {t('from_date')}
               </label>
@@ -278,7 +316,7 @@ const TransactionList = () => {
                   type="date"
                   value={fromDate}
                   onChange={(event) => setFromDate(event.target.value)}
-                  className="rounded-lg border px-3 py-2 pr-10 text-sm w-full"
+                  className="h-[38px] rounded-md border px-[10px] py-[6px] pr-10 text-sm w-full"
                   style={{ ...sharedInputStyle, color: fromDate ? tableColors.text : 'transparent' }}
                 />
                 {!fromDate && (
@@ -288,7 +326,7 @@ const TransactionList = () => {
                 )}
               </div>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 min-w-[160px]">
               <label htmlFor="to-date" className="text-xs font-medium" style={{ color: contentCard.subtitle }}>
                 {t('to_date')}
               </label>
@@ -298,7 +336,7 @@ const TransactionList = () => {
                   type="date"
                   value={toDate}
                   onChange={(event) => setToDate(event.target.value)}
-                  className="rounded-lg border px-3 py-2 pr-10 text-sm w-full"
+                  className="h-[38px] rounded-md border px-[10px] py-[6px] pr-10 text-sm w-full"
                   style={{ ...sharedInputStyle, color: toDate ? tableColors.text : 'transparent' }}
                 />
                 {!toDate && (
@@ -308,39 +346,68 @@ const TransactionList = () => {
                 )}
               </div>
             </div>
-            <button type="button" onClick={handleApplyFilters} disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium">
-              {t('apply')}
-            </button>
-            <button type="button" onClick={handleClearDates} className="px-4 py-2 rounded-lg border text-sm font-medium" style={sharedInputStyle}>
-              {t('clear')}
-            </button>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 min-w-[160px]">
+              <label htmlFor="txn-type" className="text-xs font-medium" style={{ color: contentCard.subtitle }}>
+                {t('txn_type')}
+              </label>
+              <select
+                id="txn-type"
+                value={txnType}
+                onChange={(event) => setTxnType(event.target.value)}
+                className="h-[38px] rounded-md border px-[10px] py-[6px] text-sm w-full"
+                style={sharedInputStyle}
+              >
+                <option value="ALL">All</option>
+                <option value="EXT WTW703">EXT WTW703</option>
+                <option value="WTC EXT">WTC EXT</option>
+                <option value="EXT CTC">EXT CTC</option>
+                <option value="WTW">WTW</option>
+                <option value="EXT CTW">EXT CTW</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1 min-w-[160px]">
               <label htmlFor="rrn-search" className="text-xs font-medium" style={{ color: contentCard.subtitle }}>
                 {t('rrn')}
               </label>
-              <div className="flex gap-2 items-center">
-                <input
-                  id="rrn-search"
-                  type="text"
-                  value={rrnSearch}
-                  onChange={(event) => setRrnSearch(event.target.value)}
-                  onKeyDown={(event) => event.key === 'Enter' && (event.preventDefault(), handleSearchByRrn())}
-                  placeholder={t('enter_rrn_number')}
-                  className="rounded-lg border px-3 py-2 text-sm min-w-[180px]"
-                  style={sharedInputStyle}
-                />
-                <button type="button" onClick={handleSearchByRrn} disabled={loading} className="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap">
-                  {t('search_by_rrn')}
-                </button>
-              </div>
+              <input
+                id="rrn-search"
+                type="text"
+                value={rrnSearch}
+                onChange={(event) => setRrnSearch(event.target.value)}
+                placeholder={t('enter_rrn_number')}
+                className="h-[38px] rounded-md border px-[10px] py-[6px] text-sm w-full"
+                style={sharedInputStyle}
+              />
+            </div>
+            <div className="flex items-end self-end">
+              <button
+                type="button"
+                onClick={handleApplyFilters}
+                disabled={loading}
+                className="h-[38px] px-4 rounded-md text-sm font-medium text-white"
+                style={{ backgroundColor: receiveColors.accentText }}
+              >
+                {t('apply')}
+              </button>
+            </div>
+            <div className="flex items-end self-end">
+              <button
+                type="button"
+                onClick={handleClearDates}
+                className="h-[38px] px-4 rounded-md border text-sm font-medium"
+                style={sharedInputStyle}
+              >
+                {t('clear')}
+              </button>
+            </div>
             </div>
           </div>
           <div className="flex-1 min-h-0 flex flex-col">
             <DataTable
-              data={data}
+              data={filteredData}
               headers={headers}
               loading={loading}
-              searchPlaceholder="search_in_table"
+              searchPlaceholder="Search transactions..."
               totalItems={totalItems}
               currentPage={currentPage}
               pageSize={pageSize}

@@ -15,7 +15,6 @@ const CardBeneficiaryAdd = () => {
   const contentCard = THEME_COLORS.contentCard
   const [cardNumber, setCardNumber] = useState('')
   const [cardholderName, setCardholderName] = useState('')
-  const [stan, setStan] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
 
@@ -25,9 +24,6 @@ const CardBeneficiaryAdd = () => {
     if (!cardNum) e.cardNumber = t('required')
     else if (!/^\d{16}$/.test(cardNum)) e.cardNumber = t('must_be_16_digits')
     if (!cardholderName?.trim()) e.cardholderName = t('required')
-    const stanTrim = stan.trim()
-    if (!stanTrim) e.stan = t('required')
-    else if (!/^\d{6}$/.test(stanTrim)) e.stan = t('must_be_6_digits')
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -40,7 +36,6 @@ const CardBeneficiaryAdd = () => {
     }
 
     const cardNum = cardNumber.trim().replace(/\s/g, '')
-    const stanTrim = stan.trim()
     setLoading(true)
     try {
       const response = await fetch(BENIFICIARY_ADD, {
@@ -56,7 +51,6 @@ const CardBeneficiaryAdd = () => {
         body: JSON.stringify({
           card_number: cardNum,
           cardholder_name: cardholderName.trim(),
-          stan: stanTrim,
         }),
       })
       const result = await response.json().catch(() => null)
@@ -126,23 +120,6 @@ const CardBeneficiaryAdd = () => {
                   className={`w-full border border-gray-300 p-2 rounded outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent bg-white text-gray-800 min-w-0 ${errors.cardholderName ? 'border-red-500' : ''}`}
                 />
                 {errors.cardholderName && <p className="text-red-500 text-xs mt-1">{errors.cardholderName}</p>}
-              </div>
-              <div className="min-w-0">
-                <label className="block font-medium mb-1.5 text-gray-700">{t('stan_6_digits_required_label')}</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={stan}
-                  onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, '').slice(0, 6)
-                    setStan(v)
-                    if (errors.stan) setErrors({ ...errors, stan: null })
-                  }}
-                  placeholder={t('stan_6_digits_placeholder')}
-                  className={`w-full border border-gray-300 p-2 rounded outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent bg-white text-gray-800 min-w-0 ${errors.stan ? 'border-red-500' : ''}`}
-                />
-                {errors.stan && <p className="text-red-500 text-xs mt-1">{errors.stan}</p>}
               </div>
             </div>
             <div className="flex flex-row mt-7 gap-3">

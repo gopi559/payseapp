@@ -20,6 +20,7 @@ import payseyCardsIcon from '../assets/PayseyCards.svg'
 import otherCardsIcon from '../assets/OtherCards.svg'
 import airtimeIcon from '../assets/AirtimeNewIcon.svg'
 import payBillIcon from '../assets/BillPaymentNewIcon.svg'
+import walletToWalletIcon from '../assets/PayseyMobileiconWallettoWallet.svg'
 import THEME_COLORS from '../theme/colors'
 import { IoChevronDown } from 'react-icons/io5'
 
@@ -148,6 +149,19 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       ),
       label: t('card_to_card'),
       route: '/customer/card-to-card',
+      isImage: true,
+    },
+    {
+      icon: (
+        <img
+          src={walletToWalletIcon}
+          className="w-7 h-7 object-contain"
+          style={{ filter: primaryGreenIconFilter }}
+          alt="Wallet to Wallet"
+        />
+      ),
+      label: t('wallet_to_wallet'),
+      route: '/customer/wallet-to-wallet',
       isImage: true,
     },
     {

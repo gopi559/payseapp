@@ -71,6 +71,7 @@ const WalletToCardMethod = () => {
               </div>
             </div>
           </button>
+
         </div>
       </div>
     </MobileScreenContainer>

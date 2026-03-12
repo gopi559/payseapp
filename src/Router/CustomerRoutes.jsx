@@ -19,6 +19,7 @@ import PayRequestStart from '../components/request-money/PayRequestStart.jsx'
 import WalletToCardCardList from '../components/wallet-to-card/WalletToCardCardList'
 
 import WalletToCardMethod from '../components/wallet-to-card/WalletToCardMethod'
+import WalletToWalletCardEntry from '../components/wallet-to-wallet/WalletToWalletCardEntry'
 
 
 import WalletToCardSuccess from '../components/wallet-to-card/WalletToCardSuccess'
@@ -51,11 +52,11 @@ import TransactionDetails from '../components/history/TransactionDetails'
 import CardsPage from '../components/cards/PaysePayCards/CardsPage'
 import CardDetails from '../components/cards/PaysePayCards/CardDetails'
 import CardRequest from '../components/cards/PaysePayCards/CardRequest'
-import CardBeneficiaryList from '../components/cards/OtherBankCards/CardBeneficiaryList'
 import CardBeneficiaryAdd from '../components/cards/OtherBankCards/CardBeneficiaryAdd'
 import CardBeneficiaryEdit from '../components/cards/OtherBankCards/CardBeneficiaryEdit'
 import CardBeneficiaryView from '../components/cards/OtherBankCards/CardBeneficiaryView'
 import CardBeneficiaryDelete from '../components/cards/OtherBankCards/CardBeneficiaryDelete'
+import OtherCardsPage from '../components/cards/OtherBankCards/OtherCardsPage'
 import TransactionList from '../components/transactions/TransactionList'
 import ViewTransactionList from '../components/transactions/viewTransactionList'
 import DisputeList from '../components/disputes/DisputeList'
@@ -181,6 +182,14 @@ export const customerRoutes = [
     </Suspense>
   ),
 },
+{
+  path: 'wallet-to-wallet',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <WalletToWalletCardEntry />
+    </Suspense>
+  ),
+},
 
 
 
@@ -195,7 +204,23 @@ export const customerRoutes = [
     ),
   },
   {
+    path: 'wallet-to-wallet/success',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <WalletToCardSuccess />
+      </Suspense>
+    ),
+  },
+  {
     path: 'wallet-to-card/details',
+    element: (
+      <Suspense fallback={<LinearProgress />}>
+        <WalletToCardTransactionDetails />
+      </Suspense>
+    ),
+  },
+  {
+    path: 'wallet-to-wallet/details',
     element: (
       <Suspense fallback={<LinearProgress />}>
         <WalletToCardTransactionDetails />
@@ -434,7 +459,7 @@ export const customerRoutes = [
     path: 'other-cards',
     element: (
       <Suspense fallback={<LinearProgress />}>
-        <CardBeneficiaryList />
+        <OtherCardsPage />
       </Suspense>
     ),
   },

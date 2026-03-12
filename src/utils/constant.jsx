@@ -132,3 +132,7 @@ export const BILL_PAYMENT_CNP = `${MAIN_API_URL}/billpayment/billpaymentcnp`;
 
 export const PERSONAL_INFORMATION_LIST = `${MAIN_API_URL}/personal_informations/list`;
 export const PERSONAL_INFORMATION = `${MAIN_API_URL}/personal_informations`;
+
+
+export const WALLET_TO_WALLET = `${MAIN_API_URL}/external_card/wallet_ext_wallet_cnp_703`;
+  

@@ -80,13 +80,14 @@ const DataTable = ({
 
   return (
     <div className={`flex flex-col gap-4 w-full min-h-0 ${fillHeight ? 'flex-1 min-h-0' : ''}`}>
-      <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+      <div className="flex justify-between items-center mb-[10px] flex-shrink-0">
+        <div />
         <input
           type="search"
-          placeholder={t(searchPlaceholder, { defaultValue: searchPlaceholder })}
+          placeholder={searchPlaceholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-xs w-full rounded-lg border px-3 py-2 text-sm"
+          className="w-full md:w-[260px] h-[38px] rounded-md border px-[10px] py-[6px] text-sm"
           style={{ borderColor: tableColors.border, color: tableColors.text, backgroundColor: tableColors.rowBackground }}
         />
       </div>
@@ -108,10 +109,17 @@ const DataTable = ({
           >
             <div className="overflow-auto h-full w-full min-h-0 table-scroll">
               <table className="w-full min-w-max text-sm text-left border-collapse">
-                <thead className="sticky top-0 z-10 font-medium" style={{ backgroundColor: tableColors.headerBackground, borderBottom: `1px solid ${tableColors.border}`, color: tableColors.text }}>
+                <thead
+                  className="sticky top-0 z-10"
+                  style={{ backgroundColor: '#F3F4F6', borderBottom: `1px solid ${tableColors.border}`, color: tableColors.text }}
+                >
                   <tr>
                     {headers.map((h) => (
-                      <th key={h.key} className="p-3 whitespace-nowrap" style={{ backgroundColor: tableColors.headerBackground }}>
+                      <th
+                        key={h.key}
+                        className={`whitespace-nowrap text-[13px] font-semibold px-[14px] py-[12px] ${h.key === 'txn_amount' || h.key === 'fee_amount' ? 'text-right' : 'text-left'}`}
+                        style={{ backgroundColor: '#F3F4F6' }}
+                      >
                         {t(h.label, { defaultValue: h.label })}
                       </th>
                     ))}
@@ -119,9 +127,20 @@ const DataTable = ({
                 </thead>
                 <tbody>
                   {displayData.map((row, idx) => (
-                    <tr key={row.id ?? idx} style={{ borderBottom: `1px solid ${tableColors.border}`, backgroundColor: tableColors.rowBackground }}>
+                    <tr
+                      key={row.id ?? idx}
+                      className="hover:bg-[#EEF4FF] transition-colors"
+                      style={{
+                        borderBottom: `1px solid ${tableColors.border}`,
+                        backgroundColor: idx % 2 === 0 ? tableColors.rowBackground : '#FAFAFB',
+                      }}
+                    >
                       {headers.map((h) => (
-                        <td key={h.key} className="p-3" style={{ color: tableColors.text }}>
+                        <td
+                          key={h.key}
+                          className={`px-[14px] py-[12px] ${h.key === 'txn_amount' || h.key === 'fee_amount' ? 'text-right' : ''}`}
+                          style={{ color: tableColors.text }}
+                        >
                           {h.content
                             ? h.content(row)
                             : h.key && (h.key.includes('date') || h.key.includes('_on'))
