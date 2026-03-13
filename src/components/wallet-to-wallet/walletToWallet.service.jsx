@@ -1,4 +1,5 @@
-import { getAuthToken, deviceId, getClientRefId } from '../../services/api.jsx'
+import { deviceId, getClientRefId } from '../../services/api.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import { WALLET_TO_WALLET } from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
@@ -11,13 +12,11 @@ const walletToWalletService = {
       ? '/webcust/external_card/wallet_ext_wallet_cnp_703'
       : WALLET_TO_WALLET
 
-    const response = await fetch(endpoint, {
+    const response = await fetchWithRefreshToken(endpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
         Clientrefid: getClientRefId(),
-        DeviceInfo: JSON.stringify({
+        deviceinfo: JSON.stringify({
           device_type: 'WEB',
           device_id: deviceId,
           app_version: '9',

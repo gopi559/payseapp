@@ -1,4 +1,4 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import {
   VALIDATE_SENDMONEY_BEN,
   CREATE_REQUEST_MONEY,
@@ -26,16 +26,8 @@ const normalizeBeneficiaryData = (data) => {
 }
 
 const postJson = async (url, body) => {
-  const response = await fetch(url, {
+  const response = await fetchWithRefreshToken(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${getAuthToken()}`,
-      deviceInfo: JSON.stringify({
-        device_type: 'WEB',
-        device_id: deviceId,
-      }),
-    },
     body: JSON.stringify(body),
   })
 
@@ -47,10 +39,9 @@ const postJson = async (url, body) => {
 
 const requestMoneyService = {
   validateBeneficiary: async (mobile) => {
-    const res = await postJson(
-      VALIDATE_SENDMONEY_BEN,
-      { mobile: String(mobile).trim() }
-    )
+    const res = await postJson(VALIDATE_SENDMONEY_BEN, {
+      mobile: String(mobile).trim(),
+    })
 
     if (!res?.data) throw new Error('')
 
@@ -61,14 +52,11 @@ const requestMoneyService = {
   },
 
   createRequestMoney: async ({ cust_id, amount, remarks = '' }) => {
-    const res = await postJson(
-      CREATE_REQUEST_MONEY,
-      {
-        cust_id: Number(cust_id),
-        amount: Number(amount),
-        remarks: String(remarks || '').trim() || undefined,
-      }
-    )
+    const res = await postJson(CREATE_REQUEST_MONEY, {
+      cust_id: Number(cust_id),
+      amount: Number(amount),
+      remarks: String(remarks || '').trim() || undefined,
+    })
 
     authService.fetchCustomerBalance().catch(() => {})
 
@@ -79,13 +67,10 @@ const requestMoneyService = {
   },
 
   getReceivedRequests: async (custId) => {
-    const res = await postJson(
-      REQUEST_MONEY_LIST,
-      {
-        get_cust_data: true,
-        recv_cust_id: Number(custId),
-      }
-    )
+    const res = await postJson(REQUEST_MONEY_LIST, {
+      get_cust_data: true,
+      recv_cust_id: Number(custId),
+    })
 
     return {
       data: Array.isArray(res?.data) ? res.data : [],
@@ -94,13 +79,10 @@ const requestMoneyService = {
   },
 
   getMyRequests: async (custId) => {
-    const res = await postJson(
-      REQUEST_MONEY_LIST,
-      {
-        get_cust_data: true,
-        req_cust_id: Number(custId),
-      }
-    )
+    const res = await postJson(REQUEST_MONEY_LIST, {
+      get_cust_data: true,
+      req_cust_id: Number(custId),
+    })
 
     return {
       data: Array.isArray(res?.data) ? res.data : [],
@@ -109,14 +91,11 @@ const requestMoneyService = {
   },
 
   payRequestMoney: async ({ money_reqid, amount, remarks = 'Paid' }) => {
-    const res = await postJson(
-      PAY_REQUEST_MONEY,
-      {
-        money_reqid: Number(money_reqid),
-        amount: Number(amount),
-        remarks: String(remarks || 'Paid'),
-      }
-    )
+    const res = await postJson(PAY_REQUEST_MONEY, {
+      money_reqid: Number(money_reqid),
+      amount: Number(amount),
+      remarks: String(remarks || 'Paid'),
+    })
 
     authService.fetchCustomerBalance().catch(() => {})
 
@@ -127,12 +106,9 @@ const requestMoneyService = {
   },
 
   declineRequestMoney: async ({ money_reqid }) => {
-    const res = await postJson(
-      DECLINE_REQUEST_MONEY,
-      {
-        money_reqid: Number(money_reqid),
-      }
-    )
+    const res = await postJson(DECLINE_REQUEST_MONEY, {
+      money_reqid: Number(money_reqid),
+    })
 
     return {
       data: res?.data,

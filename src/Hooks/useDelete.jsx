@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import useTokenRefresh from "../Hooks/useTokenRefresh";
@@ -9,8 +8,6 @@ const useDelete = (deleteUrl) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const token = useSelector((store) => store.token.token);
-  const deviceId = useSelector((store) => store.token.deviceId);
   const navigate = useNavigate();
   const { fetchWithTokenRefresh } = useTokenRefresh();
   const { t } = useTranslation();
@@ -25,8 +22,6 @@ const useDelete = (deleteUrl) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          DeviceID: deviceId,
         },
         body: JSON.stringify(payload),
       });

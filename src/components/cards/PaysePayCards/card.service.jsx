@@ -1,11 +1,10 @@
-import { getAuthToken, deviceId } from '../../../services/api.jsx'
+import fetchWithRefreshToken from '../../../services/fetchWithRefreshToken.js'
 import { CARD_LIST, CARD_FETCH } from '../../../utils/constant.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
 
 const cardService = {
-
   getList: async ({
     page = 1,
     num_data = 50,
@@ -13,7 +12,6 @@ const cardService = {
     pin_status,
     customer_id,
   } = {}) => {
-
     const body = {
       page,
       num_data,
@@ -22,16 +20,8 @@ const cardService = {
       customer_id,
     }
 
-    const response = await fetch(CARD_LIST, {
+    const response = await fetchWithRefreshToken(CARD_LIST, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(body),
     })
 
@@ -47,16 +37,8 @@ const cardService = {
   },
 
   getCard: async (card_id) => {
-    const response = await fetch(CARD_FETCH, {
+    const response = await fetchWithRefreshToken(CARD_FETCH, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({ card_id: Number(card_id) }),
     })
 

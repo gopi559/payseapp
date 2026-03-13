@@ -1,4 +1,4 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import {
   GENERATE_TRANSACTION_OTP,
   VERIFY_TRANSACTION_OTP,
@@ -10,18 +10,9 @@ const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
 
 const walletToCardService = {
-  /* ---------- SEND OTP (MOBILE) ---------- */
   sendOtp: async ({ mobile }) => {
-    const response = await fetch(GENERATE_TRANSACTION_OTP, {
+    const response = await fetchWithRefreshToken(GENERATE_TRANSACTION_OTP, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({
         entity_type: 'MOBILE',
         entity_id: mobile,
@@ -29,6 +20,7 @@ const walletToCardService = {
     })
 
     const res = await response.json().catch(() => null)
+
     if (!response.ok || !isSuccess(res)) {
       throw new Error(res?.message || '')
     }
@@ -37,16 +29,8 @@ const walletToCardService = {
   },
 
   verifyOtp: async ({ mobile, otp }) => {
-    const response = await fetch(VERIFY_TRANSACTION_OTP, {
+    const response = await fetchWithRefreshToken(VERIFY_TRANSACTION_OTP, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({
         entity_type: 'MOBILE',
         entity_id: mobile,
@@ -55,6 +39,7 @@ const walletToCardService = {
     })
 
     const res = await response.json().catch(() => null)
+
     if (!response.ok || !isSuccess(res)) {
       throw new Error(res?.message || '')
     }
@@ -62,18 +47,9 @@ const walletToCardService = {
     return res
   },
 
-  /* ---------- WALLET → CARD ---------- */
   walletToCard: async ({ to_card, txn_amount, remarks }) => {
-    const response = await fetch(WALLET_TO_CARD, {
+    const response = await fetchWithRefreshToken(WALLET_TO_CARD, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({
         card_number: String(to_card),
         txn_amount: Number(txn_amount),
@@ -82,6 +58,7 @@ const walletToCardService = {
     })
 
     const res = await response.json().catch(() => null)
+
     if (!response.ok || !isSuccess(res)) {
       throw new Error(res?.message || '')
     }

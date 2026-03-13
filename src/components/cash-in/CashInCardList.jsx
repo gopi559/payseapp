@@ -7,7 +7,7 @@ import Button from '../../Reusable/Button'
 import AmountInput from '../../Reusable/AmountInput'
 import AddBeneficiaryPopup from '../../Reusable/AddBeneficiaryPopup'
 import { BENIFICIARY_LIST } from '../../utils/constant'
-import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
+import { getCurrentUserId } from '../../services/api'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { IoArrowBack } from 'react-icons/io5'
@@ -16,6 +16,8 @@ import cashInService from './cashIn.service'
 import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
+
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
 
 import { generateStan } from '../../utils/generateStan'
 
@@ -47,16 +49,8 @@ const CashInCardList = () => {
       const userId = getCurrentUserId()
       if (!userId) throw new Error(t('user'))
 
-      const res = await fetch(BENIFICIARY_LIST, {
+      const res = await fetchWithRefreshToken(BENIFICIARY_LIST, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceinfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           page: 1,
           no_of_data: 50,

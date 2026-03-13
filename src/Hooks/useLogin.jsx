@@ -5,6 +5,7 @@ import { setToken, setUserType } from "../Redux/AuthToken";
 import { login, setProfileImage } from "../Redux/store";
 import { CHECK_MOBILE, GENERATE_OTP, VERIFY_OTP } from "../utils/constant";
 import { fetchWithBasicAuth } from "../services/basicAuth.service.js";
+import { persistRefreshSession } from "../services/fetchWithRefreshToken.js";
 
 const useLogin = () => {
   const [errors, setErrors] = useState({});
@@ -78,6 +79,8 @@ const useLogin = () => {
       const token = data?.token ?? null;
       const regInfo = data?.reg_info ?? {};
       const userType = regInfo?.user_type ?? 1;
+
+      persistRefreshSession(data);
 
       dispatch(setToken(token));
       dispatch(setUserType(userType));

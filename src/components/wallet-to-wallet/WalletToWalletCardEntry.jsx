@@ -21,7 +21,7 @@ import walletToCardService from '../wallet-to-card/walletToCard.service'
 import walletToWalletService from './walletToWallet.service'
 
 import { CARD_CHECK_BALANCE } from '../../utils/constant'
-import { getAuthToken, deviceId } from '../../services/api'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import THEME_COLORS from '../../theme/colors'
 
@@ -141,16 +141,8 @@ const WalletToWalletCardEntry = () => {
         return
       }
 
-      const res = await fetch(CARD_CHECK_BALANCE, {
+      const res = await fetchWithRefreshToken(CARD_CHECK_BALANCE, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           card_number: card.card_number,
           cvv: String(securityData.cvv),

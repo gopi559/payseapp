@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 import { HiCreditCard } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
-import { getAuthToken, deviceId } from '../../../services/api'
+import fetchWithRefreshToken from '../../../services/fetchWithRefreshToken'
 import { CARD_REQUEST_TYPE_LIST, CARD_REQUEST } from '../../../utils/constant'
 import cardService from './card.service'
 
@@ -28,16 +28,8 @@ const CardRequest = () => {
   useEffect(() => {
     const fetchCardRequestTypes = async () => {
       try {
-        const response = await fetch(CARD_REQUEST_TYPE_LIST, {
+        const response = await fetchWithRefreshToken(CARD_REQUEST_TYPE_LIST, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getAuthToken()}`,
-            deviceInfo: JSON.stringify({
-              device_type: 'WEB',
-              device_id: deviceId,
-            }),
-          },
           body: JSON.stringify({}),
         })
 
@@ -101,16 +93,8 @@ const CardRequest = () => {
         reference_card: needsReferenceCard ? Number(referenceCardId) : undefined,
       }
 
-      const response = await fetch(CARD_REQUEST, {
+      const response = await fetchWithRefreshToken(CARD_REQUEST, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify(body),
       })
 

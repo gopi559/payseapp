@@ -1,4 +1,4 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import {
   VALIDATE_SENDMONEY_BEN,
   SEND_MONEY,
@@ -26,25 +26,19 @@ const normalizeBeneficiaryData = (data) => {
 
 const sendService = {
   validateBeneficiary: async (mobile) => {
-    const response = await fetch(VALIDATE_SENDMONEY_BEN, {
+    const response = await fetchWithRefreshToken(VALIDATE_SENDMONEY_BEN, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
-      body: JSON.stringify({ mobile: String(mobile).trim() }),
+      body: JSON.stringify({
+        mobile: String(mobile).trim(),
+      }),
     })
+
     const res = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(res?.message || '')
-    }
-    if (!isSuccess(res) || !res?.data) {
-      throw new Error(res?.message || '')
-    }
+
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
+    if (!res?.data) throw new Error(res?.message || '')
+
     return {
       data: normalizeBeneficiaryData(res.data),
       message: res?.message,
@@ -52,31 +46,22 @@ const sendService = {
   },
 
   sendMoneyTransaction: async (receiver_id, amount, remarks = '') => {
-    const body = {
-      receiver_id: Number(receiver_id),
-      amount: Number(amount),
-      remarks: String(remarks || '').trim() || undefined,
-    }
-    const response = await fetch(SEND_MONEY, {
+    const response = await fetchWithRefreshToken(SEND_MONEY, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        receiver_id: Number(receiver_id),
+        amount: Number(amount),
+        remarks: String(remarks || '').trim() || undefined,
+      }),
     })
+
     const res = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(res?.message || '')
-    }
-    if (!isSuccess(res)) {
-      throw new Error(res?.message || '')
-    }
+
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
+
     authService.fetchCustomerBalance().catch(() => {})
+
     return {
       data: res?.data,
       message: res?.message,
@@ -84,28 +69,19 @@ const sendService = {
   },
 
   generateTransactionOtp: async (entity_type = 'MOBILE', entity_id) => {
-    const response = await fetch(GENERATE_TRANSACTION_OTP, {
+    const response = await fetchWithRefreshToken(GENERATE_TRANSACTION_OTP, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({
         entity_type: String(entity_type),
         entity_id: String(entity_id).trim(),
       }),
     })
+
     const res = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(res?.message || '')
-    }
-    if (!isSuccess(res)) {
-      throw new Error(res?.message || '')
-    }
+
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
+
     return {
       data: res?.data ?? null,
       message: res?.message,
@@ -113,29 +89,20 @@ const sendService = {
   },
 
   verifyTransactionOtp: async (entity_type, entity_id, otp) => {
-    const response = await fetch(VERIFY_TRANSACTION_OTP, {
+    const response = await fetchWithRefreshToken(VERIFY_TRANSACTION_OTP, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({
         entity_type: String(entity_type),
         entity_id: String(entity_id).trim(),
         otp: String(otp).trim(),
       }),
     })
+
     const res = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(res?.message || '')
-    }
-    if (!isSuccess(res)) {
-      throw new Error(res?.message || '')
-    }
+
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
+
     return {
       data: res?.data,
       message: res?.message,

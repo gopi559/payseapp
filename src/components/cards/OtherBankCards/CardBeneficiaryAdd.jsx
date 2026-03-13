@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 import { HiCreditCard } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
-import { getAuthToken, deviceId } from '../../../services/api'
+import fetchWithRefreshToken from '../../../services/fetchWithRefreshToken'
 import { BENIFICIARY_ADD } from '../../../utils/constant'
 import THEME_COLORS from '../../../theme/colors'
 
@@ -38,16 +38,8 @@ const CardBeneficiaryAdd = () => {
     const cardNum = cardNumber.trim().replace(/\s/g, '')
     setLoading(true)
     try {
-      const response = await fetch(BENIFICIARY_ADD, {
+      const response = await fetchWithRefreshToken(BENIFICIARY_ADD, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           card_number: cardNum,
           cardholder_name: cardholderName.trim(),

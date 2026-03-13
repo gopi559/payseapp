@@ -1,4 +1,4 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import { CASHCODE_LIST, CREATE_CASHCODE } from '../../utils/constant.jsx'
 
 const isSuccess = (res) =>
@@ -11,16 +11,8 @@ const voucherService = {
       no_of_data: params.no_of_data ?? 10,
     }
 
-    const response = await fetch(CASHCODE_LIST, {
+    const response = await fetchWithRefreshToken(CASHCODE_LIST, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(body),
     })
 
@@ -38,16 +30,8 @@ const voucherService = {
   },
 
   createCashcode: async (payload) => {
-    const response = await fetch(CREATE_CASHCODE, {
+    const response = await fetchWithRefreshToken(CREATE_CASHCODE, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(payload),
     })
 

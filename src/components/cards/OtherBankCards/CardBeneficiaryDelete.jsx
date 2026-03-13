@@ -5,7 +5,7 @@ import { toast } from 'react-toastify'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
-import { getAuthToken, deviceId } from '../../../services/api'
+import fetchWithRefreshToken from '../../../services/fetchWithRefreshToken'
 import { BENIFICIARY_DELETE } from '../../../utils/constant'
 import { formatTableDateTime } from '../../../utils/formatDate'
 import THEME_COLORS from '../../../theme/colors'
@@ -41,16 +41,8 @@ const CardBeneficiaryDelete = () => {
     if (!id) return
     setLoading(true)
     try {
-      const response = await fetch(BENIFICIARY_DELETE, {
+      const response = await fetchWithRefreshToken(BENIFICIARY_DELETE, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({ card_beneficiary_id: Number(id) }),
       })
       const result = await response.json().catch(() => null)

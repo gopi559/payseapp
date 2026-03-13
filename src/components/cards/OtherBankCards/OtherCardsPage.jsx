@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { HiCreditCard } from 'react-icons/hi2'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
-import { getAuthToken, deviceId, getCurrentUserId } from '../../../services/api'
+import { getCurrentUserId } from '../../../services/api'
+import fetchWithRefreshToken from '../../../services/fetchWithRefreshToken'
 import { BENIFICIARY_LIST, CARD_TXN_LIST } from '../../../utils/constant'
 import OtherCardPreview from './OtherCardPreview'
 import THEME_COLORS from '../../../theme/colors'
@@ -45,16 +46,8 @@ const OtherCardsPage = () => {
       pageNum === 1 ? setLoading(true) : setLoadingMore(true)
       setError('')
 
-      const response = await fetch(BENIFICIARY_LIST, {
+      const response = await fetchWithRefreshToken(BENIFICIARY_LIST, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceinfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           page: pageNum,
           no_of_data: NUM_DATA,
@@ -95,16 +88,8 @@ const OtherCardsPage = () => {
     try {
       setTxnLoading(true)
 
-      const response = await fetch(CARD_TXN_LIST, {
+      const response = await fetchWithRefreshToken(CARD_TXN_LIST, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           page: 1,
           no_of_data: 50,

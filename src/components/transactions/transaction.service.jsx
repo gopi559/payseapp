@@ -1,11 +1,16 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
-import { TRANSACTION_LIST, FETCH_BY_RRN, DISPUTE_LIST, SUBMIT_DISPUTE, RAISED_DISPUTE_LIST } from '../../utils/constant.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
+import {
+  TRANSACTION_LIST,
+  FETCH_BY_RRN,
+  DISPUTE_LIST,
+  SUBMIT_DISPUTE,
+  RAISED_DISPUTE_LIST,
+} from '../../utils/constant.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
 
 const transactionService = {
-
   getList: async ({
     page = 1,
     no_of_data = 20,
@@ -15,7 +20,6 @@ const transactionService = {
     end_time,
     beneficiary_id,
   } = {}) => {
-
     const body = {
       page,
       no_of_data,
@@ -26,16 +30,8 @@ const transactionService = {
       ...(beneficiary_id !== undefined && { beneficiary_id }),
     }
 
-    const response = await fetch(TRANSACTION_LIST, {
+    const response = await fetchWithRefreshToken(TRANSACTION_LIST, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: "WEB",
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(body),
     })
 
@@ -53,16 +49,8 @@ const transactionService = {
   fetchByRrn: async (rrn) => {
     if (!rrn || !String(rrn).trim()) throw new Error('')
 
-    const response = await fetch(FETCH_BY_RRN, {
+    const response = await fetchWithRefreshToken(FETCH_BY_RRN, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: "WEB",
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({ rrn: String(rrn).trim() }),
     })
 
@@ -77,16 +65,8 @@ const transactionService = {
   },
 
   getDisputeList: async () => {
-    const response = await fetch(DISPUTE_LIST, {
+    const response = await fetchWithRefreshToken(DISPUTE_LIST, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: "WEB",
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({}),
     })
 
@@ -101,16 +81,8 @@ const transactionService = {
   },
 
   submitDispute: async ({ transaction_id, dispute_type_id, details }) => {
-    const response = await fetch(SUBMIT_DISPUTE, {
+    const response = await fetchWithRefreshToken(SUBMIT_DISPUTE, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: "WEB",
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({
         transaction_id: Number(transaction_id),
         dispute_type_id: Number(dispute_type_id),
@@ -129,16 +101,8 @@ const transactionService = {
   },
 
   getRaisedDisputeList: async ({ page = 1, no_of_data = 10 } = {}) => {
-    const response = await fetch(RAISED_DISPUTE_LIST, {
+    const response = await fetchWithRefreshToken(RAISED_DISPUTE_LIST, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: "WEB",
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify({ page, no_of_data }),
     })
 
@@ -152,8 +116,6 @@ const transactionService = {
       pagination: res?.pagination,
     }
   },
-
 }
 
 export default transactionService
-

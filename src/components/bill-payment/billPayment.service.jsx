@@ -1,12 +1,11 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import { BILL_PAYMENT_CNP, BILL_PAYMENT_INFO_CP } from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
 
-const normalizeExpiry = (expiry) =>
-  String(expiry).replace('/', '').trim()
+const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
 const billPaymentService = {
   fetchBillInfoAndSendOtp: async ({
@@ -30,16 +29,8 @@ const billPaymentService = {
       mobile_no: String(mobile_no).trim(),
     }
 
-    const response = await fetch(BILL_PAYMENT_INFO_CP, {
+    const response = await fetchWithRefreshToken(BILL_PAYMENT_INFO_CP, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceinfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(body),
     })
 
@@ -74,16 +65,8 @@ const billPaymentService = {
       mobile_no: String(mobile_no).trim(),
     }
 
-    const response = await fetch(BILL_PAYMENT_CNP, {
+    const response = await fetchWithRefreshToken(BILL_PAYMENT_CNP, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceinfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(body),
     })
 

@@ -15,7 +15,8 @@ import OtpPopup from '../../Reusable/OtpPopup'
 
 import airtimeService from './airtime.service'
 import { BENIFICIARY_LIST, CARD_CHECK_BALANCE } from '../../utils/constant'
-import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
+import { getCurrentUserId } from '../../services/api'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
 import { generateStan } from '../../utils/generateStan'
 import { sendService } from '../send/send.service'
 
@@ -88,16 +89,8 @@ const AirtimePage = () => {
       const userId = getCurrentUserId()
       if (!userId) throw new Error(t('user_not_found'))
 
-      const res = await fetch(BENIFICIARY_LIST, {
+      const res = await fetchWithRefreshToken(BENIFICIARY_LIST, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceinfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           page: 1,
           no_of_data: 50,
@@ -171,16 +164,8 @@ const AirtimePage = () => {
         return
       }
 
-      const res = await fetch(CARD_CHECK_BALANCE, {
+      const res = await fetchWithRefreshToken(CARD_CHECK_BALANCE, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           card_number: card.card_number,
           cvv: String(securityData.cvv),

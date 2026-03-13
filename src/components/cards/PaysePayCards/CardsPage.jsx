@@ -7,7 +7,7 @@ import { MdBrowserUpdated } from 'react-icons/md'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
 import cardService from './card.service'
-import { getAuthToken, deviceId } from '../../../services/api'
+import fetchWithRefreshToken from '../../../services/fetchWithRefreshToken'
 import { CARD_TXN_LIST, CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '../../../utils/constant'
 import ChipIcon from '../../../assets/Chip.svg'
 import WifiIcon from '../../../assets/wifi.svg'
@@ -153,16 +153,8 @@ const CardsPage = () => {
     const fetchActions = async () => {
       setLoadingActions(true)
       try {
-        const response = await fetch(CUSTOMER_GET_ACTIONS_CARD, {
+        const response = await fetchWithRefreshToken(CUSTOMER_GET_ACTIONS_CARD, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getAuthToken()}`,
-            deviceInfo: JSON.stringify({
-              device_type: 'WEB',
-              device_id: deviceId,
-            }),
-          },
           body: JSON.stringify({}),
         })
 
@@ -200,16 +192,8 @@ const CardsPage = () => {
     try {
       setTxnLoading(true)
 
-      const response = await fetch(CARD_TXN_LIST, {
+      const response = await fetchWithRefreshToken(CARD_TXN_LIST, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           page: 1,
           no_of_data: 50,
@@ -270,16 +254,8 @@ const CardsPage = () => {
     setIsUpdatingStatus(true)
     setError('')
     try {
-      const response = await fetch(UPDATE_CARD_STATUS, {
+      const response = await fetchWithRefreshToken(UPDATE_CARD_STATUS, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
-          deviceInfo: JSON.stringify({
-            device_type: 'WEB',
-            device_id: deviceId,
-          }),
-        },
         body: JSON.stringify({
           card_id: cardId,
           card_status: selectedCardAction,

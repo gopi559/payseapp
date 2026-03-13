@@ -1,12 +1,12 @@
-import { getAuthToken, deviceId, getClientRefId } from '../../services/api.jsx'
+import { getClientRefId } from '../../services/api.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import { AIRTIME_TXN_SEND, AIRTIME_TXN_SEND_OTP } from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
 
-const normalizeExpiry = (expiry) =>
-  String(expiry).replace('/', '').trim()
+const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
 const airtimeService = {
   sendOtp: async ({ card_number, txn_amount }) => {
@@ -16,15 +16,9 @@ const airtimeService = {
       txn_amount: Number(txn_amount),
     }
 
-    const response = await fetch(AIRTIME_TXN_SEND_OTP, {
+    const response = await fetchWithRefreshToken(AIRTIME_TXN_SEND_OTP, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
         client_ref_id: clientRefId,
       },
       body: JSON.stringify(body),
@@ -60,15 +54,9 @@ const airtimeService = {
       mobile_no: String(mobile_no).trim(),
     }
 
-    const response = await fetch(AIRTIME_TXN_SEND, {
+    const response = await fetchWithRefreshToken(AIRTIME_TXN_SEND, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
         client_ref_id: clientRefId,
       },
       body: JSON.stringify(body),

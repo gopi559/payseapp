@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import useTokenRefresh from "../Hooks/useTokenRefresh";
@@ -8,10 +7,7 @@ import { useTranslation } from "react-i18next";
 const useCardRequest = (apiEndpoint, redirectPath) => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const token = useSelector((store) => store.token.token);
-  const deviceId = useSelector((store) => store.token.deviceId);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const { fetchWithTokenRefresh } = useTokenRefresh();
   const { t } = useTranslation();
 
@@ -28,8 +24,6 @@ const useCardRequest = (apiEndpoint, redirectPath) => {
         headers: {
           "x-client-type": "web",
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          DeviceID: deviceId,
         },
         body: JSON.stringify(payload),
       });

@@ -1,5 +1,9 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
-import { CARD_TO_CARD_TRANSFER, CARD_TO_CARD_SEND_OTP, CARD_NUMBER_VERIFY } from '../../utils/constant.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
+import {
+  CARD_TO_CARD_TRANSFER,
+  CARD_TO_CARD_SEND_OTP,
+  CARD_NUMBER_VERIFY,
+} from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
@@ -8,18 +12,12 @@ const isSuccess = (res) =>
 const cardToCardService = {
   verifyCard: async (card_number) => {
     const body = { card_number: String(card_number).trim().replace(/\s/g, '') }
-    const response = await fetch(CARD_NUMBER_VERIFY, {
+
+    const response = await fetchWithRefreshToken(CARD_NUMBER_VERIFY, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: "WEB",
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(body),
     })
+
     const res = await response.json().catch(() => null)
     if (!response.ok) {
       throw new Error(res?.message || '')
@@ -27,6 +25,7 @@ const cardToCardService = {
     if (!isSuccess(res)) {
       throw new Error(res?.message || '')
     }
+
     return {
       data: res?.data,
       message: res?.message,
@@ -38,21 +37,13 @@ const cardToCardService = {
       from_card: String(from_card).trim().replace(/\s/g, ''),
       to_card: String(to_card).trim().replace(/\s/g, ''),
       cvv: String(cvv).trim(),
-expiry_date: String(expiry_date).replace('/', '').trim(),
+      expiry_date: String(expiry_date).replace('/', '').trim(),
       otp: '',
       txn_amount: parseFloat(txn_amount),
     }
 
-    const response = await fetch(CARD_TO_CARD_SEND_OTP, {
+    const response = await fetchWithRefreshToken(CARD_TO_CARD_SEND_OTP, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(body),
     })
 
@@ -81,22 +72,14 @@ expiry_date: String(expiry_date).replace('/', '').trim(),
       to_card: String(to_card).trim().replace(/\s/g, ''),
       txn_amount: parseFloat(txn_amount),
       cvv: String(cvv).trim(),
-expiry_date: String(expiry_date).replace('/', '').trim(),
+      expiry_date: String(expiry_date).replace('/', '').trim(),
       otp: String(otp).trim(),
       ...(rrn && { rrn: String(rrn).trim() }),
       ...(stan && { stan: String(stan).trim() }),
     }
 
-    const response = await fetch(CARD_TO_CARD_TRANSFER, {
+    const response = await fetchWithRefreshToken(CARD_TO_CARD_TRANSFER, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getAuthToken()}`,
-        deviceInfo: JSON.stringify({
-          device_type: 'WEB',
-          device_id: deviceId,
-        }),
-      },
       body: JSON.stringify(body),
     })
 

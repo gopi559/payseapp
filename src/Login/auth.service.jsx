@@ -3,6 +3,7 @@ import { login, logout, setWalletId, setBalance, setProfileImage } from "../Redu
 import { clearUserDataAuth } from "../Redux/AuthToken.jsx";
 import { callApi, clearAuthRuntime } from "../services/api.jsx";
 import { fetchWithBasicAuth } from "../services/basicAuth.service.js";
+import { persistRefreshSession } from "../services/fetchWithRefreshToken.js";
 import {
   CHECK_MOBILE,
   GENERATE_OTP,
@@ -58,6 +59,8 @@ const authService = {
 
       const data = (await fetchWithBasicAuth(VERIFY_OTP, { mobile, otp })) || {};
       const regInfo = data?.reg_info || {};
+
+      persistRefreshSession(data);
 
       Store.dispatch(
         login({
