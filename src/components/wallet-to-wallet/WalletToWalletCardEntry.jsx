@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import { IoArrowBack } from 'react-icons/io5'
 
@@ -12,28 +13,32 @@ import Button from '../../Reusable/Button'
 import Input from '../../Reusable/Input'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
+import CvvPopup from '../../Reusable/CvvPopup'
 
 import cardService from '../cards/PaysePayCards/card.service'
 import cardToCardService from '../card-to-card/cardToCard.service'
 import walletToCardService from '../wallet-to-card/walletToCard.service'
 import walletToWalletService from './walletToWallet.service'
 
-import { CUSTOMER_BALANCE } from '../../utils/constant'
+import { CARD_CHECK_BALANCE } from '../../utils/constant'
 import { getAuthToken, deviceId } from '../../services/api'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import THEME_COLORS from '../../theme/colors'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
+const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
 const WalletToWalletCardEntry = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
 
   const [sourceCards, setSourceCards] = useState([])
   const [activeSourceIndex, setActiveSourceIndex] = useState(0)
   const [destinationCard, setDestinationCard] = useState('')
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(null)
+  const [balanceCardIndex, setBalanceCardIndex] = useState(null)
   const [loading, setLoading] = useState(false)
   const [beneficiaryName, setBeneficiaryName] = useState('')
   const [beneficiaryVerified, setBeneficiaryVerified] = useState(false)
@@ -106,6 +111,7 @@ const WalletToWalletCardEntry = () => {
         ...raw,
         cardholder_name: raw.name_on_card,
         color_code: raw.color_code || '#0fb36c',
+        balance: walletBalance,
       }))
 
       setSourceCards(mapped)
@@ -114,9 +120,28 @@ const WalletToWalletCardEntry = () => {
     }
   }
 
-  const fetchSourceCardBalance = async () => {
+  const fetchSourceCardBalance = async (cardIndex, securityData) => {
     try {
-      const res = await fetch(CUSTOMER_BALANCE, {
+      const card = sourceCards[cardIndex]
+      if (!card) return
+
+      const isInternalCard = !card.external_inst_name
+      if (!isInternalCard && !securityData) {
+        setBalanceCardIndex(cardIndex)
+        setStep('BALANCE_CVV')
+        return
+      }
+
+      if (isInternalCard) {
+        setSourceCards((prev) =>
+          prev.map((c, i) =>
+            i === cardIndex ? { ...c, balance: walletBalance } : c
+          )
+        )
+        return
+      }
+
+      const res = await fetch(CARD_CHECK_BALANCE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,6 +151,11 @@ const WalletToWalletCardEntry = () => {
             device_id: deviceId,
           }),
         },
+        body: JSON.stringify({
+          card_number: card.card_number,
+          cvv: String(securityData.cvv),
+          expiry_date: normalizeExpiry(securityData.expiry),
+        }),
       })
 
       const json = await res.json()
@@ -134,13 +164,27 @@ const WalletToWalletCardEntry = () => {
       }
 
       setSourceCards((prev) =>
-        prev.map((card) => ({
-          ...card,
-          balance: json.data.avail_bal,
-        }))
+        prev.map((c, i) =>
+          i === cardIndex ? { ...c, balance: json.data.avail_bal } : c
+        )
       )
     } catch (e) {
       toast.error(e.message || t('failed_to_fetch_source_card_balance'))
+    }
+  }
+
+  const handleBalanceCvvConfirm = async ({ cvv, expiry }) => {
+    if (balanceCardIndex === null) return
+
+    setLoading(true)
+    try {
+      await fetchSourceCardBalance(balanceCardIndex, { cvv, expiry })
+      setStep(null)
+      setBalanceCardIndex(null)
+    } catch (e) {
+      toast.error(e.message || t('failed_to_fetch_source_card_balance'))
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -232,8 +276,24 @@ const WalletToWalletCardEntry = () => {
 
   const resetFlow = () => {
     setStep(null)
+    setBalanceCardIndex(null)
     setLoading(false)
   }
+
+  const handleCvvPopupClose = () => {
+    if (step === 'BALANCE_CVV') {
+      setStep(null)
+      setBalanceCardIndex(null)
+      return
+    }
+    resetFlow()
+  }
+
+  useEffect(() => {
+    setSourceCards((prev) =>
+      prev.map((card) => ({ ...card, balance: walletBalance }))
+    )
+  }, [walletBalance])
 
   const footer = (
       <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
@@ -285,7 +345,7 @@ const WalletToWalletCardEntry = () => {
                   >
                     <BankCard
                       card={card}
-                      onBalance={activeSourceIndex === index ? () => fetchSourceCardBalance() : undefined}
+                      onBalance={activeSourceIndex === index ? () => fetchSourceCardBalance(index) : undefined}
                     />
                   </div>
                 ))}
@@ -366,6 +426,13 @@ const WalletToWalletCardEntry = () => {
         loading={loading}
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
+      />
+
+      <CvvPopup
+        open={step === 'BALANCE_CVV'}
+        loading={loading}
+        onClose={handleCvvPopupClose}
+        onConfirm={handleBalanceCvvConfirm}
       />
     </MobileScreenContainer>
   )

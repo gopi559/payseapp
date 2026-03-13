@@ -1,14 +1,23 @@
 ﻿// src/components/BankCard.jsx
 
 import React from 'react'
+import { useState } from 'react'
 import Chip from '../assets/Chip.svg'
 import Wifi from '../assets/wifi.svg'
 import PayseyLogoWhite from '../assets/PayseyPaymentLogowhite.png'
 import AfganCurrency from '../assets/afgan_currency.svg'
 import { formatCardNumber } from '../utils/formatCardNumber'
+import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5'
+
+const formatExpiry = (rawExpiry) => {
+  const digits = String(rawExpiry || '').replace(/\D/g, '')
+  if (digits.length !== 4) return ''
+  return `${digits.slice(0, 2)}/${digits.slice(2)}`
+}
 
 const BankCard = ({ card, onBalance }) => {
   const isMyPayseCard = !card.external_inst_name
+  const [showExpiry, setShowExpiry] = useState(false)
 
   const cardNumberToFormat = card.card_number || card.masked_card || ''
   const formattedCardNumber = formatCardNumber(cardNumberToFormat)
@@ -17,6 +26,8 @@ const BankCard = ({ card, onBalance }) => {
     card.inst_short_name?.trim() ||
     (isMyPayseCard ? 'Paysey' : 'Bank')
   const cardholderName = card.cardholder_name || card.name_on_card || '—'
+  const expiry = formatExpiry(card.expiry_date)
+  const hasExpiry = !isMyPayseCard && Boolean(expiry)
 
   return (
     <div
@@ -80,6 +91,26 @@ const BankCard = ({ card, onBalance }) => {
             </button>
           )}
         </div>
+
+        {hasExpiry && (
+          <div className="mt-3 flex items-center justify-between">
+            <div>
+              <div className="text-sm text-white/80">Expiry</div>
+              <div className="text-sm font-semibold tracking-wider">
+                {showExpiry ? expiry : '**/**'}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              aria-label={showExpiry ? 'Hide expiry' : 'Show expiry'}
+              onClick={() => setShowExpiry((prev) => !prev)}
+              className="p-1 rounded-full text-white/90 hover:text-white"
+            >
+              {showExpiry ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

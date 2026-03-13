@@ -239,6 +239,7 @@
   "requested_money": "Requested Money",
   "enter_recipient_mobile_and_continue": "Enter recipient mobile number and continue.",
   "cannot_request_money_from_yourself": "You cannot request money from yourself",
+  "cannot_send_money_to_yourself": "You cannot send money to yourself",
   "failed_to_create_request": "Failed to create request",
   "add_description": "Add description",
   "category": "Category",
@@ -430,5 +431,6 @@
   "active": "Active",
   "inactive": "Inactive",
   "select_card_preview_actions": "Select a card to see preview and actions.",
-  "created_on": "Created on"
+  "created_on": "Created on",
+  "bill_number" : "Bill number"
 }

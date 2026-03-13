@@ -64,6 +64,10 @@ const downloadTransactionPdf = (details, t, language) => {
     { label: t('service_id'), value: details?.service_id ?? '-' },
     { label: t('bill_number'), value: details?.bill_number ?? '-' },
     { label: t('mobile_number'), value: details?.mobile_no ?? '-' },
+    { label: t('account_number'), value: details?.acc_number ?? '-' },
+    { label: t('card_number'), value: details?.response_card_number ?? details?.from_card ?? '-' },
+    { label: t('rrn'), value: details?.rrn ?? '-' },
+    { label: t('status'), value: details?.resp_code ?? '-' },
     { label: t('stan'), value: details?.stan ?? '-' },
   ]
 
@@ -179,6 +183,10 @@ const BillPaymentTransactionDetails = () => {
   const serviceId = details?.service_id ?? '-'
   const billNumber = details?.bill_number ?? '-'
   const mobileNo = details?.mobile_no ?? '-'
+  const accountNumber = details?.acc_number ?? '-'
+  const responseCardNumber = details?.response_card_number ?? details?.from_card ?? '-'
+  const respCode = details?.resp_code ?? '-'
+  const stan = details?.stan ?? '-'
 
   const handleDownloadPdf = () => {
     downloadTransactionPdf(details, t, i18n.language)
@@ -346,6 +354,38 @@ const BillPaymentTransactionDetails = () => {
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number')}</p>
                 <p className="text-sm font-medium text-gray-800">{mobileNo}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
+                <p className="text-sm font-medium text-gray-800 font-mono">{accountNumber}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                <p className="text-sm font-medium text-gray-800 font-mono">{responseCardNumber}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{t('status')}</p>
+                <p className="text-sm font-medium text-gray-800">{respCode}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{t('stan')}</p>
+                <p className="text-sm font-medium text-gray-800 font-mono">{stan}</p>
               </div>
             </div>
           </div>

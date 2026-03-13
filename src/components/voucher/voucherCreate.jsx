@@ -15,6 +15,27 @@ import {
 } from '../../utils/constant.jsx'
 import { fetchWithBasicAuth } from '../../services/basicAuth.service.js'
 
+const normalizeReceiverMobile = (value) => {
+  let digits = String(value || '').replace(/\D/g, '')
+  if (!digits) return ''
+  if (digits.startsWith('93')) digits = digits.slice(2)
+  if (digits.startsWith('0')) digits = digits.slice(1)
+  if (digits.length > 9) digits = digits.slice(-9)
+  return digits
+}
+
+const buildReceiverMobileVariants = (localNineDigits) => {
+  const variants = [
+    localNineDigits,
+    `93${localNineDigits}`,
+    `+93${localNineDigits}`,
+  ]
+  return [...new Set(variants)]
+}
+
+const isNotFoundError = (message) =>
+  /not\s*found|user\s*not\s*found|customer\s*not\s*found/i.test(String(message || ''))
+
 const VoucherCreate = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -84,7 +105,7 @@ const VoucherCreate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const mobileDigits = form.receiver_mobile.replace(/\D/g, '').replace(/^93/, '')
+    const mobileDigits = normalizeReceiverMobile(form.receiver_mobile)
 
     if (
       !form.amount ||
@@ -106,7 +127,7 @@ const VoucherCreate = () => {
       amount: String(form.amount),
       receiver_name: form.receiver_name,
       receiver_father_name: form.receiver_father_name,
-      receiver_mobile: form.receiver_mobile.replace('+', ''),
+      receiver_mobile: mobileDigits,
       receiver_id_type: Number(form.receiver_id_type),
       receiver_id_number: form.receiver_id_number,
       nationality_id: form.nationality_id ? Number(form.nationality_id) : undefined,
@@ -118,7 +139,30 @@ const VoucherCreate = () => {
     setSubmitting(true)
 
     try {
-      await voucherService.createCashcode(payload)
+      const mobileVariants = buildReceiverMobileVariants(mobileDigits)
+      let success = false
+      let lastError = null
+
+      for (const mobileVariant of mobileVariants) {
+        try {
+          await voucherService.createCashcode({
+            ...payload,
+            receiver_mobile: mobileVariant,
+          })
+          success = true
+          break
+        } catch (err) {
+          lastError = err
+          if (!isNotFoundError(err?.message)) {
+            throw err
+          }
+        }
+      }
+
+      if (!success && lastError) {
+        throw lastError
+      }
+
       toast.success(t('cash_code_created_successfully'))
       navigate('/customer/voucher')
     } catch (e) {

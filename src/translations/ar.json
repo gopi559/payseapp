@@ -248,6 +248,7 @@
   "request_category_food": "طعام",
   "beneficiary_mobile_number": "رقم جوال المستفيد",
   "cannot_request_money_from_yourself": "لا يمكنك طلب المال من نفسك",
+  "cannot_send_money_to_yourself": "لا يمكنك إرسال المال إلى نفسك",
   "category": "الفئة",
   "payment_failed": "فشل الدفع",
   "status_declined": "مرفوض",
@@ -430,5 +431,6 @@
   "active": "نشط",
   "inactive": "غير نشط",
   "select_card_preview_actions": "اختر بطاقة لعرض المعاينة والإجراءات.",
-  "created_on": "تاريخ الإنشاء"
+  "created_on": "تاريخ الإنشاء",
+   "bill_number" : "رقم الفاتورة"
 }

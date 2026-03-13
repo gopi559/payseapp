@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
@@ -13,17 +14,19 @@ import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
 
 import airtimeService from './airtime.service'
-import { BENIFICIARY_LIST } from '../../utils/constant'
+import { BENIFICIARY_LIST, CARD_CHECK_BALANCE } from '../../utils/constant'
 import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
 import { sendService } from '../send/send.service'
 
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200]
+const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
 const AirtimePage = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const scrollRef = useRef(null)
+  const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
 
   const [cards, setCards] = useState([])
   const [cardsLoading, setCardsLoading] = useState(false)
@@ -36,6 +39,7 @@ const AirtimePage = () => {
   const [beneficiaryError, setBeneficiaryError] = useState('')
 
   const [step, setStep] = useState(null)
+  const [balanceCardIndex, setBalanceCardIndex] = useState(null)
   const [selectedCard, setSelectedCard] = useState(null)
   const [cvvData, setCvvData] = useState(null)
   const [txnMeta, setTxnMeta] = useState(null)
@@ -107,7 +111,9 @@ const AirtimePage = () => {
         throw new Error(data?.message || t('failed_to_load_cards'))
       }
 
-      const list = Array.isArray(data?.data) ? data.data : []
+      const list = (Array.isArray(data?.data) ? data.data : []).map((card) =>
+        !card.external_inst_name ? { ...card, balance: walletBalance } : card
+      )
       setCards(list)
       setActiveIndex(0)
 
@@ -144,6 +150,59 @@ const AirtimePage = () => {
     return true
   }
 
+  const fetchCardBalance = async (cardIndex, securityData) => {
+    try {
+      const card = cards[cardIndex]
+      if (!card) return
+
+      const isInternalCard = !card.external_inst_name
+      if (!isInternalCard && !securityData) {
+        setBalanceCardIndex(cardIndex)
+        setStep('BALANCE_CVV')
+        return
+      }
+
+      if (isInternalCard) {
+        setCards((prev) =>
+          prev.map((c, i) =>
+            i === cardIndex ? { ...c, balance: walletBalance } : c
+          )
+        )
+        return
+      }
+
+      const res = await fetch(CARD_CHECK_BALANCE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+          deviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
+        },
+        body: JSON.stringify({
+          card_number: card.card_number,
+          cvv: String(securityData.cvv),
+          expiry_date: normalizeExpiry(securityData.expiry),
+        }),
+      })
+
+      const json = await res.json()
+      if (!res.ok || json.code !== 1) {
+        throw new Error(json.message)
+      }
+
+      setCards((prev) =>
+        prev.map((c, i) =>
+          i === cardIndex ? { ...c, balance: json.data.avail_bal } : c
+        )
+      )
+    } catch (e) {
+      toast.error(e.message || t('failed_to_fetch_balance'))
+    }
+  }
+
   const handleContinue = async () => {
     if (!validateInput()) return
 
@@ -172,6 +231,21 @@ const AirtimePage = () => {
   const handleCvvConfirm = ({ cvv, expiry }) => {
     setCvvData({ cvv, expiry })
     setStep('CONFIRM')
+  }
+
+  const handleBalanceCvvConfirm = async ({ cvv, expiry }) => {
+    if (balanceCardIndex === null) return
+
+    setLoading(true)
+    try {
+      await fetchCardBalance(balanceCardIndex, { cvv, expiry })
+      setStep(null)
+      setBalanceCardIndex(null)
+    } catch (e) {
+      toast.error(e.message || t('failed_to_fetch_balance'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSendOtp = async () => {
@@ -258,9 +332,27 @@ const AirtimePage = () => {
     setStep(null)
     setCvvData(null)
     setTxnMeta(null)
+    setBalanceCardIndex(null)
     setSelectedCard(null)
     setLoading(false)
   }
+
+  const handleCvvPopupClose = () => {
+    if (step === 'BALANCE_CVV') {
+      setStep(null)
+      setBalanceCardIndex(null)
+      return
+    }
+    resetFlow()
+  }
+
+  useEffect(() => {
+    setCards((prev) =>
+      prev.map((c) =>
+        !c.external_inst_name ? { ...c, balance: walletBalance } : c
+      )
+    )
+  }, [walletBalance])
 
   return (
     <MobileScreenContainer>
@@ -292,7 +384,10 @@ const AirtimePage = () => {
                 className="snap-center shrink-0 w-full"
                 onClick={() => setActiveIndex(index)}
               >
-                <BankCard card={card} />
+                <BankCard
+                  card={card}
+                  onBalance={activeIndex === index ? () => fetchCardBalance(index) : undefined}
+                />
               </div>
             ))}
           </div>
@@ -351,10 +446,10 @@ const AirtimePage = () => {
       </div>
 
       <CvvPopup
-        open={step === 'CVV'}
+        open={step === 'CVV' || step === 'BALANCE_CVV'}
         loading={loading}
-        onClose={resetFlow}
-        onConfirm={handleCvvConfirm}
+        onClose={handleCvvPopupClose}
+        onConfirm={step === 'BALANCE_CVV' ? handleBalanceCvvConfirm : handleCvvConfirm}
       />
 
       <ConfirmTransactionPopup

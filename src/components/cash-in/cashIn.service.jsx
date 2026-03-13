@@ -43,9 +43,11 @@ const cashInService = {
   },
 
   /* ---------------- CHECK CARD BALANCE ---------------- */
-  checkCardBalance: async ({ card_number }) => {
+  checkCardBalance: async ({ card_number, cvv, expiry_date }) => {
     const body = {
       card_number: String(card_number).trim(),
+      cvv: String(cvv),
+      expiry_date: normalizeExpiry(expiry_date),
     }
 
     const response = await fetch(CARD_CHECK_BALANCE, {

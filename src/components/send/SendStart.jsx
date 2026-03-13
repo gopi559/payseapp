@@ -14,6 +14,20 @@ import THEME_COLORS from '../../theme/colors'
 import { IoArrowBack } from 'react-icons/io5'
 import { sendService } from './send.service'
 
+const normalizeMobile = (value) => {
+  const trimmed = String(value || '').trim()
+  if (!trimmed) return ''
+  if (trimmed.startsWith('+')) return `+${trimmed.slice(1).replace(/\D/g, '')}`
+  return `+${trimmed.replace(/\D/g, '')}`
+}
+
+const getCustomerId = (user) =>
+  user?.reg_info?.user_id ??
+  user?.reg_info?.id ??
+  user?.user_id ??
+  user?.id ??
+  null
+
 const SendStart = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -29,6 +43,8 @@ const SendStart = () => {
 
   const senderMobile =
     user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
+  const currentUserId = getCustomerId(user)
+  const currentUserMobile = normalizeMobile(senderMobile)
 
   const handleValidate = async () => {
     if (!mobile || mobile === '+93') {
@@ -39,6 +55,16 @@ const SendStart = () => {
     setLoading(true)
     try {
       const { data } = await sendService.validateBeneficiary(mobile)
+      const beneficiaryId = data?.user_id ?? data?.id ?? null
+      const beneficiaryMobile = normalizeMobile(data?.reg_mobile ?? mobile)
+      if (
+        Number(beneficiaryId) === Number(currentUserId) ||
+        beneficiaryMobile === currentUserMobile
+      ) {
+        setBeneficiary(null)
+        toast.error(t('cannot_send_money_to_yourself'))
+        return
+      }
       setBeneficiary(data)
       toast.success(t('beneficiary_validated'))
     } catch (e) {
@@ -57,6 +83,16 @@ const SendStart = () => {
 
     if (!amount || Number(amount) <= 0) {
       toast.error(t('enter_valid_amount'))
+      return
+    }
+
+    const beneficiaryId = beneficiary?.user_id ?? beneficiary?.id ?? null
+    const beneficiaryMobile = normalizeMobile(beneficiary?.reg_mobile ?? mobile)
+    if (
+      Number(beneficiaryId) === Number(currentUserId) ||
+      beneficiaryMobile === currentUserMobile
+    ) {
+      toast.error(t('cannot_send_money_to_yourself'))
       return
     }
 
@@ -186,6 +222,17 @@ const SendStart = () => {
           setLoading(true)
           try {
             await sendService.verifyTransactionOtp('MOBILE', senderMobile, otp)
+
+            const beneficiaryId = beneficiary?.user_id ?? beneficiary?.id ?? null
+            const beneficiaryMobile = normalizeMobile(beneficiary?.reg_mobile ?? mobile)
+            if (
+              Number(beneficiaryId) === Number(currentUserId) ||
+              beneficiaryMobile === currentUserMobile
+            ) {
+              toast.error(t('cannot_send_money_to_yourself'))
+              setStep(null)
+              return
+            }
 
             const { data } = await sendService.sendMoneyTransaction(
               beneficiary.user_id,

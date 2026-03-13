@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
@@ -11,6 +11,10 @@ import THEME_COLORS from '../../theme/colors'
 
 const DEFAULT_PAGE_SIZE = 10
 const FETCH_PAGE_SIZE = 500
+const ACTION_MENU_WIDTH = 184
+const ACTION_MENU_HEIGHT = 108
+const ACTION_MENU_OFFSET = 8
+const VIEWPORT_EDGE_GAP = 8
 
 const toStartTime = (dateStr) => (dateStr ? `${dateStr} 00:00:00` : undefined)
 const toEndTime = (dateStr) => (dateStr ? `${dateStr} 23:59:59` : undefined)
@@ -26,7 +30,7 @@ const TransactionList = () => {
   const [toDate, setToDate] = useState('')
   const [txnType, setTxnType] = useState('ALL')
   const [rrnSearch, setRrnSearch] = useState('')
-  const [actionRowId, setActionRowId] = useState(null)
+  const [actionMenu, setActionMenu] = useState(null)
   const [disputeModalRow, setDisputeModalRow] = useState(null)
   const [disputeTypes, setDisputeTypes] = useState([])
   const [disputeTypeId, setDisputeTypeId] = useState('')
@@ -38,6 +42,38 @@ const TransactionList = () => {
   const receiveColors = THEME_COLORS.receive
   const popupColors = THEME_COLORS.popup
   const contentCard = THEME_COLORS.contentCard
+
+  const closeActionMenu = useCallback(() => {
+    setActionMenu(null)
+  }, [])
+
+  const openActionMenu = useCallback(
+    (event, row) => {
+      event.stopPropagation()
+      const rowId = row.txn_id ?? row.id
+      if (actionMenu?.rowId === rowId) {
+        closeActionMenu()
+        return
+      }
+      const triggerRect = event.currentTarget.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - triggerRect.bottom
+      const openUp = spaceBelow < ACTION_MENU_HEIGHT + ACTION_MENU_OFFSET
+      const rawTop = openUp
+        ? triggerRect.top - ACTION_MENU_HEIGHT - ACTION_MENU_OFFSET
+        : triggerRect.bottom + ACTION_MENU_OFFSET
+      const top = Math.min(
+        Math.max(rawTop, VIEWPORT_EDGE_GAP),
+        window.innerHeight - ACTION_MENU_HEIGHT - VIEWPORT_EDGE_GAP
+      )
+      const rawLeft = triggerRect.right - ACTION_MENU_WIDTH
+      const left = Math.min(
+        Math.max(rawLeft, VIEWPORT_EDGE_GAP),
+        window.innerWidth - ACTION_MENU_WIDTH - VIEWPORT_EDGE_GAP
+      )
+      setActionMenu({ rowId, top, left })
+    },
+    [actionMenu?.rowId, closeActionMenu]
+  )
 
   const fetchList = async (dateOverrides) => {
     setLoading(true)
@@ -80,6 +116,17 @@ const TransactionList = () => {
     }, 300)
     return () => clearTimeout(timer)
   }, [fromDate, toDate])
+
+  useEffect(() => {
+    if (!actionMenu) return
+    const handleViewportChange = () => setActionMenu(null)
+    window.addEventListener('resize', handleViewportChange)
+    window.addEventListener('scroll', handleViewportChange, true)
+    return () => {
+      window.removeEventListener('resize', handleViewportChange)
+      window.removeEventListener('scroll', handleViewportChange, true)
+    }
+  }, [actionMenu])
 
   const handleApplyFilters = () => {
     fetchList()
@@ -131,7 +178,7 @@ const TransactionList = () => {
   }, [data, txnType, rrnSearch])
 
   const openDisputeModal = async (row) => {
-    setActionRowId(null)
+    closeActionMenu()
     setDisputeModalRow(row)
     setDisputeTypeId('')
     setDisputeDetails('')
@@ -221,15 +268,13 @@ const TransactionList = () => {
       key: 'actions',
       label: 'actions',
       content: (row) => {
-        const isOpen = actionRowId === (row.txn_id ?? row.id)
+        const rowId = row.txn_id ?? row.id
+        const isOpen = actionMenu?.rowId === rowId
         return (
-          <div className="relative inline-block">
+          <div className="inline-block">
             <button
               type="button"
-              onClick={(event) => {
-                event.stopPropagation()
-                setActionRowId(isOpen ? null : row.txn_id ?? row.id)
-              }}
+              onClick={(event) => openActionMenu(event, row)}
               className="p-2 rounded-lg inline-flex items-center gap-1"
               style={{ color: tableColors.text }}
               aria-label={t('actions')}
@@ -239,20 +284,32 @@ const TransactionList = () => {
             </button>
             {isOpen && (
               <>
-                <div className="fixed inset-0 z-40" aria-hidden="true" onClick={() => setActionRowId(null)} />
+                <div className="fixed inset-0 z-40" aria-hidden="true" onClick={closeActionMenu} />
                 <div
-                  className="absolute right-0 top-full mt-1 z-50 min-w-[160px] rounded-lg py-1"
-                  style={{ border: `1px solid ${tableColors.border}` }}
+                  className="fixed z-[70] w-[184px] rounded-xl py-1 overflow-hidden"
+                  style={{
+                    top: actionMenu.top,
+                    left: actionMenu.left,
+                    border: `1px solid ${tableColors.border}`,
+                    backgroundColor: tableColors.rowBackground || '#FFFFFF',
+                    boxShadow: '0 10px 24px rgba(15, 23, 42, 0.14), 0 2px 6px rgba(15, 23, 42, 0.08)',
+                  }}
                 >
                   <button
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation()
-                      setActionRowId(null)
+                      closeActionMenu()
                       navigate(`/customer/transactions/view/${row.id}`, { state: { row } })
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left"
-                    style={{ color: tableColors.text }}
+                    className="flex items-center gap-2 w-full px-3.5 py-2.5 text-sm text-left transition-colors"
+                    style={{ color: tableColors.text, backgroundColor: 'transparent' }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.backgroundColor = tableColors.rowHover || '#EEF4FF'
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.backgroundColor = 'transparent'
+                    }}
                   >
                     <HiEye className="w-4 h-4" />
                     {t('view')}
@@ -263,8 +320,14 @@ const TransactionList = () => {
                       event.stopPropagation()
                       openDisputeModal(row)
                     }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left"
-                    style={{ color: tableColors.text }}
+                    className="flex items-center gap-2 w-full px-3.5 py-2.5 text-sm text-left transition-colors"
+                    style={{ color: tableColors.text, backgroundColor: 'transparent' }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.backgroundColor = tableColors.rowHover || '#EEF4FF'
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.backgroundColor = 'transparent'
+                    }}
                   >
                     <HiExclamationTriangle className="w-4 h-4" style={{ color: popupColors.accent }} />
                     {t('raise_dispute')}

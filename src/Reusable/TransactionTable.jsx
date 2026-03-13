@@ -107,7 +107,7 @@ const DataTable = ({
               ...(fillHeight ? undefined : { height: tableMaxHeight, maxHeight: tableMaxHeight, minHeight: 0 }),
             }}
           >
-            <div className="overflow-auto h-full w-full min-h-0 table-scroll">
+            <div className="relative overflow-auto h-full w-full min-h-0 table-scroll">
               <table className="w-full min-w-max text-sm text-left border-collapse">
                 <thead
                   className="sticky top-0 z-10"

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
 import Button from '../../Reusable/Button'
@@ -16,7 +17,6 @@ import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
 
-import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
 import { generateStan } from '../../utils/generateStan'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
@@ -25,12 +25,14 @@ const CashInCardList = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const scrollRef = useRef(null)
+  const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
 
   const [cards, setCards] = useState([])
   const [activeIndex, setActiveIndex] = useState(0)
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(null)
   const [selectedCard, setSelectedCard] = useState(null)
+  const [balanceCardIndex, setBalanceCardIndex] = useState(null)
   const [cvvData, setCvvData] = useState(null)
   const [txnMeta, setTxnMeta] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -69,58 +71,61 @@ const CashInCardList = () => {
         throw new Error(data.message)
       }
 
-      setCards(data.data || [])
+      const list = (data.data || []).map((card) =>
+        !card.external_inst_name ? { ...card, balance: walletBalance } : card
+      )
+      setCards(list)
     } catch (e) {
       toast.error(e.message || t('failed_to_load_cards'))
     }
   }
 
-  const fetchCardBalance = async (cardIndex) => {
-    try {
-      const card = cards[cardIndex]
-      const isInternalCard = !card.external_inst_name
-
-      const res = await fetch(
-        isInternalCard ? CUSTOMER_BALANCE : CARD_CHECK_BALANCE,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getAuthToken()}`,
-            deviceInfo: JSON.stringify({
-              device_type: 'WEB',
-              device_id: deviceId,
-            }),
-          },
-          ...(isInternalCard
-            ? {}
-            : {
-                body: JSON.stringify({
-                  card_number: card.card_number,
-                }),
-              }),
-        }
+  const fetchInternalCardBalance = () => {
+    setCards((prev) =>
+      prev.map((c) =>
+        !c.external_inst_name ? { ...c, balance: walletBalance } : c
       )
-
-      const json = await res.json()
-      if (!res.ok || json.code !== 1) {
-        throw new Error(json.message)
-      }
-
-      setCards((prev) =>
-        isInternalCard
-          ? prev.map((c) => ({
-              ...c,
-              balance: json.data.avail_bal,
-            }))
-          : prev.map((c, i) =>
-              i === cardIndex ? { ...c, balance: json.data.avail_bal } : c
-            )
-      )
-    } catch (e) {
-      toast.error(e.message || t('failed_to_fetch_balance'))
-    }
+    )
   }
+
+  const fetchExternalCardBalance = async (cardIndex, { cvv, expiry }) => {
+    const card = cards[cardIndex]
+    if (!card) return
+
+    const { data } = await cashInService.checkCardBalance({
+      card_number: card.card_number,
+      cvv,
+      expiry_date: expiry,
+    })
+
+    setCards((prev) =>
+      prev.map((c, i) =>
+        i === cardIndex ? { ...c, balance: data?.avail_bal } : c
+      )
+    )
+  }
+
+  const handleBalanceClick = async (cardIndex) => {
+    const card = cards[cardIndex]
+    if (!card) return
+
+    const isInternalCard = !card.external_inst_name
+    if (isInternalCard) {
+      fetchInternalCardBalance()
+      return
+    }
+
+    setBalanceCardIndex(cardIndex)
+    setStep('BALANCE_CVV')
+  }
+
+  useEffect(() => {
+    setCards((prev) =>
+      prev.map((c) =>
+        !c.external_inst_name ? { ...c, balance: walletBalance } : c
+      )
+    )
+  }, [walletBalance])
 
   const handleContinue = () => {
     if (!amount || Number(amount) <= 0) {
@@ -137,9 +142,24 @@ const CashInCardList = () => {
     setStep('CVV')
   }
 
-  const handleCvvConfirm = ({ cvv, expiry }) => {
+  const handleTransactionCvvConfirm = ({ cvv, expiry }) => {
     setCvvData({ cvv, expiry })
     setStep('CONFIRM')
+  }
+
+  const handleBalanceCvvConfirm = async ({ cvv, expiry }) => {
+    if (balanceCardIndex === null) return
+
+    setLoading(true)
+    try {
+      await fetchExternalCardBalance(balanceCardIndex, { cvv, expiry })
+      setStep(null)
+      setBalanceCardIndex(null)
+    } catch (e) {
+      toast.error(e.message || t('failed_to_fetch_balance'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSendOtp = async () => {
@@ -219,7 +239,17 @@ const CashInCardList = () => {
     setStep(null)
     setCvvData(null)
     setTxnMeta(null)
+    setBalanceCardIndex(null)
     setLoading(false)
+  }
+
+  const handleCvvPopupClose = () => {
+    if (step === 'BALANCE_CVV') {
+      setStep(null)
+      setBalanceCardIndex(null)
+      return
+    }
+    resetFlow()
   }
 
   return (
@@ -253,7 +283,7 @@ const CashInCardList = () => {
             <div key={card.id} className="snap-center shrink-0 w-full">
               <BankCard
                 card={card}
-                onBalance={activeIndex === index ? () => fetchCardBalance(index) : undefined}
+                onBalance={activeIndex === index ? () => handleBalanceClick(index) : undefined}
               />
             </div>
           ))}
@@ -291,10 +321,10 @@ const CashInCardList = () => {
       </div>
 
       <CvvPopup
-        open={step === 'CVV'}
+        open={step === 'CVV' || step === 'BALANCE_CVV'}
         loading={loading}
-        onClose={resetFlow}
-        onConfirm={handleCvvConfirm}
+        onClose={handleCvvPopupClose}
+        onConfirm={step === 'BALANCE_CVV' ? handleBalanceCvvConfirm : handleTransactionCvvConfirm}
       />
 
       <ConfirmTransactionPopup

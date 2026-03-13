@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { IoArrowBack } from 'react-icons/io5'
 import { FaSearch } from 'react-icons/fa'
 import { toast } from 'react-toastify'
@@ -18,6 +19,7 @@ import { getAuthToken, deviceId, getCurrentUserId, getAuthUser } from '../../ser
 import { generateStan } from '../../utils/generateStan'
 import billPaymentService from './billPayment.service'
 import { getBillServiceName } from './billPayment.constants'
+import { CARD_CHECK_BALANCE } from '../../utils/constant'
 
 const generateRrn = () => {
   const d = new Date()
@@ -31,6 +33,7 @@ const generateRrn = () => {
   ].join('')
   return part
 }
+const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
 const resolveMobileNo = () => {
   const user = getAuthUser()
@@ -50,6 +53,7 @@ const BillPaymentPage = () => {
   const navigate = useNavigate()
   const { serviceId } = useParams()
   const scrollRef = useRef(null)
+  const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
 
   const [cards, setCards] = useState([])
   const [cardsLoading, setCardsLoading] = useState(false)
@@ -63,6 +67,7 @@ const BillPaymentPage = () => {
   const [billInfo, setBillInfo] = useState(null)
   const [txnMeta, setTxnMeta] = useState(null)
   const [step, setStep] = useState(null)
+  const [balanceCardIndex, setBalanceCardIndex] = useState(null)
   const [selectedCard, setSelectedCard] = useState(null)
   const [cvvData, setCvvData] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -107,7 +112,9 @@ const BillPaymentPage = () => {
         throw new Error(data?.message || t('failed_to_load_cards'))
       }
 
-      const list = Array.isArray(data?.data) ? data.data : []
+      const list = (Array.isArray(data?.data) ? data.data : []).map((card) =>
+        !card.external_inst_name ? { ...card, balance: walletBalance } : card
+      )
       setCards(list)
       setActiveIndex(0)
       if (!list.length) setCardsError(t('no_beneficiary_cards_found_for_account'))
@@ -134,6 +141,59 @@ const BillPaymentPage = () => {
       return false
     }
     return true
+  }
+
+  const fetchCardBalance = async (cardIndex, securityData) => {
+    try {
+      const card = cards[cardIndex]
+      if (!card) return
+
+      const isInternalCard = !card.external_inst_name
+      if (!isInternalCard && !securityData) {
+        setBalanceCardIndex(cardIndex)
+        setStep('BALANCE_CVV')
+        return
+      }
+
+      if (isInternalCard) {
+        setCards((prev) =>
+          prev.map((c, i) =>
+            i === cardIndex ? { ...c, balance: walletBalance } : c
+          )
+        )
+        return
+      }
+
+      const res = await fetch(CARD_CHECK_BALANCE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+          deviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
+        },
+        body: JSON.stringify({
+          card_number: card.card_number,
+          cvv: String(securityData.cvv),
+          expiry_date: normalizeExpiry(securityData.expiry),
+        }),
+      })
+
+      const json = await res.json()
+      if (!res.ok || json.code !== 1) {
+        throw new Error(json.message)
+      }
+
+      setCards((prev) =>
+        prev.map((c, i) =>
+          i === cardIndex ? { ...c, balance: json.data.avail_bal } : c
+        )
+      )
+    } catch (e) {
+      toast.error(e.message || t('failed_to_fetch_balance'))
+    }
   }
 
   const handleFetchBillDetails = async (silent = false) => {
@@ -178,16 +238,31 @@ const BillPaymentPage = () => {
       toast.error(t('fetch_bill_details_first'))
       return
     }
-    setStep('CVV')
+    setStep('CONFIRM')
   }
 
   const handleCvvConfirm = ({ cvv, expiry }) => {
     setCvvData({ cvv, expiry })
-    setStep('CONFIRM')
+    setStep('OTP')
   }
 
-  const handleOpenOtp = () => {
-    setStep('OTP')
+  const handleBalanceCvvConfirm = async ({ cvv, expiry }) => {
+    if (balanceCardIndex === null) return
+
+    setLoading(true)
+    try {
+      await fetchCardBalance(balanceCardIndex, { cvv, expiry })
+      setStep(null)
+      setBalanceCardIndex(null)
+    } catch (e) {
+      toast.error(e.message || t('failed_to_fetch_balance'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleOpenCvv = () => {
+    setStep('CVV')
   }
 
   const handleConfirmOtp = async (otp) => {
@@ -231,6 +306,11 @@ const BillPaymentPage = () => {
           bill_number: billNumber,
           mobile_no: mobileNo,
           stan: txnMeta.stan,
+          acc_number: data?.acc_number ?? null,
+          resp_code: data?.resp_code ?? null,
+          authcode: data?.authcode ?? null,
+          avail_bal: data?.avail_bal ?? null,
+          response_card_number: data?.card_number ?? null,
           bill_info: billInfo,
         })
       )
@@ -247,8 +327,26 @@ const BillPaymentPage = () => {
   const resetFlow = () => {
     setStep(null)
     setCvvData(null)
+    setBalanceCardIndex(null)
     setLoading(false)
   }
+
+  const handleCvvPopupClose = () => {
+    if (step === 'BALANCE_CVV') {
+      setStep(null)
+      setBalanceCardIndex(null)
+      return
+    }
+    resetFlow()
+  }
+
+  useEffect(() => {
+    setCards((prev) =>
+      prev.map((c) =>
+        !c.external_inst_name ? { ...c, balance: walletBalance } : c
+      )
+    )
+  }, [walletBalance])
 
   const footer = (
     <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
@@ -298,7 +396,10 @@ const BillPaymentPage = () => {
                 className="snap-center shrink-0 w-full"
                 onClick={() => setActiveIndex(index)}
               >
-                <BankCard card={card} />
+                <BankCard
+                  card={card}
+                  onBalance={activeIndex === index ? () => fetchCardBalance(index) : undefined}
+                />
               </div>
             ))}
           </div>
@@ -346,10 +447,10 @@ const BillPaymentPage = () => {
       </div>
 
       <CvvPopup
-        open={step === 'CVV'}
+        open={step === 'CVV' || step === 'BALANCE_CVV'}
         loading={loading}
-        onClose={resetFlow}
-        onConfirm={handleCvvConfirm}
+        onClose={handleCvvPopupClose}
+        onConfirm={step === 'BALANCE_CVV' ? handleBalanceCvvConfirm : handleCvvConfirm}
       />
 
       <ConfirmTransactionPopup
@@ -359,7 +460,7 @@ const BillPaymentPage = () => {
         to={`${serviceName} - ${t('bill')} #${billNumber}`}
         description={t('bill_payment_for_service', { service: serviceName })}
         loading={loading}
-        onSendOtp={handleOpenOtp}
+        onSendOtp={handleOpenCvv}
         onCancel={resetFlow}
       />
 

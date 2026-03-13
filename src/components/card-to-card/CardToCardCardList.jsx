@@ -3,12 +3,14 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
+import AddBeneficiaryPopup from '../../Reusable/AddBeneficiaryPopup'
 
 import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
@@ -18,16 +20,18 @@ import cardToCardService from './cardToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getAuthToken, deviceId, getCurrentUserId } from '../../services/api'
 import { generateStan } from '../../utils/generateStan'
-import { CUSTOMER_BALANCE, CARD_CHECK_BALANCE } from '../../utils/constant'
+import { CARD_CHECK_BALANCE } from '../../utils/constant'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
+const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
 const CardToCardCardList = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const sourceScrollRef = useRef(null)
   const destScrollRef = useRef(null)
+  const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
 
   const [sourceCards, setSourceCards] = useState([])
   const [activeSourceIndex, setActiveSourceIndex] = useState(0)
@@ -40,9 +44,11 @@ const CardToCardCardList = () => {
   const [step, setStep] = useState(null)
 
   const [selectedCard, setSelectedCard] = useState(null)
+  const [balanceContext, setBalanceContext] = useState(null) // { type: 'source'|'dest', cardIndex: number }
   const [cvvData, setCvvData] = useState(null)
   const [txnMeta, setTxnMeta] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [isAddNewOpen, setIsAddNewOpen] = useState(false)
 
   const sourceCard = sourceCards[activeSourceIndex]
   const destCard = destCards[activeDestIndex]
@@ -82,7 +88,10 @@ const CardToCardCardList = () => {
         throw new Error(data.message)
       }
 
-      setSourceCards(data.data || [])
+      const list = (data.data || []).map((card) =>
+        !card.external_inst_name ? { ...card, balance: walletBalance } : card
+      )
+      setSourceCards(list)
     } catch (e) {
       toast.error(e.message || t('failed_to_load_source_cards'))
     }
@@ -117,40 +126,52 @@ const CardToCardCardList = () => {
         throw new Error(data.message)
       }
 
-      setDestCards(data.data || [])
+      const list = (data.data || []).map((card) =>
+        !card.external_inst_name ? { ...card, balance: walletBalance } : card
+      )
+      setDestCards(list)
     } catch (e) {
       toast.error(e.message || t('failed_to_load_destination_cards'))
     }
   }
 
-
-  const fetchSourceCardBalance = async (cardIndex) => {
+  const fetchSourceCardBalance = async (cardIndex, securityData) => {
     try {
       const card = sourceCards[cardIndex]
+      if (!card) return
 
       const isInternalCard = !card.external_inst_name
+      if (!isInternalCard && !securityData) {
+        setBalanceContext({ type: 'source', cardIndex })
+        setStep('BALANCE_CVV')
+        return
+      }
 
-      const res = await fetch(
-        isInternalCard ? CUSTOMER_BALANCE : CARD_CHECK_BALANCE,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getAuthToken()}`,
-            deviceInfo: JSON.stringify({
-              device_type: 'WEB',
-              device_id: deviceId,
-            }),
-          },
-          ...(isInternalCard
-            ? {}
-            : {
-                body: JSON.stringify({
-                  card_number: card.card_number,
-                }),
-              }),
-        }
-      )
+      if (isInternalCard) {
+        setSourceCards((prev) =>
+          prev.map((c, i) =>
+            i === cardIndex ? { ...c, balance: walletBalance } : c
+          )
+        )
+        return
+      }
+
+      const res = await fetch(CARD_CHECK_BALANCE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+          deviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
+        },
+        body: JSON.stringify({
+          card_number: card.card_number,
+          cvv: String(securityData.cvv),
+          expiry_date: normalizeExpiry(securityData.expiry),
+        }),
+      })
 
       const json = await res.json()
       if (!res.ok || json.code !== 1) {
@@ -158,49 +179,52 @@ const CardToCardCardList = () => {
       }
 
       setSourceCards((prev) =>
-        isInternalCard
-          ? prev.map((c) => ({
-              ...c,
-              balance: json.data.avail_bal,
-            }))
-          : prev.map((c, i) =>
-              i === cardIndex
-                ? { ...c, balance: json.data.avail_bal }
-                : c
-            )
+        prev.map((c, i) =>
+          i === cardIndex ? { ...c, balance: json.data.avail_bal } : c
+        )
       )
     } catch (e) {
       toast.error(e.message || t('failed_to_fetch_source_card_balance'))
     }
   }
 
-  const fetchDestCardBalance = async (cardIndex) => {
+  const fetchDestCardBalance = async (cardIndex, securityData) => {
     try {
       const card = destCards[cardIndex]
+      if (!card) return
 
       const isInternalCard = !card.external_inst_name
+      if (!isInternalCard && !securityData) {
+        setBalanceContext({ type: 'dest', cardIndex })
+        setStep('BALANCE_CVV')
+        return
+      }
 
-      const res = await fetch(
-        isInternalCard ? CUSTOMER_BALANCE : CARD_CHECK_BALANCE,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${getAuthToken()}`,
-            deviceInfo: JSON.stringify({
-              device_type: 'WEB',
-              device_id: deviceId,
-            }),
-          },
-          ...(isInternalCard
-            ? {}
-            : {
-                body: JSON.stringify({
-                  card_number: card.card_number,
-                }),
-              }),
-        }
-      )
+      if (isInternalCard) {
+        setDestCards((prev) =>
+          prev.map((c, i) =>
+            i === cardIndex ? { ...c, balance: walletBalance } : c
+          )
+        )
+        return
+      }
+
+      const res = await fetch(CARD_CHECK_BALANCE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getAuthToken()}`,
+          deviceInfo: JSON.stringify({
+            device_type: 'WEB',
+            device_id: deviceId,
+          }),
+        },
+        body: JSON.stringify({
+          card_number: card.card_number,
+          cvv: String(securityData.cvv),
+          expiry_date: normalizeExpiry(securityData.expiry),
+        }),
+      })
 
       const json = await res.json()
       if (!res.ok || json.code !== 1) {
@@ -208,16 +232,9 @@ const CardToCardCardList = () => {
       }
 
       setDestCards((prev) =>
-        isInternalCard
-          ? prev.map((c) => ({
-              ...c,
-              balance: json.data.avail_bal,
-            }))
-          : prev.map((c, i) =>
-              i === cardIndex
-                ? { ...c, balance: json.data.avail_bal }
-                : c
-            )
+        prev.map((c, i) =>
+          i === cardIndex ? { ...c, balance: json.data.avail_bal } : c
+        )
       )
     } catch (e) {
       toast.error(e.message || t('failed_to_fetch_destination_card_balance'))
@@ -251,6 +268,25 @@ const CardToCardCardList = () => {
   const handleCvvConfirm = ({ cvv, expiry }) => {
     setCvvData({ cvv, expiry })
     setStep('CONFIRM')
+  }
+
+  const handleBalanceCvvConfirm = async ({ cvv, expiry }) => {
+    if (!balanceContext) return
+
+    setLoading(true)
+    try {
+      if (balanceContext.type === 'source') {
+        await fetchSourceCardBalance(balanceContext.cardIndex, { cvv, expiry })
+      } else {
+        await fetchDestCardBalance(balanceContext.cardIndex, { cvv, expiry })
+      }
+      setStep(null)
+      setBalanceContext(null)
+    } catch (e) {
+      toast.error(e.message || t('something_went_wrong'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   /* ---------------- STEP 3 → SEND OTP ---------------- */
@@ -343,8 +379,31 @@ const CardToCardCardList = () => {
     setStep(null)
     setCvvData(null)
     setTxnMeta(null)
+    setBalanceContext(null)
     setLoading(false)
   }
+
+  const handleCvvPopupClose = () => {
+    if (step === 'BALANCE_CVV') {
+      setStep(null)
+      setBalanceContext(null)
+      return
+    }
+    resetFlow()
+  }
+
+  useEffect(() => {
+    setSourceCards((prev) =>
+      prev.map((c) =>
+        !c.external_inst_name ? { ...c, balance: walletBalance } : c
+      )
+    )
+    setDestCards((prev) =>
+      prev.map((c) =>
+        !c.external_inst_name ? { ...c, balance: walletBalance } : c
+      )
+    )
+  }, [walletBalance])
 
   return (
     <MobileScreenContainer
@@ -398,6 +457,16 @@ const CardToCardCardList = () => {
             </>
           )}
 
+          <div className="mt-2 mb-3 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setIsAddNewOpen(true)}
+              className="text-sm font-semibold text-[#357219] cursor-pointer no-underline"
+            >
+              {t('add_new')}
+            </button>
+          </div>
+
           <AmountInput label={t('amount')} value={amount} onChange={setAmount} />
 
           <div className="grid grid-cols-5 gap-2 mt-3">
@@ -413,7 +482,9 @@ const CardToCardCardList = () => {
           </div>
 
           {/* Destination Card carousel */}
-          <div className="mt-8 text-sm font-medium text-brand-dark">{t('select_destination_card')}</div>
+          <div className="mt-8 mb-2 flex items-center justify-between">
+            <div className="text-sm font-medium text-brand-dark">{t('select_destination_card')}</div>
+          </div>
           <div
             ref={destScrollRef}
             onScroll={() => {
@@ -445,10 +516,10 @@ const CardToCardCardList = () => {
 
       {/* CVV */}
       <CvvPopup
-        open={step === 'CVV'}
+        open={step === 'CVV' || step === 'BALANCE_CVV'}
         loading={loading}
-        onClose={resetFlow}
-        onConfirm={handleCvvConfirm}
+        onClose={handleCvvPopupClose}
+        onConfirm={step === 'BALANCE_CVV' ? handleBalanceCvvConfirm : handleCvvConfirm}
       />
 
       {/* CONFIRM */}
@@ -481,6 +552,15 @@ const CardToCardCardList = () => {
         loading={loading}
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
+      />
+
+      <AddBeneficiaryPopup
+        open={isAddNewOpen}
+        onClose={() => setIsAddNewOpen(false)}
+        onSuccess={() => {
+          fetchSourceCards()
+          fetchDestinationCards()
+        }}
       />
     </MobileScreenContainer>
   )
