@@ -13,18 +13,16 @@ import AddBeneficiaryPopup from '../../Reusable/AddBeneficiaryPopup'
 
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
-import CvvPopup from '../../Reusable/CvvPopup'
 
 import cardService from '../cards/PaysePayCards/card.service'
 import walletToCardService from './walletToCard.service'
-import { BENIFICIARY_LIST, CARD_CHECK_BALANCE } from '../../utils/constant'
+import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getCurrentUserId } from '../../services/api'
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
 import bankIcon from '../../assets/BankIcon.svg'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
-const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
 const WalletToCardCardList = () => {
   const { t } = useTranslation()
@@ -37,7 +35,6 @@ const WalletToCardCardList = () => {
   const [activeDestIndex, setActiveDestIndex] = useState(null)
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(null)
-  const [balanceCardIndex, setBalanceCardIndex] = useState(null)
   const [isAddNewOpen, setIsAddNewOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -102,66 +99,6 @@ const WalletToCardCardList = () => {
       setDestCards(json.data || [])
     } catch (e) {
       toast.error(e.message || t('failed_to_load_destination_cards'))
-    }
-  }
-
-  const fetchDestCardBalance = async (cardIndex, securityData) => {
-    try {
-      const card = destCards[cardIndex]
-      if (!card) return
-      const isInternalCard = !card.external_inst_name
-
-      if (!isInternalCard && !securityData) {
-        setBalanceCardIndex(cardIndex)
-        setStep('BALANCE_CVV')
-        return
-      }
-
-      if (isInternalCard) {
-        setDestCards((prev) =>
-          prev.map((item, idx) =>
-            idx === cardIndex ? { ...item, balance: walletBalance } : item
-          )
-        )
-        return
-      }
-
-      const res = await fetchWithRefreshToken(CARD_CHECK_BALANCE, {
-        method: 'POST',
-        body: JSON.stringify({
-          card_number: card.card_number,
-          cvv: String(securityData.cvv),
-          expiry_date: normalizeExpiry(securityData.expiry),
-        }),
-      })
-
-      const json = await res.json()
-      if (!res.ok || json.code !== 1) {
-        throw new Error(json.message)
-      }
-
-      setDestCards((prev) =>
-        prev.map((item, idx) =>
-          idx === cardIndex ? { ...item, balance: json.data.avail_bal } : item
-        )
-      )
-    } catch (e) {
-      toast.error(e.message || t('failed_to_fetch_destination_card_balance'))
-    }
-  }
-
-  const handleBalanceCvvConfirm = async ({ cvv, expiry }) => {
-    if (balanceCardIndex === null) return
-
-    setLoading(true)
-    try {
-      await fetchDestCardBalance(balanceCardIndex, { cvv, expiry })
-      setStep(null)
-      setBalanceCardIndex(null)
-    } catch (e) {
-      toast.error(e.message || t('failed_to_fetch_destination_card_balance'))
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -232,17 +169,7 @@ const WalletToCardCardList = () => {
 
   const resetFlow = () => {
     setStep(null)
-    setBalanceCardIndex(null)
     setLoading(false)
-  }
-
-  const handleCvvPopupClose = () => {
-    if (step === 'BALANCE_CVV') {
-      setStep(null)
-      setBalanceCardIndex(null)
-      return
-    }
-    resetFlow()
   }
 
   useEffect(() => {
@@ -372,18 +299,6 @@ const WalletToCardCardList = () => {
                   )}
                 </div>
 
-                {activeDestIndex === index && (
-                  <button
-                    type="button"
-                    className="mt-2 text-xs text-[#357219] underline"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      fetchDestCardBalance(index)
-                    }}
-                  >
-                    {t('refresh_balance')}
-                  </button>
-                )}
               </div>
             ))}
           </div>
@@ -417,13 +332,6 @@ const WalletToCardCardList = () => {
         loading={loading}
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
-      />
-
-      <CvvPopup
-        open={step === 'BALANCE_CVV'}
-        loading={loading}
-        onClose={handleCvvPopupClose}
-        onConfirm={handleBalanceCvvConfirm}
       />
 
       <AddBeneficiaryPopup

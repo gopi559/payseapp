@@ -62,16 +62,35 @@ const BankCard = ({ card, onBalance }) => {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0 flex-1">
             <div className="text-sm text-white/80">Card Holder Name</div>
-            <div className="text-sm font-semibold capitalize">
+            <div className="text-sm font-semibold capitalize truncate">
               {cardholderName}
             </div>
           </div>
 
+          {hasExpiry && (
+            <div className="shrink-0 text-right">
+              <div className="text-xs text-white/80">Expiry</div>
+              <div className="flex items-center justify-end gap-1">
+                <div className="text-sm font-semibold tracking-wider">
+                  {showExpiry ? expiry : '**/**'}
+                </div>
+                <button
+                  type="button"
+                  aria-label={showExpiry ? 'Hide expiry' : 'Show expiry'}
+                  onClick={() => setShowExpiry((prev) => !prev)}
+                  className="p-1 rounded-full text-white/90 hover:text-white"
+                >
+                  {showExpiry ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
+                </button>
+              </div>
+            </div>
+          )}
+
           {card.balance !== undefined ? (
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <div className="text-xs text-white/80">Balance</div>
               <div className="flex items-center justify-end gap-2 text-lg font-semibold">
                 <img
@@ -91,26 +110,6 @@ const BankCard = ({ card, onBalance }) => {
             </button>
           )}
         </div>
-
-        {hasExpiry && (
-          <div className="mt-3 flex items-center justify-between">
-            <div>
-              <div className="text-sm text-white/80">Expiry</div>
-              <div className="text-sm font-semibold tracking-wider">
-                {showExpiry ? expiry : '**/**'}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              aria-label={showExpiry ? 'Hide expiry' : 'Show expiry'}
-              onClick={() => setShowExpiry((prev) => !prev)}
-              className="p-1 rounded-full text-white/90 hover:text-white"
-            >
-              {showExpiry ? <IoEyeOffOutline size={20} /> : <IoEyeOutline size={20} />}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   )
