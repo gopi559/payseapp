@@ -1,6 +1,6 @@
 import { deviceId } from './api.jsx'
 
-const API_BASE = 'https://backend.api-innovitegra.in/webcust'
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').trim()
 
 export const persistRefreshSession = (payload) => {
   const nextToken =

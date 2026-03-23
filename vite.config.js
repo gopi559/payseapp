@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   // Vite loads .env from project ROOT only (not from src/)
   const env = loadEnv(mode, process.cwd(), '')
-  const rawApiBase = (env.VITE_API_BASE_URL || 'https://backend.api-innovitegra.in/webcust').trim()
-  let proxyTarget = 'https://backend.api-innovitegra.in'
+  const rawApiBase = (env.VITE_API_BASE_URL || '').trim()
+  let proxyTarget = 'http://localhost'
 
   try {
     const parsed = new URL(rawApiBase)

@@ -1,6 +1,6 @@
 import Store from '../Redux/store.jsx'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://backend.api-innovitegra.in'
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').trim()
 
 const INVALID_TOKEN_VALUES = new Set(['', 'null', 'undefined', 'nan'])
 

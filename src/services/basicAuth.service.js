@@ -1,6 +1,6 @@
 const basicAuthUser = import.meta.env.VITE_BASIC_AUTH_USER || import.meta.env.VITE_BASIC_AUTH_USERNAME
 const basicAuthPass = import.meta.env.VITE_BASIC_AUTH_PASS || import.meta.env.VITE_BASIC_AUTH_PASSWORD
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || ''
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || '').trim()
 const inflightRequests = new Map()
 
 const isAbsoluteUrl = (url) => /^https?:\/\//i.test(url)
