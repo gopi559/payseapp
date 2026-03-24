@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import { useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
-import { IoArrowBack } from 'react-icons/io5'
+import { IoArrowBack, IoCheckmarkCircle } from 'react-icons/io5'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
 import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
 import Input from '../../Reusable/Input'
+import AddBeneficiaryPopup from '../../Reusable/AddBeneficiaryPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
 import CvvPopup from '../../Reusable/CvvPopup'
@@ -20,25 +20,30 @@ import cardToCardService from '../card-to-card/cardToCard.service'
 import walletToCardService from '../wallet-to-card/walletToCard.service'
 import walletToWalletService from './walletToWallet.service'
 
-import { CARD_CHECK_BALANCE } from '../../utils/constant'
+import { BENIFICIARY_LIST, CARD_CHECK_BALANCE } from '../../utils/constant'
+import { getCurrentUserId } from '../../services/api'
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import THEME_COLORS from '../../theme/colors'
+import bankIcon from '../../assets/BankIcon.svg'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
-const WalletToWalletCardEntry = () => {
+const WalletToWalletCardList = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
 
   const [sourceCards, setSourceCards] = useState([])
   const [activeSourceIndex, setActiveSourceIndex] = useState(0)
+  const [destCards, setDestCards] = useState([])
+  const [activeDestIndex, setActiveDestIndex] = useState(null)
   const [destinationCard, setDestinationCard] = useState('')
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState(null)
   const [balanceCardIndex, setBalanceCardIndex] = useState(null)
+  const [isAddNewOpen, setIsAddNewOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [beneficiaryName, setBeneficiaryName] = useState('')
   const [beneficiaryVerified, setBeneficiaryVerified] = useState(false)
@@ -49,17 +54,22 @@ const WalletToWalletCardEntry = () => {
 
   const sourceCard = sourceCards[activeSourceIndex]
   const destinationCardDigits = destinationCard.replace(/\D/g, '')
-
-  // TODO: replace with real mobile from profile/auth state
   const customerMobile = '+93123456789'
 
   useEffect(() => {
     fetchSourceCard()
+    fetchDestinationCards()
   }, [])
 
   useEffect(() => {
     if (verifyTimeoutRef.current) {
       clearTimeout(verifyTimeoutRef.current)
+    }
+
+    if (activeDestIndex !== null) {
+      setVerifyingBeneficiary(false)
+      setCardError('')
+      return
     }
 
     if (destinationCardDigits.length !== 16) {
@@ -77,11 +87,16 @@ const WalletToWalletCardEntry = () => {
       setCardError('')
       try {
         const { data } = await cardToCardService.verifyCard(destinationCardDigits)
+        if (data?.inst_type !== 'EMI') {
+          throw new Error(t('card_not_found_invalid'))
+        }
+
         const name =
           data?.card_holder_name ||
           data?.cardholder_name ||
           data?.name_on_card ||
           t('card_verified')
+
         setBeneficiaryName(name)
         setBeneficiaryVerified(true)
       } catch (e) {
@@ -100,7 +115,7 @@ const WalletToWalletCardEntry = () => {
         clearTimeout(verifyTimeoutRef.current)
       }
     }
-  }, [destinationCardDigits, t])
+  }, [activeDestIndex, destinationCardDigits, t])
 
   const fetchSourceCard = async () => {
     try {
@@ -117,6 +132,37 @@ const WalletToWalletCardEntry = () => {
       setSourceCards(mapped)
     } catch (e) {
       toast.error(e.message || t('failed_to_load_wallet_cards'))
+    }
+  }
+
+  const fetchDestinationCards = async () => {
+    try {
+      const userId = getCurrentUserId()
+      if (!userId) throw new Error(t('user'))
+
+      const res = await fetchWithRefreshToken(BENIFICIARY_LIST, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          is_temp: 0,
+          no_of_data: 50,
+          page: 1,
+          beneficiary_type: 1,
+        }),
+      })
+
+      const json = await res.json()
+      if (!res.ok || json.code !== 1) {
+        throw new Error(json.message)
+      }
+
+      const emiCards = Array.isArray(json.data)
+        ? json.data.filter((card) => card?.inst_type === 'EMI')
+        : []
+
+      setDestCards(emiCards)
+    } catch (e) {
+      toast.error(e.message || t('failed_to_load_destination_cards'))
     }
   }
 
@@ -183,7 +229,25 @@ const WalletToWalletCardEntry = () => {
   const handleDestinationCardChange = (event) => {
     const onlyDigits = event.target.value.replace(/\D/g, '').slice(0, 16)
     const formatted = onlyDigits.replace(/(\d{4})(?=\d)/g, '$1 ').trim()
+    setActiveDestIndex(null)
     setDestinationCard(formatted)
+  }
+
+  const handleDestinationSelect = (card, index) => {
+    const rawCardNumber = String(card?.card_number || '')
+      .replace(/\D/g, '')
+      .slice(0, 16)
+
+    setActiveDestIndex(index)
+    setDestinationCard(formatCardNumber(rawCardNumber))
+    setBeneficiaryName(
+      card?.cardholder_name?.trim() ||
+        card?.cardholder_nick_name?.trim() ||
+        t('card_verified')
+    )
+    setBeneficiaryVerified(true)
+    setVerifyingBeneficiary(false)
+    setCardError('')
   }
 
   const handleContinue = () => {
@@ -197,17 +261,17 @@ const WalletToWalletCardEntry = () => {
       return
     }
 
-    if (destinationCardDigits.length !== 16) {
+    if (activeDestIndex === null && destinationCardDigits.length !== 16) {
       toast.error(t('please_enter_valid_16_digit_card_number'))
       return
     }
 
-    if (verifyingBeneficiary) {
+    if (activeDestIndex === null && verifyingBeneficiary) {
       toast.error(t('please_wait_for_card_verification'))
       return
     }
 
-    if (!beneficiaryVerified) {
+    if (activeDestIndex === null && !beneficiaryVerified) {
       toast.error(cardError || t('card_not_found_invalid'))
       return
     }
@@ -238,7 +302,7 @@ const WalletToWalletCardEntry = () => {
       })
 
       sessionStorage.setItem(
-        'walletToCardSuccess',
+        'walletToWalletSuccess',
         JSON.stringify({
           txn_id: res?.data?.txn_id,
           rrn: res?.data?.rrn,
@@ -287,13 +351,25 @@ const WalletToWalletCardEntry = () => {
     )
   }, [walletBalance])
 
+  const getBankName = (card) =>
+    card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || t('bank')
+
+  const getCardholderName = (card) =>
+    card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || 'No Name'
+
   const footer = (
-      <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
+    <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
       <div className="max-w-md mx-auto">
         <Button
           fullWidth
           onClick={handleContinue}
-          disabled={!amount || destinationCardDigits.length !== 16 || !beneficiaryVerified || verifyingBeneficiary}
+          disabled={
+            !amount ||
+            (activeDestIndex === null &&
+              (destinationCardDigits.length !== 16 ||
+                !beneficiaryVerified ||
+                verifyingBeneficiary))
+          }
         >
           {t('continue')}
         </Button>
@@ -308,7 +384,7 @@ const WalletToWalletCardEntry = () => {
           <div className="relative flex items-center justify-between mb-5">
             <button
               type="button"
-              onClick={() => navigate('/customer/wallet-to-card')}
+              onClick={() => navigate('/customer/wallet-to-wallet')}
               className="w-9 h-9 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center text-[#357219]"
               aria-label={t('go_back')}
             >
@@ -359,35 +435,86 @@ const WalletToWalletCardEntry = () => {
             ))}
           </div>
 
-          <div className="mt-8">
-            <Input
-              label={t('card_number')}
-              placeholder={t('card_number_placeholder')}
-              value={destinationCard}
-              onChange={handleDestinationCardChange}
-              inputMode="numeric"
-              maxLength={19}
-            />
-            {beneficiaryVerified && beneficiaryName && (
-              <div
-                className="mt-2 rounded-lg px-3 py-2 text-sm"
-                style={{ border: `1px solid ${contentCard.divider}`, backgroundColor: contentCard.accentBackground }}
-              >
-                <span style={{ color: contentCard.subtitle }}>{t('beneficiary_name')}: </span>
-                <span className="font-medium" style={{ color: contentCard.title }}>
-                  {beneficiaryName}
-                </span>
-              </div>
-            )}
-            {verifyingBeneficiary && (
-              <div className="mt-2 text-sm" style={{ color: contentCard.subtitle }}>
-                {t('verifying_card')}
-              </div>
-            )}
-            {cardError && !verifyingBeneficiary && (
-              <div className="mt-2 text-sm text-red-600">{cardError}</div>
-            )}
+          <div className="mt-8 mb-3 flex items-center justify-between">
+            <div className="text-sm font-medium">{t('select_destination')}</div>
+            <button
+              type="button"
+              onClick={() => setIsAddNewOpen(true)}
+              className="text-sm font-semibold text-[#357219]"
+            >
+              {t('add_new')}
+            </button>
           </div>
+
+          <div className="space-y-3 max-h-[190px] overflow-y-auto pr-1 pb-1">
+            {destCards.map((card, index) => (
+              <div
+                key={card.id}
+                onClick={() => handleDestinationSelect(card, index)}
+                className={`w-full cursor-pointer rounded-2xl border px-4 py-3 ${
+                  activeDestIndex === index
+                    ? 'border-[#357219] bg-[#F2FBF6]'
+                    : 'border-[#E5E7EB] bg-white'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 rounded-full bg-[#EEF2EF] flex items-center justify-center shrink-0">
+                      <img src={bankIcon} alt={t('bank')} className="w-6 h-6 object-contain" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-[#111827] truncate">{getBankName(card)}</p>
+                      <p className="text-sm text-[#111827] mt-0.5 truncate">
+                        {getCardholderName(card)}
+                      </p>
+                      <p className="text-sm text-[#4B5563] mt-0.5">
+                        {formatCardNumber(card.card_number || card.masked_card)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {activeDestIndex === index && (
+                    <div className="inline-flex items-center gap-1.5 rounded-xl bg-[#E6F4E7] px-3 py-2 text-[#357219] shrink-0">
+                      <IoCheckmarkCircle size={18} />
+                      <span className="text-sm font-semibold">{t('selected')}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {activeDestIndex === null && (
+            <div className="mt-8">
+              {/* <Input
+                label={t('card_number')}
+                placeholder={t('card_number_placeholder')}
+                value={destinationCard}
+                onChange={handleDestinationCardChange}
+                inputMode="numeric"
+                maxLength={19}
+              /> */}
+              {beneficiaryVerified && beneficiaryName && (
+                <div
+                  className="mt-2 rounded-lg px-3 py-2 text-sm"
+                  style={{ border: `1px solid ${contentCard.divider}`, backgroundColor: contentCard.accentBackground }}
+                >
+                  <span style={{ color: contentCard.subtitle }}>{t('beneficiary_name')}: </span>
+                  <span className="font-medium" style={{ color: contentCard.title }}>
+                    {beneficiaryName}
+                  </span>
+                </div>
+              )}
+              {verifyingBeneficiary && (
+                <div className="mt-2 text-sm" style={{ color: contentCard.subtitle }}>
+                  {t('verifying_card')}
+                </div>
+              )}
+              {cardError && !verifyingBeneficiary && (
+                <div className="mt-2 text-sm text-red-600">{cardError}</div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -426,8 +553,15 @@ const WalletToWalletCardEntry = () => {
         onClose={handleCvvPopupClose}
         onConfirm={handleBalanceCvvConfirm}
       />
+
+      <AddBeneficiaryPopup
+        open={isAddNewOpen}
+        onClose={() => setIsAddNewOpen(false)}
+        onSuccess={fetchDestinationCards}
+        transactionType="WALLET_TO_WALLET"
+      />
     </MobileScreenContainer>
   )
 }
 
-export default WalletToWalletCardEntry
+export default WalletToWalletCardList

@@ -7,7 +7,21 @@ import { fetchWithBasicAuth } from '../services/basicAuth.service.js'
 import { toast } from 'react-toastify'
 import THEME_COLORS from '../theme/colors'
 
-const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
+const BIN_VALIDATION_RULES = {
+  CASH_IN: ['Bank', 'EMI'],
+  CASH_OUT: ['Bank'],
+  CARD_TO_CARD: ['Bank'],
+  WALLET_TO_WALLET: ['EMI'],
+}
+
+const DEFAULT_TRANSACTION_TYPE = 'CASH_IN'
+
+const AddBeneficiaryPopup = ({
+  open,
+  onClose,
+  onSuccess,
+  transactionType = DEFAULT_TRANSACTION_TYPE,
+}) => {
   // ✅ store only digits (no spaces)
   const [cardNumber, setCardNumber] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
@@ -18,6 +32,7 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
   const popupColors = THEME_COLORS.popup
 
   const reqIdRef = useRef(0)
+  const validatedTransactionTypeRef = useRef(transactionType)
 
   // ✅ format for display: 1234 5678 9012 3456
   const formattedCardNumber = useMemo(() => {
@@ -34,6 +49,9 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
     if (!open) return
 
     const currentBin = cardNumber.slice(0, 6)
+    const allowedInstTypes =
+      BIN_VALIDATION_RULES[transactionType] ||
+      BIN_VALIDATION_RULES[DEFAULT_TRANSACTION_TYPE]
 
     if (currentBin.length < 6) {
       setBinStatus('idle')
@@ -41,12 +59,18 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
       return
     }
 
-    if (validatedBin === currentBin) return
+    if (
+      validatedBin === currentBin &&
+      validatedTransactionTypeRef.current === transactionType
+    ) {
+      return
+    }
 
     reqIdRef.current += 1
     const myReqId = reqIdRef.current
 
     setValidatedBin(currentBin)
+    validatedTransactionTypeRef.current = transactionType
     setBinStatus('checking')
 
     let cleared = false
@@ -63,16 +87,34 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
         if (myReqId !== reqIdRef.current) return
 
         const list = Array.isArray(res) ? res : []
+        const currentBinValue = Number(currentBin)
 
-        const isBinAllowed = list.some((item) => {
+        const matchedBin = list.find((item) => {
+          const startBin = Number(item?.start_bin)
+          const endBin = Number(item?.end_bin ?? item?.start_bin)
+
           return (
             Number(item?.status) === 1 &&
-            String(item?.start_bin).trim() === currentBin
+            Number.isFinite(startBin) &&
+            Number.isFinite(endBin) &&
+            currentBinValue >= startBin &&
+            currentBinValue <= endBin
           )
         })
 
-        setBinStatus(isBinAllowed ? 'valid' : 'invalid')
-        if (!isBinAllowed) toast.error('Entered card BIN is not supported')
+        if (!matchedBin) {
+          setBinStatus('invalid')
+          toast.error('Entered card BIN is not supported')
+          return
+        }
+
+        if (!allowedInstTypes.includes(matchedBin?.inst_type)) {
+          setBinStatus('invalid')
+          toast.error('This card is not allowed for this transaction type')
+          return
+        }
+
+        setBinStatus('valid')
       } catch (err) {
         if (myReqId !== reqIdRef.current) return
         setBinStatus('invalid')
@@ -89,7 +131,7 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
       cleared = true
       clearTimeout(t)
     }
-  }, [cardNumber, open, validatedBin])
+  }, [cardNumber, open, transactionType, validatedBin])
 
   useEffect(() => {
     if (open) {
@@ -104,6 +146,7 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
       setCvv('')
       setBinStatus('idle')
       setValidatedBin('')
+      validatedTransactionTypeRef.current = transactionType
     }
   }, [open])
 

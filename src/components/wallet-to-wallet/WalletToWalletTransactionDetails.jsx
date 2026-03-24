@@ -13,7 +13,7 @@ import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } fro
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
-import AfganCurrency from '../../assets/afgan_currency_green.svg'
+import { formatCardNumber } from '../../utils/formatCardNumber'
 
 function escapeHtml(str) {
   const s = String(str ?? '')
@@ -24,32 +24,14 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
 }
 
-const formatDateTimeValue = (dateTimeStr) => {
-  if (!dateTimeStr) return '-'
-  try {
-    const date = new Date(dateTimeStr)
-    const options = {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    }
-    return date.toLocaleString('en-US', options).replace(',', ' at')
-  } catch {
-    return dateTimeStr
-  }
-}
-
 const downloadTransactionPdf = (
   details,
   senderName,
   senderMobile,
   senderAccountNumber,
-  receiverName,
-  receiverMobile,
-  receiverAccountNumber,
+  cardNumber,
+  cardName,
+  walletNumber,
   labels
 ) => {
   const win = window.open('', '_blank')
@@ -58,51 +40,85 @@ const downloadTransactionPdf = (
     return
   }
 
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return '-'
+    try {
+      const date = new Date(dateTimeStr)
+      return date
+        .toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        })
+        .replace(',', ' at')
+    } catch {
+      return dateTimeStr
+    }
+  }
+
   const transactionRows = [
-    { label: labels.transactionId, value: details?.txn_id != null ? String(details.txn_id) : '-' },
+    { label: labels.transactionId, value: details?.txn_id ?? '-' },
     { label: labels.rrn, value: details?.rrn ?? '-' },
     { label: labels.transactionType, value: details?.txn_type ?? labels.walletToWallet },
-    { label: labels.description, value: details?.txn_desc ?? details?.txn_short_desc ?? labels.walletToWallet },
-    { label: labels.dateTime, value: formatDateTimeValue(details?.txn_time ?? details?.created_at ?? '') },
-    { label: labels.amount, value: details?.amount != null ? `${Number(details.amount).toFixed(2)}` : '0.00' },
+    { label: labels.description, value: details?.txn_desc ?? labels.walletToWallet },
+    { label: labels.dateTime, value: formatDateTime(details?.txn_time) },
+    { label: labels.amount, value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
     { label: labels.channel, value: details?.channel_type ?? 'WEB' },
     { label: labels.status, value: details?.status === 1 ? labels.success : labels.success },
-    { label: labels.feeAmount, value: details?.fee_amount != null ? `${Number(details.fee_amount).toFixed(2)}` : '0.00' },
     { label: labels.remarks, value: details?.remarks ?? '-' },
   ]
 
   const senderRows = [
     { label: labels.name, value: senderName },
     { label: labels.mobileNumber, value: senderMobile || '-' },
+    { label: labels.cardNumber, value: labels.notAvailable },
     { label: labels.accountNumber, value: senderAccountNumber },
   ]
 
   const receiverRows = [
-    { label: labels.name, value: receiverName },
-    { label: labels.mobileNumber, value: receiverMobile || '-' },
-    { label: labels.accountNumber, value: receiverAccountNumber || '-' },
+    { label: labels.cardNumber, value: cardNumber },
+    { label: labels.cardName, value: cardName || '-' },
+    { label: labels.walletNumber, value: walletNumber || '-' },
   ]
 
   const formatRows = (rows) =>
     rows
-      .map(({ label, value }) => {
-        const displayValue = value == null || value === '' ? '-' : String(value)
-        return `<tr><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;vertical-align:top;">${escapeHtml(displayValue)}</td></tr>`
-      })
+      .map(
+        ({ label, value }) => `
+      <tr>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;">
+          ${escapeHtml(label)}
+        </td>
+        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;">
+          ${escapeHtml(value ?? '-')}
+        </td>
+      </tr>
+    `
+      )
       .join('')
 
   win.document.write(`
     <!DOCTYPE html>
     <html>
     <head>
-      <title>${escapeHtml(labels.transaction)} ${escapeHtml(String(details?.txn_id ?? ''))}</title>
+      <title>${escapeHtml(labels.transactionDetails)} ${escapeHtml(details?.txn_id)}</title>
       <style>
-        body { font-family: system-ui, sans-serif; padding: 24px; color: #111; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 20px; }
-        .header img { height: 40px; }
-        h1 { font-size: 20px; margin: 0; }
-        h2 { font-size: 16px; margin-top: 24px; margin-bottom: 12px; color: #374151; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        body { font-family: system-ui, sans-serif; padding: 24px; }
+        .header {
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          border-bottom:2px solid #e5e7eb;
+          padding-bottom:12px;
+          margin-bottom:20px;
+        }
+        img { height:40px; }
+        h1 { font-size:20px; margin:0; }
+        h2 { font-size:16px; margin-top:24px; color:#374151; }
+        table { width:100%; border-collapse:collapse; margin-bottom:24px; }
       </style>
     </head>
     <body>
@@ -121,32 +137,27 @@ const downloadTransactionPdf = (
     </body>
     </html>
   `)
+
   win.document.close()
   win.focus()
   win.print()
   win.onafterprint = () => win.close()
 }
 
-const SendTransactionDetails = () => {
+const WalletToWalletTransactionDetails = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useSelector((state) => state.auth?.user)
   const walletId = useSelector((state) => state.wallet?.walletId)
   const [details, setDetails] = useState(null)
-  const [isPayRequestFlow, setIsPayRequestFlow] = useState(false)
 
   useEffect(() => {
-    const payRaw = sessionStorage.getItem('payRequestSuccess')
-    const sendRaw = sessionStorage.getItem('sendSuccess')
-    const raw = payRaw || sendRaw
-
+    const raw = sessionStorage.getItem('walletToWalletSuccess')
     if (raw) {
       try {
         setDetails(JSON.parse(raw))
-        setIsPayRequestFlow(Boolean(payRaw))
-      } catch (_) {
+      } catch {
         setDetails({})
-        setIsPayRequestFlow(Boolean(payRaw))
       }
     } else {
       navigate('/customer/home')
@@ -155,43 +166,57 @@ const SendTransactionDetails = () => {
 
   if (!details) return null
 
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return '-'
+    try {
+      const date = new Date(dateTimeStr)
+      return date
+        .toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        })
+        .replace(',', ' at')
+    } catch {
+      return dateTimeStr
+    }
+  }
+
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
-  const senderName =
-    userKyc?.first_name || userKyc?.last_name
-      ? [userKyc.first_name, userKyc.middle_name, userKyc.last_name].filter(Boolean).join(' ')
-      : regInfo?.first_name || regInfo?.name || t('user')
+  const senderName = userKyc?.first_name || userKyc?.last_name
+    ? [userKyc.first_name, userKyc.middle_name, userKyc.last_name].filter(Boolean).join(' ')
+    : regInfo?.first_name || regInfo?.name || t('user')
   const senderMobile = regInfo?.mobile ?? regInfo?.reg_mobile ?? user?.mobile ?? ''
   const senderAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || '-'
 
-  const amount = details?.amount != null ? Number(details.amount).toFixed(2) : '0.00'
+  const amount = details?.txn_amount != null ? Number(details.txn_amount).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
   const txnTime = details?.txn_time ?? details?.created_at ?? ''
   const txnTypeRaw = details?.txn_type ?? 'WALLET_TO_WALLET'
-  const txnType = isPayRequestFlow
-    ? 'W2W'
-    : txnTypeRaw === 'WALLET_TO_WALLET'
-      ? 'W2W'
-      : txnTypeRaw
+  const txnType = txnTypeRaw === 'WALLET_TO_WALLET' ? 'W2W' : txnTypeRaw
   const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? t('wallet_to_wallet')
   const channel = details?.channel_type ?? 'WEB'
 
-  const receiverName = details?.beneficiary_name ?? details?.beneficiary?.displayName ?? '-'
-  const receiverMobile = details?.beneficiary_mobile ?? details?.beneficiary?.reg_mobile ?? '-'
-  const receiverAccountNumber =
-    details?.receiver_account_number ?? details?.beneficiary?.account_number ?? '-'
+  const cardNumber = details?.card_number ?? ''
+  const formattedCardNumber = cardNumber ? formatCardNumber(cardNumber) : '-'
+  const cardName = details?.card_name ?? t('not_available')
+  const walletNumber = details?.wallet_number ?? '-'
+
   const handleDownloadPdf = () => {
     downloadTransactionPdf(
       details,
       senderName,
       senderMobile,
       senderAccountNumber,
-      receiverName,
-      receiverMobile,
-      receiverAccountNumber,
+      formattedCardNumber,
+      cardName,
+      walletNumber,
       {
         pleaseAllowPopups: t('please_allow_popups_to_download_pdf'),
-        transaction: t('transaction'),
         transactionId: t('transaction_id'),
         rrn: t('rrn'),
         transactionType: t('transaction_type'),
@@ -201,10 +226,11 @@ const SendTransactionDetails = () => {
         channel: t('channel'),
         status: t('status'),
         success: t('success'),
-        feeAmount: t('fee_amount'),
         remarks: t('remarks'),
-        mobileNumber: t('mobile_number_label'),
         cardNumber: t('card_number'),
+        cardName: t('card_name'),
+        walletNumber: t('wallet_number'),
+        mobileNumber: t('mobile_number_label'),
         accountNumber: t('account_number'),
         name: t('name'),
         notAvailable: t('not_available'),
@@ -217,20 +243,17 @@ const SendTransactionDetails = () => {
   }
 
   const handleDone = () => {
-    if (isPayRequestFlow) {
-      sessionStorage.removeItem('payRequestSuccess')
-      navigate('/customer/request-money/received')
-      return
-    }
-
-    sessionStorage.removeItem('sendSuccess')
+    sessionStorage.removeItem('walletToWalletSuccess')
     navigate('/customer/home')
   }
 
   return (
     <MobileScreenContainer>
       <div className="bg-brand-secondary text-white px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate('/customer/home')} className="text-white hover:opacity-80 transition-opacity">
+        <button
+          onClick={() => navigate('/customer/home')}
+          className="text-white hover:opacity-80 transition-opacity"
+        >
           <IoArrowBack className="w-6 h-6" />
         </button>
         <h1 className="text-lg font-bold flex-1">{t('transaction_details')}</h1>
@@ -242,14 +265,13 @@ const SendTransactionDetails = () => {
       <div className="px-4 py-6 max-w-2xl mx-auto">
         <div className="bg-brand-secondary rounded-2xl p-6 mb-6 text-white">
           <div className="flex flex-col items-center text-center">
-            <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
-            {isPayRequestFlow && <p className="text-sm mb-2 font-medium">{t('paid_request')}</p>}
-            <div className="text-3xl font-bold mb-4 flex items-center gap-2">
-              <img src={AfganCurrency} alt={t('currency')} className="h-8 w-8 object-contain" />
-              <span>{amount}</span>
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4">
+              <span className="text-3xl text-brand-secondary">V</span>
             </div>
+            <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
+            <p className="text-3xl font-bold mb-4">{amount}</p>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <span className="text-sm font-medium">{isPayRequestFlow ? t('paid_request') : t('money_sent')}</span>
+              <span className="text-sm font-medium">{t('money_sent')}</span>
             </div>
           </div>
         </div>
@@ -294,7 +316,7 @@ const SendTransactionDetails = () => {
                 <FaClock className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
                   <p className="text-xs text-gray-500 mb-0.5">{t('date_time')}</p>
-                  <p className="text-sm font-medium text-gray-800">{formatDateTimeValue(txnTime)}</p>
+                  <p className="text-sm font-medium text-gray-800">{formatDateTime(txnTime)}</p>
                 </div>
               </div>
             )}
@@ -303,10 +325,7 @@ const SendTransactionDetails = () => {
               <FaMoneyBillWave className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('amount')}</p>
-                <div className="text-sm font-medium text-gray-800 flex items-center gap-1">
-                  <img src={AfganCurrency} alt={t('currency')} className="w-5 h-5 object-contain" />
-                  <span>{amount}</span>
-                </div>
+                <p className="text-sm font-medium text-gray-800">{amount}</p>
               </div>
             </div>
 
@@ -348,6 +367,14 @@ const SendTransactionDetails = () => {
             )}
 
             <div className="flex items-start gap-3">
+              <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
               <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
@@ -360,36 +387,34 @@ const SendTransactionDetails = () => {
         <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
-              <HiOutlineUser className="w-4 h-4 text-white" />
+              <HiOutlineCreditCard className="w-4 h-4 text-white" />
             </div>
             <h3 className="text-lg font-bold text-gray-800">{t('receiver_details')}</h3>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('name')}</p>
-                <p className="text-sm font-medium text-gray-800">{receiverName}</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                <p className="text-sm font-medium text-gray-800 font-mono">{formattedCardNumber}</p>
               </div>
             </div>
 
-            {receiverMobile && receiverMobile !== '-' && (
-              <div className="flex items-start gap-3">
-                <HiOutlinePhone className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number_label')}</p>
-                  <p className="text-sm font-medium text-gray-800 font-mono">{receiverMobile}</p>
-                </div>
+            <div className="flex items-start gap-3">
+              <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
+                <p className="text-sm font-medium text-gray-800">{cardName}</p>
               </div>
-            )}
+            </div>
 
-            {receiverAccountNumber && receiverAccountNumber !== '-' && (
+            {walletNumber && walletNumber !== '-' && (
               <div className="flex items-start gap-3">
                 <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
-                  <p className="text-sm font-medium text-gray-800 font-mono">{receiverAccountNumber}</p>
+                  <p className="text-xs text-gray-500 mb-0.5">{t('wallet_number')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{walletNumber}</p>
                 </div>
               </div>
             )}
@@ -417,4 +442,4 @@ const SendTransactionDetails = () => {
   )
 }
 
-export default SendTransactionDetails
+export default WalletToWalletTransactionDetails

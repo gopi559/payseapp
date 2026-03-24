@@ -96,11 +96,11 @@ const WalletToCardCardList = () => {
         throw new Error(json.message)
       }
 
-      const emiCards = Array.isArray(json.data)
-        ? json.data.filter((card) => card?.inst_type === 'EMI')
+      const bankCards = Array.isArray(json.data)
+        ? json.data.filter((card) => card?.inst_type === 'Bank')
         : []
 
-      setDestCards(emiCards)
+      setDestCards(bankCards)
     } catch (e) {
       toast.error(e.message || t('failed_to_load_destination_cards'))
     }
@@ -345,6 +345,7 @@ const WalletToCardCardList = () => {
         open={isAddNewOpen}
         onClose={() => setIsAddNewOpen(false)}
         onSuccess={fetchDestinationCards}
+        transactionType="CASH_OUT"
       />
     </MobileScreenContainer>
   )

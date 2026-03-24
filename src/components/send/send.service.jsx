@@ -29,7 +29,7 @@ const sendService = {
     const response = await fetchWithRefreshToken(VALIDATE_SENDMONEY_BEN, {
       method: 'POST',
       body: JSON.stringify({
-        mobile: String(mobile).trim(),
+        mobile_number: String(mobile).trim(),
       }),
     })
 

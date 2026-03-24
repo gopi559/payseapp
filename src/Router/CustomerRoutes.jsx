@@ -19,11 +19,14 @@ import PayRequestStart from '../components/request-money/PayRequestStart.jsx'
 import WalletToCardCardList from '../components/wallet-to-card/WalletToCardCardList'
 
 import WalletToCardMethod from '../components/wallet-to-card/WalletToCardMethod'
-import WalletToWalletCardEntry from '../components/wallet-to-wallet/WalletToWalletCardEntry'
+import WalletToWalletCardList from '../components/wallet-to-wallet/WalletToWalletCardList'
+import WalletToWalletMethod from '../components/wallet-to-wallet/WalletToWalletMethod'
 
 
 import WalletToCardSuccess from '../components/wallet-to-card/WalletToCardSuccess'
 import WalletToCardTransactionDetails from '../components/wallet-to-card/WalletToCardTransactionDetails'
+import WalletToWalletSuccess from '../components/wallet-to-wallet/WalletToWalletSuccess'
+import WalletToWalletTransactionDetails from '../components/wallet-to-wallet/WalletToWalletTransactionDetails'
 
 
 import CashInPage from '../components/cash-in/CashInPage'
@@ -186,7 +189,15 @@ export const customerRoutes = [
   path: 'wallet-to-wallet',
   element: (
     <Suspense fallback={<LinearProgress />}>
-      <WalletToWalletCardEntry />
+      <WalletToWalletMethod />
+    </Suspense>
+  ),
+},
+{
+  path: 'wallet-to-wallet/cards',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <WalletToWalletCardList />
     </Suspense>
   ),
 },
@@ -207,7 +218,7 @@ export const customerRoutes = [
     path: 'wallet-to-wallet/success',
     element: (
       <Suspense fallback={<LinearProgress />}>
-        <WalletToCardSuccess />
+        <WalletToWalletSuccess />
       </Suspense>
     ),
   },
@@ -223,7 +234,7 @@ export const customerRoutes = [
     path: 'wallet-to-wallet/details',
     element: (
       <Suspense fallback={<LinearProgress />}>
-        <WalletToCardTransactionDetails />
+        <WalletToWalletTransactionDetails />
       </Suspense>
     ),
   },

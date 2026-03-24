@@ -532,6 +532,7 @@ const CardToCardCardList = () => {
           fetchSourceCards()
           fetchDestinationCards()
         }}
+        transactionType="CARD_TO_CARD"
       />
     </MobileScreenContainer>
   )

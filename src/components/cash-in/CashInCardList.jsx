@@ -343,6 +343,7 @@ const CashInCardList = () => {
         open={isAddNewOpen}
         onClose={() => setIsAddNewOpen(false)}
         onSuccess={fetchCards}
+        transactionType="CASH_IN"
       />
     </MobileScreenContainer>
   )
