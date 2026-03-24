@@ -26,6 +26,10 @@ import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
+const filterBankCards = (cards) =>
+  Array.isArray(cards) ? cards.filter((card) => card?.inst_type === 'Bank') : []
+const getCardholderName = (card) =>
+  card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || 'No Name'
 
 const CardToCardCardList = () => {
   const { t } = useTranslation()
@@ -81,7 +85,7 @@ const CardToCardCardList = () => {
         throw new Error(data.message)
       }
 
-      const list = (data.data || []).map((card) =>
+      const list = filterBankCards(data.data).map((card) =>
         !card.external_inst_name ? { ...card, balance: walletBalance } : card
       )
       setSourceCards(list)
@@ -111,7 +115,7 @@ const CardToCardCardList = () => {
         throw new Error(data.message)
       }
 
-      const list = (data.data || []).map((card) =>
+      const list = filterBankCards(data.data).map((card) =>
         !card.external_inst_name ? { ...card, balance: walletBalance } : card
       )
       setDestCards(list)
@@ -326,11 +330,11 @@ const CardToCardCardList = () => {
 
           // from
           from_card: selectedCard.card_number,
-          from_card_name: selectedCard.cardholder_name || selectedCard.card_name,
+          from_card_name: getCardholderName(selectedCard),
 
           // to
           to_card: destCard.card_number,
-          to_card_name: destCard.cardholder_name || destCard.card_name || null,
+          to_card_name: getCardholderName(destCard),
         })
       )
 
@@ -502,9 +506,7 @@ const CardToCardCardList = () => {
               <p className="text-brand-secondary font-medium font-mono">
                 {formatCardNumber(destCard.card_number || destCard.masked_card)}
               </p>
-              {destCard.cardholder_name && (
-                <p className="text-brand-secondary text-xs mt-1">{destCard.cardholder_name}</p>
-              )}
+              <p className="text-brand-secondary text-xs mt-1">{getCardholderName(destCard)}</p>
             </div>
           ) : null
         }

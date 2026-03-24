@@ -60,6 +60,7 @@ const RequestStart = () => {
             user_id: beneficiaryId,
             reg_mobile: beneficiaryMobile,
             name: beneficiaryName,
+            entity_type: data?.entity_type,
           },
         },
       })

@@ -10,7 +10,6 @@ import THEME_COLORS from '../theme/colors'
 const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
   // ✅ store only digits (no spaces)
   const [cardNumber, setCardNumber] = useState('')
-  const [cardholderName, setCardholderName] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
   const [cvv, setCvv] = useState('')
   const [loading, setLoading] = useState(false)
@@ -101,7 +100,6 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
       document.body.style.overflow = ''
       reqIdRef.current += 1
       setCardNumber('')
-      setCardholderName('')
       setExpiryDate('')
       setCvv('')
       setBinStatus('idle')
@@ -153,7 +151,7 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
         body: JSON.stringify({
           // ✅ send digits-only value
           card_number: cardNumber,
-          cardholder_name: cardholderName.trim() || '',
+          cardholder_name: '',
           stan,
         }),
       })
@@ -274,18 +272,6 @@ const AddBeneficiaryPopup = ({ open, onClose, onSuccess }) => {
             />
           </div>
 
-          <input
-            type="text"
-            value={cardholderName}
-            onChange={(e) => setCardholderName(e.target.value)}
-            placeholder="Cardholder Name"
-            className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
-            style={{
-              backgroundColor: popupColors.inputBackground,
-              borderColor: popupColors.inputBorder,
-              color: popupColors.title,
-            }}
-          />
         </div>
 
         <Button fullWidth onClick={handleContinue} disabled={!isValid || loading}>

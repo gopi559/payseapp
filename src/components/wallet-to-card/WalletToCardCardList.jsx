@@ -96,7 +96,11 @@ const WalletToCardCardList = () => {
         throw new Error(json.message)
       }
 
-      setDestCards(json.data || [])
+      const emiCards = Array.isArray(json.data)
+        ? json.data.filter((card) => card?.inst_type === 'EMI')
+        : []
+
+      setDestCards(emiCards)
     } catch (e) {
       toast.error(e.message || t('failed_to_load_destination_cards'))
     }
@@ -186,6 +190,8 @@ const WalletToCardCardList = () => {
   const dest = destCards[activeDestIndex]
   const getBankName = (card) =>
     card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || t('bank')
+  const getCardholderName = (card) =>
+    card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || 'No Name'
 
   const footer = (
     <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
@@ -285,6 +291,9 @@ const WalletToCardCardList = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-base font-semibold text-[#111827] truncate">{getBankName(card)}</p>
+                      <p className="text-sm text-[#111827] mt-0.5 truncate">
+                        {getCardholderName(card)}
+                      </p>
                       <p className="text-sm text-[#4B5563] mt-0.5">
                         {formatCardNumber(card.card_number || card.masked_card)}
                       </p>
@@ -315,9 +324,7 @@ const WalletToCardCardList = () => {
               <p className="text-brand-secondary font-medium font-mono">
                 {formatCardNumber(dest.card_number || dest.masked_card)}
               </p>
-              {dest.cardholder_name && (
-                <p className="text-brand-secondary text-xs mt-1">{dest.cardholder_name}</p>
-              )}
+              <p className="text-brand-secondary text-xs mt-1">{getCardholderName(dest)}</p>
             </div>
           ) : null
         }

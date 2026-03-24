@@ -2,9 +2,9 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FiPhone } from 'react-icons/fi'
-import { HiOutlineCurrencyDollar } from 'react-icons/hi2'
 import { getStatusConfig, formatShortDate, REQUEST_STATUS } from './requestMoney.utils'
 import THEME_COLORS from '../../theme/colors'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 
 const RequestCard = ({
   item,
@@ -56,7 +56,7 @@ const RequestCard = ({
 
         <div className="shrink-0 flex flex-col items-end">
           <p className="text-[20px] font-bold flex items-center gap-1" style={{ color: menuGreen }}>
-            <HiOutlineCurrencyDollar size={22} />
+            <img src={AfganCurrency} alt="AFN" className="w-7 h-7 object-contain" />
             <span>{Number(item?.amount || 0).toFixed(2)}</span>
           </p>
 

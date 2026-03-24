@@ -14,7 +14,6 @@ const CardBeneficiaryAdd = () => {
   const navigate = useNavigate()
   const contentCard = THEME_COLORS.contentCard
   const [cardNumber, setCardNumber] = useState('')
-  const [cardholderName, setCardholderName] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
 
@@ -23,7 +22,6 @@ const CardBeneficiaryAdd = () => {
     const cardNum = cardNumber.trim().replace(/\s/g, '')
     if (!cardNum) e.cardNumber = t('required')
     else if (!/^\d{16}$/.test(cardNum)) e.cardNumber = t('must_be_16_digits')
-    if (!cardholderName?.trim()) e.cardholderName = t('required')
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -42,7 +40,7 @@ const CardBeneficiaryAdd = () => {
         method: 'POST',
         body: JSON.stringify({
           card_number: cardNum,
-          cardholder_name: cardholderName.trim(),
+          cardholder_name: '',
         }),
       })
       const result = await response.json().catch(() => null)
@@ -81,7 +79,7 @@ const CardBeneficiaryAdd = () => {
           style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
         >
           <form onSubmit={handleSubmit} noValidate className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full min-w-0">
+            <div className="grid grid-cols-1 gap-6 w-full min-w-0">
               <div className="min-w-0">
                 <label className="block font-medium mb-1.5 text-gray-700">{t('card_number_16_digits_required_label')}</label>
                 <input
@@ -98,20 +96,6 @@ const CardBeneficiaryAdd = () => {
                   className={`w-full border border-gray-300 p-2 rounded outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent bg-white text-gray-800 min-w-0 ${errors.cardNumber ? 'border-red-500' : ''}`}
                 />
                 {errors.cardNumber && <p className="text-red-500 text-xs mt-1">{errors.cardNumber}</p>}
-              </div>
-              <div className="min-w-0">
-                <label className="block font-medium mb-1.5 text-gray-700">{t('cardholder_name_required_label')}</label>
-                <input
-                  type="text"
-                  value={cardholderName}
-                  onChange={(e) => {
-                    setCardholderName(e.target.value)
-                    if (errors.cardholderName) setErrors({ ...errors, cardholderName: null })
-                  }}
-                  placeholder={t('name_on_card_placeholder')}
-                  className={`w-full border border-gray-300 p-2 rounded outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent bg-white text-gray-800 min-w-0 ${errors.cardholderName ? 'border-red-500' : ''}`}
-                />
-                {errors.cardholderName && <p className="text-red-500 text-xs mt-1">{errors.cardholderName}</p>}
               </div>
             </div>
             <div className="flex flex-row mt-7 gap-3">

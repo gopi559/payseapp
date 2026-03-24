@@ -65,6 +65,7 @@ const RequestAmount = () => {
       })
       const { data } = await requestMoneyService.createRequestMoney({
         cust_id: beneficiary.user_id,
+        entity_type: beneficiary.entity_type,
         amount: parsedAmount,
         remarks,
       })

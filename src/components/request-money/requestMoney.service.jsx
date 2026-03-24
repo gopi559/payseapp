@@ -40,7 +40,7 @@ const postJson = async (url, body) => {
 const requestMoneyService = {
   validateBeneficiary: async (mobile) => {
     const res = await postJson(VALIDATE_SENDMONEY_BEN, {
-      mobile: String(mobile).trim(),
+      mobile_number: String(mobile).trim(),
     })
 
     if (!res?.data) throw new Error('')
@@ -51,9 +51,10 @@ const requestMoneyService = {
     }
   },
 
-  createRequestMoney: async ({ cust_id, amount, remarks = '' }) => {
+  createRequestMoney: async ({ cust_id, entity_type, amount, remarks = '' }) => {
     const res = await postJson(CREATE_REQUEST_MONEY, {
       cust_id: Number(cust_id),
+      entity_type: String(entity_type || '').trim() || undefined,
       amount: Number(amount),
       remarks: String(remarks || '').trim() || undefined,
     })

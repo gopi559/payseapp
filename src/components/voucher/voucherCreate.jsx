@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
@@ -33,12 +34,23 @@ const buildReceiverMobileVariants = (localNineDigits) => {
   return [...new Set(variants)]
 }
 
+const normalizeAmountInput = (value) => {
+  const cleaned = String(value || '').replace(/[^\d.]/g, '')
+  const parts = cleaned.split('.')
+
+  if (!parts[0] && parts.length > 1) return `0.${parts.slice(1).join('').slice(0, 2)}`
+  if (parts.length === 1) return parts[0]
+
+  return `${parts[0]}.${parts.slice(1).join('').slice(0, 2)}`
+}
+
 const isNotFoundError = (message) =>
   /not\s*found|user\s*not\s*found|customer\s*not\s*found/i.test(String(message || ''))
 
 const VoucherCreate = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const user = useSelector((state) => state.auth?.user)
 
   const [lists, setLists] = useState({
     nationalities: [],
@@ -62,6 +74,9 @@ const VoucherCreate = () => {
   })
 
   const [submitting, setSubmitting] = useState(false)
+  const currentUserMobile = normalizeReceiverMobile(
+    user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
+  )
 
   useEffect(() => {
     Promise.all([
@@ -106,15 +121,23 @@ const VoucherCreate = () => {
     e.preventDefault()
 
     const mobileDigits = normalizeReceiverMobile(form.receiver_mobile)
+    const normalizedAmount = normalizeAmountInput(form.amount)
+    const parsedAmount = Number(normalizedAmount)
 
     if (
-      !form.amount ||
+      !normalizedAmount ||
+      Number.isNaN(parsedAmount) ||
+      parsedAmount <= 0 ||
       !form.receiver_name ||
       !form.receiver_mobile ||
       !form.receiver_id_number ||
       !form.receiver_id_type
     ) {
-      toast.error(t('please_fill_all_required_fields'))
+      toast.error(
+        !normalizedAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0
+          ? t('please_enter_valid_amount')
+          : t('please_fill_all_required_fields')
+      )
       return
     }
 
@@ -123,8 +146,13 @@ const VoucherCreate = () => {
       return
     }
 
+    if (mobileDigits === currentUserMobile) {
+      toast.error(t('cannot_send_money_to_yourself'))
+      return
+    }
+
     const payload = {
-      amount: String(form.amount),
+      amount: String(normalizedAmount),
       receiver_name: form.receiver_name,
       receiver_father_name: form.receiver_father_name,
       receiver_mobile: mobileDigits,
@@ -202,9 +230,15 @@ const VoucherCreate = () => {
               <label className="text-sm font-medium">{t('amount')}</label>
               <input
                 className={inputStyle}
+                inputMode="decimal"
                 placeholder={t('enter_amount')}
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                onChange={(e) => setForm({ ...form, amount: normalizeAmountInput(e.target.value) })}
+                onPaste={(e) => {
+                  e.preventDefault()
+                  const pasted = e.clipboardData.getData('text')
+                  setForm((prev) => ({ ...prev, amount: normalizeAmountInput(pasted) }))
+                }}
               />
             </div>
 
