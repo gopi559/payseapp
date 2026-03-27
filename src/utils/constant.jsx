@@ -85,6 +85,8 @@ export const RAISED_DISPUTE_LIST = `${MAIN_API_URL}/transaction_web/cust_dispute
 
 export const CASHCODE_LIST = `${MAIN_API_URL}/transaction_web/casecode/list_cashcode`
 
+export const CASH_CODE_DATA = `${MAIN_API_URL}/transaction_web/casecode/fetch_cashcode`
+
 export const CREATE_CASHCODE = `${MAIN_API_URL}/transaction_web/casecode/create_cashcode`
 
 export const CARD_TO_WALLET_SEND_OTP = `${MAIN_API_URL}/external_card/card_to_wallet_cnp/send_otp`;

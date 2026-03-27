@@ -4,7 +4,7 @@ import THEME_COLORS from '../theme/colors'
 
 const KeyValueDisplay = ({
   data,
-  excludedKeys = ['id', 'txn_short_desc'],
+  excludedKeys = ['id', 'txn_short_desc', 'Nationality', 'FullAddress', 'Nationality'],
   nestedExcludedKeys = {
     debit_details: ['user_id'],
     credit_details: ['user_id'],

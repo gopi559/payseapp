@@ -237,7 +237,8 @@ const SendStart = () => {
             const { data } = await sendService.sendMoneyTransaction(
               beneficiary.user_id,
               amount,
-              remarks
+              remarks,
+              beneficiary?.entity_type ?? 'MOBILE'
             )
 
             sessionStorage.setItem(

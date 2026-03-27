@@ -1,21 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import bannerImage from '../../assets/bannerimage.png'
+import React, { useEffect, useState } from 'react'
 import { fetchWithBasicAuth, postWithBasicAuth } from '../../services/basicAuth.service.js'
 import { LOGIN_BANNER_IMAGE, LOGIN_BANNER_LIST } from '../../utils/constant.jsx'
 
 const PromoBanner = () => {
- const [bannerSrc, setBannerSrc] = useState(bannerImage)
+ const [bannerSrc, setBannerSrc] = useState('')
  const [bannerLink, setBannerLink] = useState('')
  const [isLoading, setIsLoading] = useState(true)
-
- const fallbackBanner = useMemo(() => bannerImage, [])
  const handleImageError = (event) => {
- if (event.currentTarget.src !== fallbackBanner) {
- event.currentTarget.src = fallbackBanner
- }
- if (bannerSrc !== fallbackBanner) {
- setBannerSrc(fallbackBanner)
- }
+ event.currentTarget.style.display = 'none'
+ setBannerSrc('')
  }
 
  useEffect(() => {
@@ -63,7 +56,7 @@ const PromoBanner = () => {
  const selectedBanner = pickBanner(bannerList)
 
  if (!selectedBanner) {
- if (isMounted) setBannerSrc(fallbackBanner)
+ if (isMounted) setBannerSrc('')
  return
  }
 
@@ -74,7 +67,7 @@ const PromoBanner = () => {
  const imageId = Number(selectedBanner?.image_id)
  if (!imageId || Number.isNaN(imageId)) {
  if (isMounted) {
- setBannerSrc(selectedBanner?.image_url || fallbackBanner)
+ setBannerSrc(selectedBanner?.image_url || '')
  }
  return
  }
@@ -85,11 +78,11 @@ const PromoBanner = () => {
  if (isMounted && resolvedSrc) {
  setBannerSrc(resolvedSrc)
  } else if (isMounted) {
- setBannerSrc(selectedBanner?.image_url || fallbackBanner)
+ setBannerSrc(selectedBanner?.image_url || '')
  }
  } catch (error) {
  if (isMounted) {
- setBannerSrc(fallbackBanner)
+ setBannerSrc('')
  }
  } finally {
  if (isMounted) {
@@ -106,7 +99,9 @@ const PromoBanner = () => {
  URL.revokeObjectURL(objectUrl)
  }
  }
- }, [fallbackBanner])
+ }, [])
+
+ if (!isLoading && !bannerSrc) return null
 
  return (
  <div className="w-full px-4 pt-12 pb-8">

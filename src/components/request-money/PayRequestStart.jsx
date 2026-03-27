@@ -139,6 +139,7 @@ const PayRequestStart = () => {
               money_reqid: request.id,
               amount,
               remarks: remarks || t('request_payment'),
+              entity_type: request?.req_cust_type ?? 'CUST',
             })
 
             sessionStorage.setItem(

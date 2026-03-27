@@ -152,7 +152,7 @@ const VoucherCreate = () => {
     }
 
     const payload = {
-      amount: String(normalizedAmount),
+amount: Number(normalizedAmount),
       receiver_name: form.receiver_name,
       receiver_father_name: form.receiver_father_name,
       receiver_mobile: mobileDigits,

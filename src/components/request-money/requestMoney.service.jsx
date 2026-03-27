@@ -91,11 +91,17 @@ const requestMoneyService = {
     }
   },
 
-  payRequestMoney: async ({ money_reqid, amount, remarks = 'Paid' }) => {
+  payRequestMoney: async ({
+    money_reqid,
+    amount,
+    remarks = 'Paid',
+    entity_type = 'CUST',
+  }) => {
     const res = await postJson(PAY_REQUEST_MONEY, {
       money_reqid: Number(money_reqid),
       amount: Number(amount),
       remarks: String(remarks || 'Paid'),
+      entity_type: String(entity_type || '').trim() || undefined,
     })
 
     authService.fetchCustomerBalance().catch(() => {})

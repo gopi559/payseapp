@@ -99,7 +99,19 @@ const VoucherPage = () => {
           type="button"
           onClick={(e) => {
             e.stopPropagation()
-            navigate('/customer/voucher/view', { state: { row } })
+            navigate('/customer/voucher/view', {
+              state: {
+                row,
+                cashcode:
+                  row?.Cashcode ||
+                  row?.cashcode ||
+                  row?.CashCode ||
+                  row?.cash_code ||
+                  row?.voucher_code ||
+                  row?.VoucherCode ||
+                  '',
+              },
+            })
           }}
           className="p-2 rounded-lg inline-flex items-center gap-1"
           style={{ color: contentCard.subtitle }}

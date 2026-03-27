@@ -45,13 +45,19 @@ const sendService = {
     }
   },
 
-  sendMoneyTransaction: async (receiver_id, amount, remarks = '') => {
+  sendMoneyTransaction: async (
+    receiver_id,
+    amount,
+    remarks = '',
+    entity_type = ''
+  ) => {
     const response = await fetchWithRefreshToken(SEND_MONEY, {
       method: 'POST',
       body: JSON.stringify({
         receiver_id: Number(receiver_id),
         amount: Number(amount),
         remarks: String(remarks || '').trim() || undefined,
+        entity_type: String(entity_type || '').trim() || undefined,
       }),
     })
 
