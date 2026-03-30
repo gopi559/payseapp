@@ -151,12 +151,18 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
       route: '/customer/card-to-card',
       isImage: true,
     },
+
+
+
+
+
+
+    
     {
       icon: (
         <img
           src={walletToWalletIcon}
           className="w-7 h-7 object-contain"
-          style={{ filter: primaryGreenIconFilter }}
           alt="Wallet to Wallet"
         />
       ),

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { HiChevronRight } from 'react-icons/hi2'
 import THEME_COLORS from '../../theme/colors'
-import walletToWalletIcon from '../../assets/wallet-to-wallet.svg'
+import walletToWalletIcon from '../../assets/PayseyMobileiconWallettoWallet.svg'
 
 const WalletToWalletMethod = () => {
   const { t } = useTranslation()
