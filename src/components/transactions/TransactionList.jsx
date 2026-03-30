@@ -470,7 +470,7 @@ const TransactionList = () => {
               data={filteredData}
               headers={headers}
               loading={loading}
-              searchPlaceholder="Search transactions..."
+              searchPlaceholder="search_in_table"
               totalItems={totalItems}
               currentPage={currentPage}
               pageSize={pageSize}

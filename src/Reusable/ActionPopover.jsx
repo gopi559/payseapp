@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { HiPencil, HiEye, HiTrash, HiXMark } from 'react-icons/hi2'
 import THEME_COLORS from '../theme/colors'
 
@@ -14,6 +15,7 @@ const ActionPopover = ({
   hideView = false,
   hideDelete = false,
 }) => {
+  const { t } = useTranslation()
   const [position, setPosition] = useState({ top: 0, left: 0 })
   const tableColors = THEME_COLORS.table
   const popupColors = THEME_COLORS.popup
@@ -38,8 +40,8 @@ const ActionPopover = ({
         style={{ top: position.top, left: position.left, backgroundColor: tableColors.rowBackground, border: `1px solid ${tableColors.border}` }}
       >
         <div className="flex items-center justify-between px-3 pb-2 mb-2" style={{ borderBottom: `1px solid ${tableColors.border}` }}>
-          <span className="text-xs font-medium" style={{ color: tableColors.text }}>Actions</span>
-          <button type="button" onClick={handleClose} className="p-1 rounded" aria-label="Close" style={{ color: tableColors.text }}>
+          <span className="text-xs font-medium" style={{ color: tableColors.text }}>{t('actions')}</span>
+          <button type="button" onClick={handleClose} className="p-1 rounded" aria-label={t('dismiss')} style={{ color: tableColors.text }}>
             <HiXMark className="w-4 h-4" />
           </button>
         </div>
@@ -55,7 +57,7 @@ const ActionPopover = ({
               style={{ color: tableColors.text }}
             >
               <HiEye className="w-4 h-4" />
-              View
+              {t('view')}
             </button>
           )}
           {!hideEdit && (
@@ -69,7 +71,7 @@ const ActionPopover = ({
               style={{ color: tableColors.text }}
             >
               <HiPencil className="w-4 h-4" style={{ color: popupColors.accent }} />
-              Edit
+              {t('edit')}
             </button>
           )}
           {!hideDelete && (
@@ -83,7 +85,7 @@ const ActionPopover = ({
               style={{ color: tableColors.text }}
             >
               <HiTrash className="w-4 h-4" />
-              Delete
+              {t('delete')}
             </button>
           )}
         </div>

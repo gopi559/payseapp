@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Button from './Button'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import { BENIFICIARY_ADD, EXTERNAL_BIN_LIST } from '../utils/constant'
@@ -22,6 +23,7 @@ const AddBeneficiaryPopup = ({
   onSuccess,
   transactionType = DEFAULT_TRANSACTION_TYPE,
 }) => {
+  const { t } = useTranslation()
   // ✅ store only digits (no spaces)
   const [cardNumber, setCardNumber] = useState('')
   const [expiryDate, setExpiryDate] = useState('')
@@ -235,12 +237,12 @@ const AddBeneficiaryPopup = ({
             className="text-lg font-semibold"
             style={{ color: popupColors.title }}
           >
-            Add New Card
+            {t('add_new_card')}
           </h2>
         </div>
 
         <p className="text-sm mb-4" style={{ color: popupColors.subtitle }}>
-          Enter Card Details To Add Beneficiary
+          {t('add_other_bank_card_as_beneficiary')}
         </p>
 
         <div className="space-y-4 mb-6">
@@ -267,17 +269,17 @@ const AddBeneficiaryPopup = ({
 
           {binStatus === 'checking' && (
             <p className="text-xs px-1" style={{ color: popupColors.subtitle }}>
-              Checking card BIN...
+              {t('checking_card_bin')}
             </p>
           )}
 
           {binStatus === 'valid' && (
-            <p className="text-xs px-1 text-[#16A34A]">Card BIN is supported.</p>
+            <p className="text-xs px-1 text-[#16A34A]">{t('card_bin_supported')}</p>
           )}
 
           {binStatus === 'invalid' && (
             <p className="text-xs px-1 text-[#DC2626]">
-              This card is not supported.
+              {t('card_not_supported')}
             </p>
           )}
 
@@ -318,7 +320,7 @@ const AddBeneficiaryPopup = ({
         </div>
 
         <Button fullWidth onClick={handleContinue} disabled={!isValid || loading}>
-          {loading ? 'Submitting...' : 'Continue'}
+          {loading ? t('submitting') : t('continue')}
         </Button>
 
         <button
@@ -327,7 +329,7 @@ const AddBeneficiaryPopup = ({
           onClick={handleClose}
           disabled={loading}
         >
-          Cancel
+          {t('cancel')}
         </button>
       </div>
     </div>
