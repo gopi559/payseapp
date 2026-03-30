@@ -5,6 +5,7 @@ import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
+import walletToWalletService from './walletToWallet.service'
 
 const WalletToWalletSuccess = () => {
   const { t, i18n } = useTranslation()
@@ -16,7 +17,20 @@ const WalletToWalletSuccess = () => {
     if (!raw) return
 
     try {
-      setDetails(JSON.parse(raw))
+      const parsed = JSON.parse(raw)
+      setDetails(parsed)
+
+      const rrn = parsed?.rrn
+      if (!rrn) return
+
+      walletToWalletService.fetchTransactionByRrn(rrn)
+        .then(({ data }) => {
+          if (!data) return
+          const merged = { ...parsed, ...data }
+          setDetails(merged)
+          sessionStorage.setItem('walletToWalletSuccess', JSON.stringify(merged))
+        })
+        .catch(() => {})
     } catch {
       setDetails(null)
     }

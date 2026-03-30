@@ -85,8 +85,11 @@ const sendService = {
 
     const res = await response.json().catch(() => null)
 
-    if (!response.ok) throw new Error(res?.message || '')
-    if (!isSuccess(res)) throw new Error(res?.message || '')
+    if (!response.ok || !isSuccess(res)) {
+      const error = new Error(res?.message || '')
+      error.data = res?.data ?? null
+      throw error
+    }
 
     return {
       data: res?.data ?? null,

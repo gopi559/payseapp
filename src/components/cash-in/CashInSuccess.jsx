@@ -5,6 +5,7 @@ import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
+import cashInService from './cashIn.service'
 
 const CashInSuccess = () => {
   const { t, i18n } = useTranslation()
@@ -16,7 +17,20 @@ const CashInSuccess = () => {
     if (!raw) return
 
     try {
-      setDetails(JSON.parse(raw))
+      const parsed = JSON.parse(raw)
+      setDetails(parsed)
+
+      const rrn = parsed?.rrn
+      if (!rrn) return
+
+      cashInService.fetchTransactionByRrn(rrn)
+        .then(({ data }) => {
+          if (!data) return
+          const merged = { ...parsed, ...data }
+          setDetails(merged)
+          sessionStorage.setItem('cashInSuccess', JSON.stringify(merged))
+        })
+        .catch(() => {})
     } catch {
       setDetails(null)
     }
@@ -30,7 +44,11 @@ const CashInSuccess = () => {
 
   const txnId = details.txn_id ?? '-'
   const formattedFromCardNumber = details.from_card_number ? formatCardNumber(details.from_card_number) : '-'
-  const fromCardholderName = details.from_card_name || '-'
+  const fromCardholderName =
+    details.from_card_name ||
+    details.card_name ||
+    details.display_cardholder_name ||
+    '-'
   const amount = details.txn_amount ? Number(details.txn_amount).toFixed(2) : '0.00'
   const dateTime = details.txn_time
     ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString(i18n.language === 'ar' ? 'ar' : 'en-IN', {

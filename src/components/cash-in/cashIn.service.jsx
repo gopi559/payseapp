@@ -4,6 +4,7 @@ import {
   CARD_TO_WALLET_CNP,
   CARD_NUMBER_VERIFY,
   CARD_CHECK_BALANCE,
+  FETCH_BY_RRN,
 } from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
@@ -105,6 +106,23 @@ const cashInService = {
     authService.fetchCustomerBalance().catch(() => {})
 
     return { data: res?.data ?? res, message: res?.message }
+  },
+
+  fetchTransactionByRrn: async (rrn) => {
+    const response = await fetchWithRefreshToken(FETCH_BY_RRN, {
+      method: 'POST',
+      body: JSON.stringify({
+        rrn: String(rrn || '').trim(),
+      }),
+    })
+
+    const res = await response.json().catch(() => null)
+
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || 'Failed to fetch transaction details')
+    }
+
+    return { data: res?.data ?? null, message: res?.message }
   },
 }
 

@@ -233,6 +233,7 @@ const TransactionList = () => {
   }
 
   const totalItems = filteredData.length
+  const hasActiveFilters = Boolean(fromDate || toDate || txnType !== 'ALL' || rrnSearch.trim())
 
   const headers = [
     { key: 'rrn', label: 'rrn' },
@@ -470,14 +471,14 @@ const TransactionList = () => {
               data={filteredData}
               headers={headers}
               loading={loading}
-              searchPlaceholder="search_in_table"
+              searchPlaceholder={t('search_in_table')}
               totalItems={totalItems}
               currentPage={currentPage}
               pageSize={pageSize}
               onPageChange={handlePageChange}
               pageSizeOptions={[10, 20, 50, 100]}
               totalRowsLabel={t('total_rows_pattern')}
-              emptyMessage="no_transactions_yet"
+              emptyMessage={hasActiveFilters ? 'no_data_found' : 'no_transactions_yet'}
               fillHeight
             />
           </div>

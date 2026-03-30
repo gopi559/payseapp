@@ -9,6 +9,8 @@ const AmountInput = ({
   label = 'Amount',
   maxAmount,
   className = '',
+  readOnly = false,
+  disabled = false,
 }) => {
   const [displayValue, setDisplayValue] = useState(value || '')
   const inputColors = THEME_COLORS.input
@@ -18,6 +20,7 @@ const AmountInput = ({
   }, [value])
 
   const handleChange = (e) => {
+    if (readOnly || disabled) return
     const input = e.target.value.replace(/[^\d.]/g, '')
     const parts = input.split('.')
 
@@ -29,6 +32,7 @@ const AmountInput = ({
   }
 
   const handleKeyPress = (e) => {
+    if (readOnly || disabled) return
     if (e.key === 'Enter') {
       onChange(displayValue)
     }
@@ -52,6 +56,8 @@ const AmountInput = ({
           onChange={handleChange}
           onKeyPress={handleKeyPress}
           placeholder="0.00"
+          readOnly={readOnly}
+          disabled={disabled}
           className="w-full pl-11 pr-3 py-2.5 text-xl font-semibold rounded-md border"
           style={{ borderColor: inputColors.border, color: inputColors.text, backgroundColor: inputColors.background }}
         />

@@ -37,6 +37,8 @@
   "profile_place_of_birth": "مكان الميلاد",
   "profile_account_purpose": "الغرض من الحساب",
   "profile_emergency_number": "رقم الطوارئ",
+  "profile_user_ref": "مرجع المستخدم",
+  "profile_account_type": "نوع الحساب",
   "profile_occupation_name": "اسم المهنة",
   "profile_employer_name": "اسم جهة العمل",
   "profile_designation": "المنصب",
@@ -61,6 +63,25 @@
   "profile_value_permanent_address": "العنوان الدائم",
   "profile_value_official_address": "العنوان الرسمي",
   "profile_value_same_as_ekyc_doc": "نفس وثيقة اعرف عميلك الإلكترونية",
+  "profile_personal_documents": "المستندات الشخصية",
+  "profile_view_personal_documents": "عرض المستندات الشخصية",
+  "profile_hide_documents": "إخفاء المستندات",
+  "profile_show_documents": "إظهار المستندات",
+  "profile_address_document": "مستند العنوان",
+  "profile_identity_document": "مستند الهوية",
+  "profile_selfie_document": "مستند الصورة الشخصية",
+  "profile_document_images": "صور المستندات",
+  "profile_address_type_desc": "وصف نوع العنوان",
+  "profile_address_label": "العنوان",
+  "profile_doc_type": "نوع المستند",
+  "profile_proof_number": "رقم الإثبات",
+  "profile_document_name": "اسم المستند",
+  "profile_document_number": "رقم المستند",
+  "profile_document_image_id": "معرف صورة المستند",
+  "profile_image_id": "معرف الصورة",
+  "profile_preview_document": "معاينة المستند",
+  "profile_no_preview": "لا توجد معاينة",
+  "profile_unable_to_load_personal_documents": "تعذر تحميل المستندات الشخصية",
   "user": "مستخدم",
   "good_morning": "صباح الخير",
   "good_afternoon": "مساء الخير",
@@ -88,6 +109,7 @@
   "continue": "متابعة",
   "otp_sent_to": "تم إرسال رمز التحقق إلى {{mobile}}",
   "enter_otp": "أدخل رمز التحقق المكون من 6 أرقام",
+  "otp_already_generated_wait_until_expiry": "تم إنشاء رمز التحقق بالفعل. يرجى الانتظار حتى انتهاء الصلاحية أو استخدام الرمز الحالي. ينتهي في: {{expiryTime}}",
   "verifying": "جارٍ التحقق...",
   "submit": "إرسال",
   "change_mobile_number": "تغيير رقم الجوال",
@@ -125,6 +147,7 @@
   "search_in_table": "ابحث في الجدول...",
   "total_rows": "إجمالي الصفوف: {{count}}",
   "no_transactions_yet": "لا توجد معاملات بعد.",
+  "no_data_found": "لم يتم العثور على بيانات.",
   "loading": "جارٍ التحميل...",
   "previous_page": "الصفحة السابقة",
   "next_page": "الصفحة التالية",
@@ -369,6 +392,9 @@
   "fetch_bill_details": "جلب تفاصيل الفاتورة",
   "bill_details_fetched_rrn": "تم جلب تفاصيل الفاتورة. RRN:",
   "bill_details": "تفاصيل الفاتورة",
+  "bill_amount_will_be_auto_fetched": "سيتم جلب المبلغ تلقائيًا من تفاصيل الفاتورة",
+  "bill_amount_is_auto_fetched": "تم جلب المبلغ تلقائيًا من تفاصيل الفاتورة ولا يمكن تعديله",
+  "bill_amount_not_provided_by_api": "لم يتم إرسال مبلغ الفاتورة من خلال الواجهة البرمجية لهذه الخدمة. يرجى إدخال المبلغ يدويًا",
   "service": "الخدمة",
   "service_id": "معرف الخدمة",
   "stan": "STAN",
@@ -483,5 +509,32 @@
   "inactive": "غير نشط",
   "select_card_preview_actions": "اختر بطاقة لعرض المعاينة والإجراءات.",
   "created_on": "تاريخ الإنشاء",
-   "bill_number" : "رقم الفاتورة"
+   "bill_number" : "رقم الفاتورة",
+
+
+
+  "add": "إضافة",
+
+  "otp_expiry_message": "ينتهي رمز التحقق خلال 120 ثانية",
+  "resend_in_seconds": "إعادة الإرسال خلال {{count}} ثانية",
+
+
+  "view_transaction_details": "عرض تفاصيل العملية",
+
+  "receiver_full_name": "الاسم الكامل للمستلم",
+  "sender_full_name": "الاسم الكامل للمرسل",
+
+  "card_holder_name": "اسم صاحب البطاقة",
+  "no_name_available": "غير متوفر",
+
+  "voucher_details": "تفاصيل القسيمة",
+  "receiver_id_type_name": "نوع الهوية",
+  "currency_name": "العملة",
+
+  "fetch_rrn_failed": "فشل في جلب تفاصيل المعاملة",
+  "transaction_fetched_successfully": "تم جلب تفاصيل المعاملة بنجاح"
+
+
+
+
 }

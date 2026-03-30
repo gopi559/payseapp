@@ -23,11 +23,31 @@ import { generateStan } from '../../utils/generateStan'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
+const getUserFullName = (user, fallback = '') => {
+  const regInfo = user?.reg_info || user
+  const userKyc = user?.user_kyc || null
+
+  return (
+    [userKyc?.first_name, userKyc?.middle_name, userKyc?.last_name].filter(Boolean).join(' ').trim() ||
+    [regInfo?.first_name, regInfo?.middle_name, regInfo?.last_name].filter(Boolean).join(' ').trim() ||
+    regInfo?.name ||
+    fallback
+  )
+}
+
+const getCardholderDisplayName = (card, fallback = '') =>
+  card?.cardholder_name?.trim() ||
+  card?.cardholder_nick_name?.trim() ||
+  card?.name_on_card?.trim() ||
+  card?.card_name?.trim() ||
+  fallback
+
 const CashInCardList = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const scrollRef = useRef(null)
   const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
+  const user = useSelector((state) => state.auth?.user)
 
   const [cards, setCards] = useState([])
   const [activeIndex, setActiveIndex] = useState(0)
@@ -39,6 +59,7 @@ const CashInCardList = () => {
   const [txnMeta, setTxnMeta] = useState(null)
   const [loading, setLoading] = useState(false)
   const [isAddNewOpen, setIsAddNewOpen] = useState(false)
+  const customerFullName = getUserFullName(user, t('user'))
 
   useEffect(() => {
     fetchCards()
@@ -65,9 +86,16 @@ const CashInCardList = () => {
         throw new Error(data.message)
       }
 
-      const list = (data.data || []).map((card) =>
-        !card.external_inst_name ? { ...card, balance: walletBalance } : card
-      )
+      const list = (data.data || []).map((card) => {
+        const normalizedCard = {
+          ...card,
+          display_cardholder_name: getCardholderDisplayName(card, customerFullName),
+        }
+
+        return !card.external_inst_name
+          ? { ...normalizedCard, balance: walletBalance }
+          : normalizedCard
+      })
       setCards(list)
     } catch (e) {
       toast.error(e.message || t('failed_to_load_cards'))
@@ -132,7 +160,10 @@ const CashInCardList = () => {
       return
     }
 
-    setSelectedCard(cards[activeIndex])
+    setSelectedCard({
+      ...cards[activeIndex],
+      display_cardholder_name: getCardholderDisplayName(cards[activeIndex], customerFullName),
+    })
     setStep('CVV')
   }
 
@@ -203,9 +234,22 @@ const CashInCardList = () => {
         stan: txnMeta.stan,
       })
 
+      let fetchedTransaction = null
+      const transactionRrn = data?.rrn ?? txnMeta?.rrn
+
+      if (transactionRrn) {
+        try {
+          const { data: rrnData } = await cashInService.fetchTransactionByRrn(transactionRrn)
+          fetchedTransaction = rrnData
+        } catch (fetchError) {
+          console.error(fetchError)
+        }
+      }
+
       sessionStorage.setItem(
         'cashInSuccess',
         JSON.stringify({
+          ...(fetchedTransaction || {}),
           txn_id: data.txn_id,
           rrn: data.rrn,
           txn_amount: data.txn_amount,
@@ -215,7 +259,7 @@ const CashInCardList = () => {
           channel_type: 'WEB',
           status: 1,
           from_card_number: selectedCard.card_number,
-          from_card_name: selectedCard.cardholder_name || selectedCard.card_name,
+          from_card_name: getCardholderDisplayName(selectedCard, customerFullName),
           to: t('wallet'),
         })
       )

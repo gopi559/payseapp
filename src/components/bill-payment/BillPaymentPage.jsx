@@ -22,6 +22,49 @@ import billPaymentService from './billPayment.service'
 import { getBillServiceName } from './billPayment.constants'
 import { CARD_CHECK_BALANCE } from '../../utils/constant'
 
+const firstFilled = (...values) => {
+  for (const value of values) {
+    if (value == null) continue
+    const text = String(value).trim()
+    if (text && text !== '-' && text.toUpperCase() !== 'N/A') return value
+  }
+  return null
+}
+
+const getFetchedBillAmount = (billInfo) =>
+  firstFilled(
+    billInfo?.txn_amount,
+    billInfo?.amount,
+    billInfo?.bill_amount,
+    billInfo?.due_amount,
+    billInfo?.total_amount,
+    billInfo?.bill_amt
+  )
+
+const getBillInfoRows = (billInfo, t) => {
+  if (!billInfo) return []
+
+  const rows = [
+    { label: t('service'), value: firstFilled(billInfo?.service_name, billInfo?.service, billInfo?.biller_name) },
+    { label: t('account_number'), value: firstFilled(billInfo?.acc_number, billInfo?.account_number, billInfo?.account_no) },
+    { label: t('mobile_number'), value: firstFilled(billInfo?.mobile_no, billInfo?.mobile_number, billInfo?.customer_mobile) },
+    { label: t('name'), value: firstFilled(billInfo?.customer_name, billInfo?.name, billInfo?.consumer_name) },
+    { label: t('bill_number'), value: firstFilled(billInfo?.bill_number, billInfo?.bill_no) },
+    { label: t('card_number'), value: firstFilled(billInfo?.card_number, billInfo?.masked_card) },
+    { label: t('card_name'), value: firstFilled(billInfo?.card_name, billInfo?.card_holder_name, billInfo?.cardholder_name) },
+  ]
+
+  return rows.filter((row) => firstFilled(row.value))
+}
+
+const getResolvedCardholderName = (cardInfo) =>
+  firstFilled(
+    cardInfo?.card_holder_name,
+    cardInfo?.cardholder_name,
+    cardInfo?.name_on_card,
+    cardInfo?.card_name
+  )
+
 const generateRrn = () => {
   const d = new Date()
   const part = [
@@ -129,10 +172,6 @@ const BillPaymentPage = () => {
       if (!silent) toast.error(t('enter_bill_number'))
       return false
     }
-    if (!amount || Number(amount) <= 0) {
-      if (!silent) toast.error(t('enter_valid_amount'))
-      return false
-    }
     return true
   }
 
@@ -192,7 +231,7 @@ const BillPaymentPage = () => {
 
       const { data } = await billPaymentService.fetchBillInfoAndSendOtp({
         card_number: selected.card_number,
-        txn_amount: String(amount),
+        txn_amount: '',
         bill_number: billNumber,
         service_id: serviceId,
         otp: '',
@@ -201,11 +240,25 @@ const BillPaymentPage = () => {
         mobile_no: mobileNo,
       })
 
+      let enrichedBillInfo = data ?? {}
+      const billCardNumber = firstFilled(data?.card_number, data?.masked_card)
+      if (billCardNumber) {
+        try {
+          const verifiedBillCard = await billPaymentService.verifyCard(billCardNumber)
+          enrichedBillInfo = {
+            ...enrichedBillInfo,
+            card_name: getResolvedCardholderName(verifiedBillCard?.data),
+          }
+        } catch (_) {}
+      }
+
       setSelectedCard(selected)
-      setBillInfo(data ?? {})
+      setBillInfo(enrichedBillInfo)
+      const fetchedAmount = getFetchedBillAmount(enrichedBillInfo)
+      setAmount(fetchedAmount != null ? String(fetchedAmount) : '')
       setTxnMeta({
-        rrn: String(data?.rrn ?? fallbackRrn),
-        stan: String(data?.stan ?? fallbackStan),
+        rrn: String(enrichedBillInfo?.rrn ?? fallbackRrn),
+        stan: String(enrichedBillInfo?.stan ?? fallbackStan),
       })
 
       toast.success(t('bill_details_fetched_otp_sent'))
@@ -221,6 +274,10 @@ const BillPaymentPage = () => {
   const handleContinue = () => {
     if (!txnMeta?.rrn || !txnMeta?.stan || !selectedCard) {
       toast.error(t('fetch_bill_details_first'))
+      return
+    }
+    if (!amount || Number(amount) <= 0) {
+      toast.error(t('enter_valid_amount'))
       return
     }
     setStep('CONFIRM')
@@ -271,11 +328,39 @@ const BillPaymentPage = () => {
         mobile_no: mobileNo,
       })
 
+      const rrn = data?.rrn ?? txnMeta.rrn
+      let fetchedTxn = null
+      let fromCardName = selectedCard.cardholder_name || selectedCard.card_name || null
+      let responseCardName = null
+
+      if (rrn) {
+        try {
+          const fetched = await billPaymentService.fetchTransactionByRrn(rrn)
+          fetchedTxn = fetched?.data ?? null
+        } catch (_) {
+          fetchedTxn = null
+        }
+      }
+
+      try {
+        const verifiedFromCard = await billPaymentService.verifyCard(selectedCard.card_number)
+        fromCardName = getResolvedCardholderName(verifiedFromCard?.data) || fromCardName
+      } catch (_) {}
+
+      try {
+        const responseCardNumber = data?.card_number ?? fetchedTxn?.card_number
+        if (responseCardNumber) {
+          const verifiedResponseCard = await billPaymentService.verifyCard(responseCardNumber)
+          responseCardName = getResolvedCardholderName(verifiedResponseCard?.data)
+        }
+      } catch (_) {}
+
       sessionStorage.setItem(
         'billPaymentSuccess',
         JSON.stringify({
+          ...(fetchedTxn || {}),
           txn_id: data?.txn_id,
-          rrn: data?.rrn ?? txnMeta.rrn,
+          rrn,
           txn_amount: String(data?.txn_amount ?? amount ?? ''),
           txn_time: data?.txn_time || new Date().toISOString(),
           channel_type: data?.channel_type || 'WEB',
@@ -285,7 +370,7 @@ const BillPaymentPage = () => {
           txn_type: 'BILL_PAYMENT',
           txn_desc: t('bill_payment_for_service', { service: serviceName }),
           from_card: selectedCard.card_number,
-          from_card_name: selectedCard.cardholder_name || selectedCard.card_name || null,
+          from_card_name: fromCardName,
           service_id: String(serviceId),
           service_name: serviceName,
           bill_number: billNumber,
@@ -296,6 +381,7 @@ const BillPaymentPage = () => {
           authcode: data?.authcode ?? null,
           avail_bal: data?.avail_bal ?? null,
           response_card_number: data?.card_number ?? null,
+          response_card_name: responseCardName,
           bill_info: billInfo,
         })
       )
@@ -342,6 +428,8 @@ const BillPaymentPage = () => {
       </div>
     </div>
   )
+
+  const fetchedBillRows = getBillInfoRows(billInfo, t)
 
   return (
     <MobileScreenContainer footer={footer}>
@@ -410,7 +498,16 @@ const BillPaymentPage = () => {
           </div>
 
           <div className="mt-4">
-            <AmountInput label={t('amount')} value={amount} onChange={setAmount} />
+            <AmountInput
+              label={t('amount')}
+              value={amount}
+              onChange={setAmount}
+              readOnly={false}
+              disabled={false}
+            />
+            {!billInfo && (
+              <p className="mt-2 text-xs text-gray-500">{t('bill_amount_will_be_auto_fetched')}</p>
+            )}
           </div>
 
           <div className="mt-6">
@@ -427,6 +524,18 @@ const BillPaymentPage = () => {
               {t('bill_details_fetched_rrn')} <span className="font-mono">{txnMeta.rrn}</span>
             </p>
           )}
+
+          {fetchedBillRows.length > 0 && (
+            <div className="mt-4 rounded-xl border border-[#DCEFE2] bg-[#F7FCF8] p-3 space-y-2">
+              <p className="text-sm font-semibold text-[#1F2937]">{t('bill_details')}</p>
+              {fetchedBillRows.map((row) => (
+                <div key={row.label} className="flex items-start justify-between gap-3 text-sm">
+                  <span className="text-[#6B7280]">{row.label}</span>
+                  <span className="text-right font-medium text-[#111827] break-all">{row.value}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         </div>
       </div>
@@ -442,7 +551,17 @@ const BillPaymentPage = () => {
         open={step === 'CONFIRM'}
         card={selectedCard}
         amount={amount}
-        to={`${serviceName} - ${t('bill')} #${billNumber}`}
+        to={
+          <div className="space-y-1">
+            <p className="font-medium">{serviceName}</p>
+            <p className="text-xs">{t('bill')} #{billNumber}</p>
+            {fetchedBillRows.slice(0, 5).map((row) => (
+              <p key={row.label} className="text-xs">
+                <span className="opacity-70">{row.label}:</span> {row.value}
+              </p>
+            ))}
+          </div>
+        }
         description={t('bill_payment_for_service', { service: serviceName })}
         loading={loading}
         onSendOtp={handleOpenCvv}

@@ -31,7 +31,11 @@ const ConfirmTransactionPopup = ({
     ? formatCardNumber(card.card_number)
     : null
 
-  const fromCardholderName = card?.cardholder_name || card?.name_on_card
+  const fromCardholderName =
+    card?.display_cardholder_name ||
+    card?.cardholder_name ||
+    card?.cardholder_nick_name ||
+    card?.name_on_card
 
   return (
 <div

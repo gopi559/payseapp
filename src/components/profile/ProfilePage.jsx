@@ -1,6 +1,7 @@
 ﻿import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { CiLogout } from 'react-icons/ci'
 import PageContainer from '../../Reusable/PageContainer'
@@ -10,9 +11,17 @@ import profileService from './profile.service'
 import { setProfileImage } from '../../Redux/store.jsx'
 import THEME_COLORS from '../../theme/colors'
 
+const resolveUserId = (user) =>
+  user?.reg_info?.user_id ??
+  user?.reg_info?.id ??
+  user?.user_id ??
+  user?.id ??
+  null
+
 const ProfilePage = () => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const { t } = useTranslation()
 
   const user = useSelector((state) => state.auth.user)
   const walletId = useSelector((state) => state.wallet.walletId)
@@ -30,10 +39,10 @@ const ProfilePage = () => {
   const displayName =
     userKyc?.first_name || userKyc?.last_name
       ? [userKyc.first_name, userKyc.last_name].filter(Boolean).join(' ')
-      : regInfo?.mobile || regInfo?.email || 'User'
+      : regInfo?.mobile || regInfo?.email || t('user')
 
   const userRef = regInfo?.user_ref || walletId
-  const userId = regInfo?.user_id ?? regInfo?.id ?? null
+  const userId = resolveUserId(user)
 
   useEffect(() => {
     if (!profileImage && profileImageId) {
@@ -117,7 +126,7 @@ const ProfilePage = () => {
   return (
     <PageContainer>
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <h1 className="text-xl font-semibold mb-6" style={{ color: contentCard.title }}>Profile</h1>
+        <h1 className="text-xl font-semibold mb-6" style={{ color: contentCard.title }}>{t('profile')}</h1>
 
         <div
           className="border rounded-lg p-6 mb-6"
@@ -156,12 +165,12 @@ const ProfilePage = () => {
 
           <div className="mt-6 space-y-2 border-t pt-4" style={{ borderColor: contentCard.divider }}>
             <div className="flex justify-between text-sm">
-              <span style={{ color: contentCard.subtitle }}>User Ref</span>
+              <span style={{ color: contentCard.subtitle }}>{t('profile_user_ref')}</span>
               <span className="font-mono" style={{ color: contentCard.title }}>{userRef || '—'}</span>
             </div>
             {regInfo?.user_type_name && (
               <div className="flex justify-between text-sm">
-                <span style={{ color: contentCard.subtitle }}>Account Type</span>
+                <span style={{ color: contentCard.subtitle }}>{t('profile_account_type')}</span>
                 <span style={{ color: contentCard.title }}>{regInfo.user_type_name}</span>
               </div>
             )}
@@ -173,13 +182,13 @@ const ProfilePage = () => {
           style={{ backgroundColor: contentCard.background, borderColor: contentCard.border }}
         >
           <button onClick={() => navigate('/customer/profile/details')} className="w-full flex justify-between items-center">
-            <span style={{ color: contentCard.title }}>Profile Details</span>
+            <span style={{ color: contentCard.title }}>{t('profile_details')}</span>
             <span style={{ color: contentCard.subtitle }}>›</span>
           </button>
         </div>
 
         <Button onClick={handleLogout} variant="outline" fullWidth>
-          <CiLogout /> Logout
+          <CiLogout /> {t('logout')}
         </Button>
       </div>
     </PageContainer>

@@ -134,6 +134,9 @@ export const BILL_PAYMENT_CNP = `${MAIN_API_URL}/billpayment/billpaymentcnp`;
 
 export const PERSONAL_INFORMATION_LIST = `${MAIN_API_URL}/personal_informations/list`;
 export const PERSONAL_INFORMATION = `${MAIN_API_URL}/personal_informations`;
+// export const DOCUMENT_LIST = `${MAIN_API_URL}/personal_documents/list`;
+
+export const DOCUMENT_LIST = `https://backend.api-innovitegra.in/webcust/personal_documents`;
 
 
 export const WALLET_TO_WALLET = `${MAIN_API_URL}/external_card/wallet_ext_wallet_cnp_703`;

@@ -21,12 +21,52 @@ const normalizeMobile = (value) => {
   return `+${trimmed.replace(/\D/g, '')}`
 }
 
+const getBeneficiaryName = (beneficiary, fallbackName) =>
+  [beneficiary?.first_name, beneficiary?.middle_name, beneficiary?.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim() ||
+  beneficiary?.displayName ||
+  beneficiary?.reg_mobile ||
+  fallbackName
+
 const getCustomerId = (user) =>
   user?.reg_info?.user_id ??
   user?.reg_info?.id ??
   user?.user_id ??
   user?.id ??
   null
+
+const getDailyLimitErrorParams = (message) => {
+  const text = String(message || '')
+  const match = text.match(
+    /current:\s*([0-9.]+),\s*limit:\s*([0-9.]+),\s*transaction:\s*([0-9.]+),\s*remaining:\s*([0-9.]+)/i
+  )
+
+  return {
+    current: match?.[1] || '0.00',
+    limit: match?.[2] || '0.00',
+    transaction: match?.[3] || '0.00',
+    remaining: match?.[4] || '0.00',
+  }
+}
+
+const isDailyLimitValidationError = (message) =>
+  /sender\s+limit\s+validation\s+failed:.*daily\s+amount\s+limit/i.test(
+    String(message || '')
+  )
+
+const getExistingOtpExpiryTime = (error) => {
+  const directExpiry = error?.data?.expiry_time
+  if (directExpiry) return String(directExpiry)
+
+  const message = String(error?.message || '')
+  const match = message.match(/expires\s+at:\s*([0-9:\-\s]+)/i)
+  return match?.[1]?.trim() || ''
+}
+
+const isOtpAlreadyGeneratedMessage = (error) =>
+  /otp\s+already\s+generated/i.test(String(error?.message || ''))
 
 const SendStart = () => {
   const { t } = useTranslation()
@@ -105,10 +145,7 @@ const SendStart = () => {
   }
 
   const beneficiaryName =
-    beneficiary?.displayName ??
-    beneficiary?.first_name ??
-    beneficiary?.reg_mobile ??
-    t('beneficiary')
+    getBeneficiaryName(beneficiary, t('beneficiary'))
 
   const beneficiaryNameUpper = String(beneficiaryName || '').toUpperCase()
 
@@ -196,7 +233,7 @@ const SendStart = () => {
         open={step === 'CONFIRM'}
         amount={amount}
         to={beneficiaryName}
-        mobile={mobile}
+        mobile={beneficiary?.reg_mobile ?? mobile}
         description={t('send_money')}
         loading={loading}
         onSendOtp={async () => {
@@ -206,7 +243,11 @@ const SendStart = () => {
             toast.success(t('otp_sent'))
             setStep('OTP')
           } catch (e) {
-            toast.error(e.message || t('failed_to_send_otp'))
+            const expiryTime = getExistingOtpExpiryTime(e)
+            const message = isOtpAlreadyGeneratedMessage(e)
+              ? t('otp_already_generated_wait_until_expiry', { expiryTime })
+              : e?.message || t('failed_to_send_otp')
+            toast.error(message)
           } finally {
             setLoading(false)
           }
@@ -255,7 +296,10 @@ const SendStart = () => {
             setStep(null)
             navigate('/customer/send/success')
           } catch (e) {
-            toast.error(e.message || t('transaction_failed'))
+            const message = isDailyLimitValidationError(e?.message)
+              ? t('daily_amount_limit_exceeded', getDailyLimitErrorParams(e?.message))
+              : e?.message || t('transaction_failed')
+            toast.error(message)
           } finally {
             setLoading(false)
           }

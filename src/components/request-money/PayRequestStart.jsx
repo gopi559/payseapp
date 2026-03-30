@@ -13,6 +13,18 @@ import THEME_COLORS from '../../theme/colors'
 import { sendService } from '../send/send.service'
 import requestMoneyService from './requestMoney.service'
 
+const getExistingOtpExpiryTime = (error) => {
+  const directExpiry = error?.data?.expiry_time
+  if (directExpiry) return String(directExpiry)
+
+  const message = String(error?.message || '')
+  const match = message.match(/expires\s+at:\s*([0-9:\-\s]+)/i)
+  return match?.[1]?.trim() || ''
+}
+
+const isOtpAlreadyGeneratedMessage = (error) =>
+  /otp\s+already\s+generated/i.test(String(error?.message || ''))
+
 const PayRequestStart = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -118,7 +130,11 @@ const PayRequestStart = () => {
             toast.success(t('otp_sent'))
             setStep('OTP')
           } catch (e) {
-            toast.error(e.message || t('failed_to_send_otp'))
+            const expiryTime = getExistingOtpExpiryTime(e)
+            const message = isOtpAlreadyGeneratedMessage(e)
+              ? t('otp_already_generated_wait_until_expiry', { expiryTime })
+              : e?.message || t('failed_to_send_otp')
+            toast.error(message)
           } finally {
             setLoading(false)
           }

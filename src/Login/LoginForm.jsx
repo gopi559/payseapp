@@ -6,6 +6,8 @@ import Button from '../Reusable/Button'
 import OtpInput from '../Reusable/OtpInput'
 import useLogin from '../Hooks/useLogin'
 
+const OTP_EXPIRY_SECONDS = 120
+
 const LoginForm = () => {
   const { t } = useTranslation()
   const location = useLocation()
@@ -49,7 +51,7 @@ const LoginForm = () => {
       const result = await sendOtp(mobileNumber)
       if (result.success) {
         setOtpSent(true)
-        setCountdown(60)
+        setCountdown(OTP_EXPIRY_SECONDS)
         setIsFlipped(true)
       } else {
         setError(result.error || t('failed_to_send_otp'))
@@ -71,7 +73,7 @@ const LoginForm = () => {
     try {
       const result = await sendOtp(mobileNumber)
       if (result.success) {
-        setCountdown(60)
+        setCountdown(OTP_EXPIRY_SECONDS)
         setOtp('')
       } else {
         setError(result.error || t('failed_to_resend_otp'))

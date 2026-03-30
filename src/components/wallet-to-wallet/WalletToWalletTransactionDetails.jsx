@@ -14,6 +14,43 @@ import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 import { formatCardNumber } from '../../utils/formatCardNumber'
+import walletToWalletService from './walletToWallet.service'
+
+const firstFilled = (...values) => {
+  for (const value of values) {
+    if (value == null) continue
+    const text = String(value).trim()
+    if (text && text !== '-' && text.toUpperCase() !== 'N/A') return value
+  }
+  return null
+}
+
+const getPrimaryEntry = (value) => (Array.isArray(value) ? value[0] ?? null : value ?? null)
+
+const formatMaskedCardValue = (value) => {
+  const raw = String(value ?? '').trim()
+  if (!raw) return null
+  if (raw.includes('*') || raw.includes('X')) return raw
+  const digits = raw.replace(/\D/g, '')
+  if (digits.length < 8) return raw
+  return formatCardNumber(digits)
+}
+
+const getDisplayName = (entry) =>
+  firstFilled(
+    entry?.cardholder_name,
+    entry?.name_on_card,
+    entry?.card_name,
+    [entry?.first_name, entry?.middle_name, entry?.last_name].filter(Boolean).join(' ').trim(),
+    entry?.customer_name,
+    entry?.name
+  )
+
+const getDisplayMobile = (entry) =>
+  firstFilled(entry?.mobile_number, entry?.mobile_no, entry?.cust_mobile, entry?.reg_mobile, entry?.phone)
+
+const getDisplayAccount = (entry) =>
+  firstFilled(entry?.account_number, entry?.acct_number, entry?.wallet_number, entry?.account_no, entry?.user_ref)
 
 function escapeHtml(str) {
   const s = String(str ?? '')
@@ -29,9 +66,9 @@ const downloadTransactionPdf = (
   senderName,
   senderMobile,
   senderAccountNumber,
-  cardNumber,
-  cardName,
-  walletNumber,
+  receiverCardNumber,
+  receiverCardName,
+  receiverWalletNumber,
   labels
 ) => {
   const win = window.open('', '_blank')
@@ -73,16 +110,15 @@ const downloadTransactionPdf = (
 
   const senderRows = [
     { label: labels.name, value: senderName },
-    { label: labels.mobileNumber, value: senderMobile || '-' },
-    { label: labels.cardNumber, value: labels.notAvailable },
+    { label: labels.mobileNumber, value: senderMobile },
     { label: labels.accountNumber, value: senderAccountNumber },
-  ]
+  ].filter((row) => firstFilled(row.value))
 
   const receiverRows = [
-    { label: labels.cardNumber, value: cardNumber },
-    { label: labels.cardName, value: cardName || '-' },
-    { label: labels.walletNumber, value: walletNumber || '-' },
-  ]
+    { label: labels.cardNumber, value: receiverCardNumber },
+    { label: labels.cardName, value: receiverCardName },
+    { label: labels.walletNumber, value: receiverWalletNumber },
+  ].filter((row) => firstFilled(row.value))
 
   const formatRows = (rows) =>
     rows
@@ -155,7 +191,20 @@ const WalletToWalletTransactionDetails = () => {
     const raw = sessionStorage.getItem('walletToWalletSuccess')
     if (raw) {
       try {
-        setDetails(JSON.parse(raw))
+        const parsed = JSON.parse(raw)
+        setDetails(parsed)
+
+        const rrn = parsed?.rrn
+        if (!rrn) return
+
+        walletToWalletService.fetchTransactionByRrn(rrn)
+          .then(({ data }) => {
+            if (!data) return
+            const merged = { ...parsed, ...data }
+            setDetails(merged)
+            sessionStorage.setItem('walletToWalletSuccess', JSON.stringify(merged))
+          })
+          .catch(() => {})
       } catch {
         setDetails({})
       }
@@ -170,16 +219,14 @@ const WalletToWalletTransactionDetails = () => {
     if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
-      return date
-        .toLocaleString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true,
-        })
-        .replace(',', ' at')
+      return date.toLocaleString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
     } catch {
       return dateTimeStr
     }
@@ -187,24 +234,32 @@ const WalletToWalletTransactionDetails = () => {
 
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
-  const senderName = userKyc?.first_name || userKyc?.last_name
+  const debitDetails = getPrimaryEntry(details?.debit_details)
+  const creditDetails = getPrimaryEntry(details?.credit_details)
+
+  const fallbackSenderName = userKyc?.first_name || userKyc?.last_name
     ? [userKyc.first_name, userKyc.middle_name, userKyc.last_name].filter(Boolean).join(' ')
     : regInfo?.first_name || regInfo?.name || t('user')
-  const senderMobile = regInfo?.mobile ?? regInfo?.reg_mobile ?? user?.mobile ?? ''
-  const senderAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || '-'
+  const fallbackSenderMobile = regInfo?.mobile ?? regInfo?.reg_mobile ?? user?.mobile ?? ''
+  const fallbackSenderAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || null
 
-  const amount = details?.txn_amount != null ? Number(details.txn_amount).toFixed(2) : '0.00'
+  const amountValue = firstFilled(details?.txn_amount, details?.amount, details?.txnAmount)
+  const amount = amountValue != null ? Number(amountValue).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
   const txnTime = details?.txn_time ?? details?.created_at ?? ''
-  const txnTypeRaw = details?.txn_type ?? 'WALLET_TO_WALLET'
-  const txnType = txnTypeRaw === 'WALLET_TO_WALLET' ? 'W2W' : txnTypeRaw
+  const txnType = details?.txn_type ?? 'WALLET_TO_WALLET'
   const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? t('wallet_to_wallet')
-  const channel = details?.channel_type ?? 'WEB'
+  const channel = details?.channel_type ?? details?.channel ?? 'WEB'
 
-  const cardNumber = details?.card_number ?? ''
-  const formattedCardNumber = cardNumber ? formatCardNumber(cardNumber) : '-'
-  const cardName = details?.card_name ?? t('not_available')
-  const walletNumber = details?.wallet_number ?? '-'
+  const senderName = firstFilled(getDisplayName(debitDetails), details?.from, fallbackSenderName)
+  const senderMobile = firstFilled(getDisplayMobile(debitDetails), fallbackSenderMobile)
+  const senderAccountNumber = firstFilled(getDisplayAccount(debitDetails), fallbackSenderAccountNumber)
+
+  const receiverCardNumber = formatMaskedCardValue(
+    firstFilled(details?.card_number, details?.to_card, creditDetails?.masked_card, creditDetails?.card_number, creditDetails?.card_no)
+  )
+  const receiverCardName = firstFilled(details?.card_name, getDisplayName(creditDetails))
+  const receiverWalletNumber = firstFilled(details?.wallet_number, getDisplayAccount(creditDetails))
 
   const handleDownloadPdf = () => {
     downloadTransactionPdf(
@@ -212,9 +267,9 @@ const WalletToWalletTransactionDetails = () => {
       senderName,
       senderMobile,
       senderAccountNumber,
-      formattedCardNumber,
-      cardName,
-      walletNumber,
+      receiverCardNumber,
+      receiverCardName,
+      receiverWalletNumber,
       {
         pleaseAllowPopups: t('please_allow_popups_to_download_pdf'),
         transactionId: t('transaction_id'),
@@ -366,21 +421,15 @@ const WalletToWalletTransactionDetails = () => {
               </div>
             )}
 
-            <div className="flex items-start gap-3">
-              <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
-                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
+            {senderAccountNumber && (
+              <div className="flex items-start gap-3">
+                <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{senderAccountNumber}</p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{senderAccountNumber}</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -393,28 +442,32 @@ const WalletToWalletTransactionDetails = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{formattedCardNumber}</p>
+            {receiverCardNumber && (
+              <div className="flex items-start gap-3">
+                <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{receiverCardNumber}</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex items-start gap-3">
-              <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
-                <p className="text-sm font-medium text-gray-800">{cardName}</p>
+            {receiverCardName && (
+              <div className="flex items-start gap-3">
+                <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
+                  <p className="text-sm font-medium text-gray-800">{receiverCardName}</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            {walletNumber && walletNumber !== '-' && (
+            {receiverWalletNumber && (
               <div className="flex items-start gap-3">
                 <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
                 <div className="flex-1">
                   <p className="text-xs text-gray-500 mb-0.5">{t('wallet_number')}</p>
-                  <p className="text-sm font-medium text-gray-800 font-mono">{walletNumber}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{receiverWalletNumber}</p>
                 </div>
               </div>
             )}

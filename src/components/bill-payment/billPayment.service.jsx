@@ -1,5 +1,10 @@
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
-import { BILL_PAYMENT_CNP, BILL_PAYMENT_INFO_CP } from '../../utils/constant.jsx'
+import {
+  BILL_PAYMENT_CNP,
+  BILL_PAYMENT_INFO_CP,
+  CARD_NUMBER_VERIFY,
+  FETCH_BY_RRN,
+} from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
@@ -8,6 +13,22 @@ const isSuccess = (res) =>
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
 const billPaymentService = {
+  verifyCard: async (card_number) => {
+    const response = await fetchWithRefreshToken(CARD_NUMBER_VERIFY, {
+      method: 'POST',
+      body: JSON.stringify({
+        card_number: String(card_number).trim().replace(/\s/g, ''),
+      }),
+    })
+
+    const res = await response.json().catch(() => null)
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || '')
+    }
+
+    return { data: res?.data ?? null, message: res?.message }
+  },
+
   fetchBillInfoAndSendOtp: async ({
     card_number,
     txn_amount,
@@ -78,6 +99,22 @@ const billPaymentService = {
     authService.fetchCustomerBalance().catch(() => {})
 
     return { data: res?.data ?? res, message: res?.message }
+  },
+
+  fetchTransactionByRrn: async (rrn) => {
+    const response = await fetchWithRefreshToken(FETCH_BY_RRN, {
+      method: 'POST',
+      body: JSON.stringify({
+        rrn: String(rrn || '').trim(),
+      }),
+    })
+
+    const res = await response.json().catch(() => null)
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || '')
+    }
+
+    return { data: res?.data ?? null, message: res?.message }
   },
 }
 

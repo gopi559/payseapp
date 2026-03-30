@@ -1,5 +1,6 @@
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import {
+  FETCH_BY_RRN,
   GENERATE_TRANSACTION_OTP,
   VERIFY_TRANSACTION_OTP,
   WALLET_TO_CARD,
@@ -64,6 +65,21 @@ const walletToCardService = {
     }
 
     authService.fetchCustomerBalance().catch(() => {})
+
+    return res
+  },
+
+  fetchTransactionByRrn: async (rrn) => {
+    const response = await fetchWithRefreshToken(FETCH_BY_RRN, {
+      method: 'POST',
+      body: JSON.stringify({ rrn }),
+    })
+
+    const res = await response.json().catch(() => null)
+
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || '')
+    }
 
     return res
   },

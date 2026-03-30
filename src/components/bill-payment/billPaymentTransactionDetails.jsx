@@ -2,11 +2,30 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
-import { HiOutlineCreditCard } from 'react-icons/hi2'
+import { HiOutlineCreditCard, HiOutlineUser } from 'react-icons/hi2'
 import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop, FaFileInvoice } from 'react-icons/fa'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import { formatCardNumber } from '../../utils/formatCardNumber'
+import billPaymentService from './billPayment.service'
+
+const firstFilled = (...values) => {
+  for (const value of values) {
+    if (value == null) continue
+    const text = String(value).trim()
+    if (text && text !== '-' && text.toUpperCase() !== 'N/A') return value
+  }
+  return null
+}
+
+const getResolvedCardholderName = (cardInfo) =>
+  firstFilled(
+    cardInfo?.card_holder_name,
+    cardInfo?.cardholder_name,
+    cardInfo?.name_on_card,
+    cardInfo?.card_name
+  )
 
 function escapeHtml(str) {
   const s = String(str ?? '')
@@ -37,9 +56,7 @@ const downloadTransactionPdf = (details, t, language) => {
     }
   }
 
-  const maskedFromCard = details?.from_card
-    ? `${details.from_card.slice(0, 4)} **** **** ${details.from_card.slice(-4)}`
-    : '-'
+  const maskedFromCard = details?.from_card ? formatCardNumber(details.from_card) : '-'
 
   const transactionRows = [
     { label: t('transaction_id'), value: details?.txn_id ?? '-' },
@@ -65,10 +82,9 @@ const downloadTransactionPdf = (details, t, language) => {
     { label: t('bill_number'), value: details?.bill_number ?? '-' },
     { label: t('mobile_number'), value: details?.mobile_no ?? '-' },
     { label: t('account_number'), value: details?.acc_number ?? '-' },
-    { label: t('card_number'), value: details?.response_card_number ?? details?.from_card ?? '-' },
+    { label: t('card_number'), value: details?.response_card_number ? formatCardNumber(details.response_card_number) : details?.from_card ? formatCardNumber(details.from_card) : '-' },
+    { label: t('card_name'), value: details?.response_card_name ?? '-' },
     { label: t('rrn'), value: details?.rrn ?? '-' },
-    { label: t('status'), value: details?.resp_code ?? '-' },
-    { label: t('stan'), value: details?.stan ?? '-' },
   ]
 
   const formatRows = (rows) =>
@@ -140,7 +156,49 @@ const BillPaymentTransactionDetails = () => {
     const raw = sessionStorage.getItem('billPaymentSuccess')
     if (raw) {
       try {
-        setDetails(JSON.parse(raw))
+        const parsed = JSON.parse(raw)
+        setDetails(parsed)
+
+        const tasks = []
+        if (parsed?.rrn) {
+          tasks.push(
+            billPaymentService.fetchTransactionByRrn(parsed.rrn).then(({ data }) => ({ type: 'txn', data })).catch(() => null)
+          )
+        }
+        if (parsed?.from_card) {
+          tasks.push(
+            billPaymentService.verifyCard(parsed.from_card).then(({ data }) => ({ type: 'fromCard', data })).catch(() => null)
+          )
+        }
+        if (parsed?.response_card_number || parsed?.card_number) {
+          tasks.push(
+            billPaymentService.verifyCard(parsed.response_card_number ?? parsed.card_number)
+              .then(({ data }) => ({ type: 'responseCard', data }))
+              .catch(() => null)
+          )
+        }
+
+        Promise.all(tasks).then((results) => {
+          const txnData = results.find((item) => item?.type === 'txn')?.data
+          const fromCardData = results.find((item) => item?.type === 'fromCard')?.data
+          const responseCardData = results.find((item) => item?.type === 'responseCard')?.data
+
+          const merged = {
+            ...parsed,
+            ...(txnData || {}),
+            from_card_name:
+              getResolvedCardholderName(fromCardData) ||
+              txnData?.from_card_name ||
+              parsed?.from_card_name,
+            response_card_name:
+              getResolvedCardholderName(responseCardData) ||
+              txnData?.response_card_name ||
+              parsed?.response_card_name,
+          }
+
+          setDetails(merged)
+          sessionStorage.setItem('billPaymentSuccess', JSON.stringify(merged))
+        })
       } catch (_) {
         setDetails({})
       }
@@ -177,16 +235,16 @@ const BillPaymentTransactionDetails = () => {
   const channel = details?.channel_type ?? 'WEB'
 
   const fromCard = details?.from_card ?? ''
-  const maskedFromCard = fromCard ? `${fromCard.slice(0, 4)} **** **** ${fromCard.slice(-4)}` : '-'
-  const fromCardName = details?.from_card_name ?? '-'
+  const maskedFromCard = fromCard ? formatCardNumber(fromCard) : '-'
+  const fromCardName = firstFilled(details?.from_card_name, details?.card_name)
   const serviceName = details?.service_name ?? t('bill_payment')
   const serviceId = details?.service_id ?? '-'
   const billNumber = details?.bill_number ?? '-'
   const mobileNo = details?.mobile_no ?? '-'
   const accountNumber = details?.acc_number ?? '-'
-  const responseCardNumber = details?.response_card_number ?? details?.from_card ?? '-'
-  const respCode = details?.resp_code ?? '-'
-  const stan = details?.stan ?? '-'
+  const responseCardNumber = firstFilled(details?.response_card_number, details?.card_number, details?.from_card)
+  const maskedResponseCardNumber = responseCardNumber ? formatCardNumber(responseCardNumber) : '-'
+  const responseCardName = firstFilled(details?.response_card_name)
 
   const handleDownloadPdf = () => {
     downloadTransactionPdf(details, t, i18n.language)
@@ -294,7 +352,7 @@ const BillPaymentTransactionDetails = () => {
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <HiOutlineCreditCard className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">{t('from_card_details')}</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('sender_details')}</h3>
           </div>
 
           <div className="space-y-3">
@@ -307,10 +365,10 @@ const BillPaymentTransactionDetails = () => {
             </div>
 
             <div className="flex items-start gap-3">
-              <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
-                <p className="text-sm font-medium text-gray-800">{fromCardName}</p>
+                <p className="text-sm font-medium text-gray-800">{fromCardName ?? '-'}</p>
               </div>
             </div>
           </div>
@@ -321,10 +379,18 @@ const BillPaymentTransactionDetails = () => {
             <div className="w-6 h-6 bg-brand-secondary rounded flex items-center justify-center">
               <FaFileInvoice className="w-4 h-4 text-white" />
             </div>
-            <h3 className="text-lg font-bold text-gray-800">{t('bill_details')}</h3>
+            <h3 className="text-lg font-bold text-gray-800">{t('receiver_details')}</h3>
           </div>
 
           <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <FaFileInvoice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{t('bill_number')}</p>
+                <p className="text-sm font-medium text-gray-800">{billNumber}</p>
+              </div>
+            </div>
+
             <div className="flex items-start gap-3">
               <FaFileInvoice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
@@ -338,14 +404,6 @@ const BillPaymentTransactionDetails = () => {
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('service_id')}</p>
                 <p className="text-sm font-medium text-gray-800">{serviceId}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('bill_number')}</p>
-                <p className="text-sm font-medium text-gray-800">{billNumber}</p>
               </div>
             </div>
 
@@ -369,25 +427,18 @@ const BillPaymentTransactionDetails = () => {
               <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{responseCardNumber}</p>
+                <p className="text-sm font-medium text-gray-800 font-mono">{maskedResponseCardNumber}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
               <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('status')}</p>
-                <p className="text-sm font-medium text-gray-800">{respCode}</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
+                <p className="text-sm font-medium text-gray-800">{responseCardName ?? '-'}</p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('stan')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{stan}</p>
-              </div>
-            </div>
           </div>
         </div>
 

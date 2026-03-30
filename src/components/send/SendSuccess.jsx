@@ -5,6 +5,15 @@ import PageContainer from '../../Reusable/PageContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
 
+const getFullName = (person, fallback = '-') =>
+  [person?.first_name, person?.middle_name, person?.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim() ||
+  person?.displayName ||
+  person?.name ||
+  fallback
+
 const SendSuccess = () => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -45,7 +54,9 @@ const SendSuccess = () => {
 
   const txnId = details?.txn_id ?? '-'
   const from = details?.sender_name ?? t('your_wallet')
-  const to = details?.beneficiary_name ?? '-'
+  const to =
+    details?.beneficiary_name ??
+    getFullName(details?.beneficiary, details?.beneficiary_mobile ?? '-')
   const transactionType = isPayRequestFlow
     ? 'W2W'
     : details?.txn_type === 'WALLET_TO_WALLET'

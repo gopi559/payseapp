@@ -301,9 +301,22 @@ const WalletToWalletCardList = () => {
         txn_amount: amount,
       })
 
+      let fetchedTransaction = null
+      const transactionRrn = res?.data?.rrn
+
+      if (transactionRrn) {
+        try {
+          const { data: rrnData } = await walletToWalletService.fetchTransactionByRrn(transactionRrn)
+          fetchedTransaction = rrnData
+        } catch (fetchError) {
+          console.error(fetchError)
+        }
+      }
+
       sessionStorage.setItem(
         'walletToWalletSuccess',
         JSON.stringify({
+          ...(fetchedTransaction || {}),
           txn_id: res?.data?.txn_id,
           rrn: res?.data?.rrn,
           stan: res?.data?.stan,
@@ -355,7 +368,7 @@ const WalletToWalletCardList = () => {
     card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || t('bank')
 
   const getCardholderName = (card) =>
-    card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || 'No Name'
+    card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || ''
 
   const footer = (
     <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
@@ -464,9 +477,11 @@ const WalletToWalletCardList = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-base font-semibold text-[#111827] truncate">{getBankName(card)}</p>
-                      <p className="text-sm text-[#111827] mt-0.5 truncate">
-                        {getCardholderName(card)}
-                      </p>
+                      {getCardholderName(card) && (
+                        <p className="text-sm text-[#111827] mt-0.5 truncate">
+                          {getCardholderName(card)}
+                        </p>
+                      )}
                       <p className="text-sm text-[#4B5563] mt-0.5">
                         {formatCardNumber(card.card_number || card.masked_card)}
                       </p>

@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { fetchWithBasicAuth, postWithBasicAuth } from '../../services/basicAuth.service.js'
 import { LOGIN_BANNER_IMAGE, LOGIN_BANNER_LIST } from '../../utils/constant.jsx'
+import fallbackBanner from '../../assets/bannerimage.png'
 
 const PromoBanner = () => {
- const [bannerSrc, setBannerSrc] = useState('')
+ const [bannerSrc, setBannerSrc] = useState(fallbackBanner)
  const [bannerLink, setBannerLink] = useState('')
  const [isLoading, setIsLoading] = useState(true)
  const handleImageError = (event) => {
  event.currentTarget.style.display = 'none'
- setBannerSrc('')
+ setBannerSrc(fallbackBanner)
  }
 
  useEffect(() => {
@@ -56,7 +57,10 @@ const PromoBanner = () => {
  const selectedBanner = pickBanner(bannerList)
 
  if (!selectedBanner) {
- if (isMounted) setBannerSrc('')
+ if (isMounted) {
+ setBannerSrc(fallbackBanner)
+ setBannerLink('')
+ }
  return
  }
 
@@ -67,7 +71,7 @@ const PromoBanner = () => {
  const imageId = Number(selectedBanner?.image_id)
  if (!imageId || Number.isNaN(imageId)) {
  if (isMounted) {
- setBannerSrc(selectedBanner?.image_url || '')
+ setBannerSrc(selectedBanner?.image_url || fallbackBanner)
  }
  return
  }
@@ -78,11 +82,12 @@ const PromoBanner = () => {
  if (isMounted && resolvedSrc) {
  setBannerSrc(resolvedSrc)
  } else if (isMounted) {
- setBannerSrc(selectedBanner?.image_url || '')
+ setBannerSrc(selectedBanner?.image_url || fallbackBanner)
  }
  } catch (error) {
  if (isMounted) {
- setBannerSrc('')
+ setBannerSrc(fallbackBanner)
+ setBannerLink('')
  }
  } finally {
  if (isMounted) {
@@ -100,8 +105,6 @@ const PromoBanner = () => {
  }
  }
  }, [])
-
- if (!isLoading && !bannerSrc) return null
 
  return (
  <div className="w-full px-4 pt-12 pb-8">

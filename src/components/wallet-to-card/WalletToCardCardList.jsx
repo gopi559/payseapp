@@ -24,6 +24,32 @@ import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
+const firstFilled = (...values) => {
+  for (const value of values) {
+    if (value == null) continue
+    const text = String(value).trim()
+    if (text && text !== '-' && text.toUpperCase() !== 'N/A') return value
+  }
+  return null
+}
+
+const isMfaNotConfiguredMessage = (message) =>
+  /multi\s*factor\s*authentication\s*is\s*not\s*yet\s*configured/i.test(
+    String(message || '')
+  )
+
+const getExistingOtpExpiryTime = (error) => {
+  const directExpiry = error?.data?.expiry_time
+  if (directExpiry) return String(directExpiry)
+
+  const message = String(error?.message || '')
+  const match = message.match(/expires\s+at:\s*([0-9:\-\s]+)/i)
+  return match?.[1]?.trim() || ''
+}
+
+const isOtpAlreadyGeneratedMessage = (error) =>
+  /otp\s+already\s+generated/i.test(String(error?.message || ''))
+
 const WalletToCardCardList = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -127,7 +153,13 @@ const WalletToCardCardList = () => {
       setStep('OTP')
       toast.success(t('otp_sent'))
     } catch (e) {
-      toast.error(e.message || t('failed_to_send_otp'))
+      const expiryTime = getExistingOtpExpiryTime(e)
+      const message = isOtpAlreadyGeneratedMessage(e)
+        ? t('otp_already_generated_wait_until_expiry', { expiryTime })
+        : isMfaNotConfiguredMessage(e?.message)
+          ? t('multi_factor_authentication_not_yet_configured')
+          : e?.message || t('failed_to_send_otp')
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -144,11 +176,24 @@ const WalletToCardCardList = () => {
         remarks: t('wallet_to_card'),
       })
 
+      const rrn = firstFilled(res?.data?.rrn, res?.rrn)
+      let fetchedTxn = null
+
+      if (rrn) {
+        try {
+          const fetched = await walletToCardService.fetchTransactionByRrn(rrn)
+          fetchedTxn = fetched?.data ?? null
+        } catch (_) {
+          fetchedTxn = null
+        }
+      }
+
       sessionStorage.setItem(
         'walletToCardSuccess',
         JSON.stringify({
+          ...(fetchedTxn || {}),
           txn_id: res?.data?.txn_id,
-          rrn: res?.data?.rrn,
+          rrn,
           txn_amount: res?.data?.txn_amount,
           wallet_number: res?.data?.wallet_number,
           card_number: res?.data?.card_number,
@@ -157,7 +202,12 @@ const WalletToCardCardList = () => {
           status: 1,
           txn_type: 'WALLET_TO_CARD',
           txn_desc: t('wallet_to_card'),
-          card_name: dest.cardholder_name,
+          card_name: firstFilled(
+            fetchedTxn?.card_name,
+            fetchedTxn?.receiver_name,
+            dest?.cardholder_name,
+            dest?.cardholder_nick_name
+          ),
           from: sourceCard?.cardholder_name,
         })
       )
@@ -165,7 +215,10 @@ const WalletToCardCardList = () => {
       resetFlow()
       navigate('/customer/wallet-to-card/success')
     } catch (e) {
-      toast.error(e.message || t('transaction_failed'))
+      const message = isMfaNotConfiguredMessage(e?.message)
+        ? t('multi_factor_authentication_not_yet_configured')
+        : e?.message || t('transaction_failed')
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -191,7 +244,7 @@ const WalletToCardCardList = () => {
   const getBankName = (card) =>
     card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || t('bank')
   const getCardholderName = (card) =>
-    card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || 'No Name'
+    card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || ''
 
   const footer = (
     <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
@@ -291,9 +344,11 @@ const WalletToCardCardList = () => {
                     </div>
                     <div className="min-w-0">
                       <p className="text-base font-semibold text-[#111827] truncate">{getBankName(card)}</p>
-                      <p className="text-sm text-[#111827] mt-0.5 truncate">
-                        {getCardholderName(card)}
-                      </p>
+                      {getCardholderName(card) && (
+                        <p className="text-sm text-[#111827] mt-0.5 truncate">
+                          {getCardholderName(card)}
+                        </p>
+                      )}
                       <p className="text-sm text-[#4B5563] mt-0.5">
                         {formatCardNumber(card.card_number || card.masked_card)}
                       </p>
@@ -324,7 +379,9 @@ const WalletToCardCardList = () => {
               <p className="text-brand-secondary font-medium font-mono">
                 {formatCardNumber(dest.card_number || dest.masked_card)}
               </p>
-              <p className="text-brand-secondary text-xs mt-1">{getCardholderName(dest)}</p>
+              {getCardholderName(dest) && (
+                <p className="text-brand-secondary text-xs mt-1">{getCardholderName(dest)}</p>
+              )}
             </div>
           ) : null
         }

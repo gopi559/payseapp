@@ -5,6 +5,16 @@ import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
+import walletToCardService from './walletToCard.service'
+
+const firstFilled = (...values) => {
+  for (const value of values) {
+    if (value == null) continue
+    const text = String(value).trim()
+    if (text && text !== '-' && text.toUpperCase() !== 'N/A') return value
+  }
+  return null
+}
 
 const WalletToCardSuccess = () => {
   const { t, i18n } = useTranslation()
@@ -16,7 +26,20 @@ const WalletToCardSuccess = () => {
     if (!raw) return
 
     try {
-      setDetails(JSON.parse(raw))
+      const parsed = JSON.parse(raw)
+      setDetails(parsed)
+
+      const rrn = parsed?.rrn
+      if (!rrn) return
+
+      walletToCardService.fetchTransactionByRrn(rrn)
+        .then(({ data }) => {
+          if (!data) return
+          const merged = { ...parsed, ...data }
+          setDetails(merged)
+          sessionStorage.setItem('walletToCardSuccess', JSON.stringify(merged))
+        })
+        .catch(() => {})
     } catch {
       setDetails(null)
     }
@@ -29,7 +52,13 @@ const WalletToCardSuccess = () => {
   const txnId = txn_id ?? '-'
   const from = t('wallet')
   const formattedCardNumber = card_number ? formatCardNumber(card_number) : '-'
-  const cardholderName = card_name || '-'
+  const cardholderName = firstFilled(
+    card_name,
+    details?.receiver_name,
+    details?.beneficiary_name,
+    details?.cardholder_name,
+    details?.display_cardholder_name
+  )
   const amount = txn_amount ? Number(txn_amount).toFixed(2) : '0.00'
 
   const dateTime = txn_time
@@ -83,7 +112,7 @@ const WalletToCardSuccess = () => {
             <span className="text-gray-600">{t('to')}</span>
             <div className="text-right">
               <div className="font-medium text-gray-900 font-mono">{formattedCardNumber}</div>
-              {cardholderName && cardholderName !== '-' && (
+              {cardholderName && (
                 <div className="text-xs text-gray-600 mt-0.5">{cardholderName}</div>
               )}
             </div>

@@ -11,7 +11,7 @@ const toUrl = (endpoint) =>
       ? `${apiBaseUrl}${endpoint}`
       : `${apiBaseUrl}/${endpoint}`
 
-const getBasicAuthHeader = () => {
+export const getBasicAuthHeader = () => {
   const user = String(basicAuthUser || '').trim()
   const pass = String(basicAuthPass || '')
 

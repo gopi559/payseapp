@@ -25,36 +25,39 @@ const BankCard = ({ card, onBalance }) => {
     card.external_inst_name?.trim() ||
     card.inst_short_name?.trim() ||
     (isMyPayseCard ? 'Paysey' : 'Bank')
-  const cardholderName = card.cardholder_name || card.name_on_card || '—'
+  const cardholderName =
+    card.display_cardholder_name ||
+    card.cardholder_name ||
+    card.cardholder_nick_name ||
+    card.name_on_card ||
+    '—'
   const expiry = formatExpiry(card.expiry_date)
   const hasExpiry = !isMyPayseCard && Boolean(expiry)
 
   return (
     <div
-      className="relative rounded-2xl p-4 mb-4 shadow-sm overflow-hidden text-white"
-      style={{ backgroundColor: card.color_code }}
+      className="relative w-full rounded-2xl p-5 mb-4 shadow-sm overflow-hidden text-white"
+      style={{ backgroundColor: card.color_code, aspectRatio: '85.6 / 53.98' }}
     >
       {isMyPayseCard && (
         <img
           src={PayseyLogoWhite}
           alt="Paysey"
-          className="absolute top-4 right-5 h-8"
+          className="absolute top-5 right-5 h-8"
         />
       )}
 
       {!isMyPayseCard && (
-        <div className="absolute top-4 right-5 text-base font-semibold text-gray-900 z-10">
+        <div className="absolute top-5 right-5 text-base font-semibold text-gray-900 z-10">
           {bankName}
         </div>
       )}
 
-      {/* 🔹 Chip - slightly smaller */}
-      <img src={Chip} alt="Chip" className="absolute top-10 left-5 h-12" />
+      <img src={Chip} alt="Chip" className="absolute top-12 left-5 h-12" />
 
-      {/* 🔹 WiFi - slightly bigger */}
-      <img src={Wifi} alt="NFC" className="absolute top-12 right-5 h-12" />
+      <img src={Wifi} alt="NFC" className="absolute top-[3.4rem] right-5 h-12" />
 
-      <div className="relative z-10 mt-24">
+      <div className="relative z-10 h-full flex flex-col justify-end pt-24">
         <div className="mb-3">
           <div className="text-sm text-white/80">Card Number</div>
           <div className="text-lg font-mono tracking-[0.22em]">

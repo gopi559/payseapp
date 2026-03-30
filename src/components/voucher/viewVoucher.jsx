@@ -61,7 +61,7 @@ const ViewVoucher = () => {
     Cashcode: t('voucher_code'),
     Channel: t('channel'),
     Amount: t('amount'),
-    Currency: t('currency'),
+    CurrencyName: t('currency'),
     ReceiverName: t('receiver_name'),
     ReceiverMobile: t('phone_number'),
     ReceiverFatherName: t('father_name'),
@@ -69,7 +69,7 @@ const ViewVoucher = () => {
     DistrictName: t('district'),
     VillageName: t('village'),
     NationalityName: t('nationality'),
-    ReceiverIDType: t('id_type'),
+    ReceiverIDTypeName: t('id_type'),
     ReceiverIDNumber: t('id_number'),
     FullAddress: t('full_address'),
     CreatedAt: t('created_at'),
@@ -92,23 +92,29 @@ const ViewVoucher = () => {
   }
 
   const data = useMemo(
-    () => ({
-      Cashcode: pick('Cashcode', 'cashcode', 'CashCode', 'cash_code', 'voucher_code', 'VoucherCode'),
-      Channel: pick('Channel', 'channel'),
-      Amount: pick('Amount', 'amount'),
-      Currency: pick('Currency', 'currency'),
-      ReceiverName: pick('ReceiverName', 'receiver_name', 'recv_cust_fname'),
-      ReceiverMobile: pick('ReceiverMobile', 'receiver_mobile', 'mobile_number'),
-      ReceiverFatherName: pick('ReceiverFatherName', 'receiver_father_name', 'father_name'),
-      ProvinceName: pick('ProvinceName', 'province_name'),
-      DistrictName: pick('DistrictName', 'district_name'),
-      VillageName: pick('VillageName', 'village_name'),
-      NationalityName: pick('NationalityName', 'nationality_name'),
-      ReceiverIDType: pick('ReceiverIDType', 'receiver_id_type', 'id_type'),
-      ReceiverIDNumber: pick('ReceiverIDNumber', 'receiver_id_number', 'id_number'),
-      FullAddress: pick('FullAddress', 'full_address', 'address'),
-      CreatedAt: pick('CreatedAt', 'created_at', 'AddedOn', 'added_on'),
-    }),
+    () => {
+      const currencyName = pick('CurrencyName', 'currency_name')
+      const nationalityName = pick('NationalityName', 'nationality_name')
+      const receiverIdTypeName = pick('ReceiverIDTypeName', 'receiver_id_type_name', 'id_type_name')
+
+      return {
+        Cashcode: pick('Cashcode', 'cashcode', 'CashCode', 'cash_code', 'voucher_code', 'VoucherCode'),
+        Channel: pick('Channel', 'channel'),
+        Amount: pick('Amount', 'amount'),
+        ...(currencyName ? { CurrencyName: currencyName } : {}),
+        ReceiverName: pick('ReceiverName', 'receiver_name', 'recv_cust_fname'),
+        ReceiverMobile: pick('ReceiverMobile', 'receiver_mobile', 'mobile_number'),
+        ReceiverFatherName: pick('ReceiverFatherName', 'receiver_father_name', 'father_name'),
+        ProvinceName: pick('ProvinceName', 'province_name'),
+        DistrictName: pick('DistrictName', 'district_name'),
+        VillageName: pick('VillageName', 'village_name'),
+        ...(nationalityName ? { NationalityName: nationalityName } : {}),
+        ...(receiverIdTypeName ? { ReceiverIDTypeName: receiverIdTypeName } : {}),
+        ReceiverIDNumber: pick('ReceiverIDNumber', 'receiver_id_number', 'id_number'),
+        FullAddress: pick('FullAddress', 'full_address', 'address'),
+        CreatedAt: pick('CreatedAt', 'created_at', 'AddedOn', 'added_on'),
+      }
+    },
     [row]
   )
 
@@ -144,6 +150,14 @@ const ViewVoucher = () => {
               data={data}
               labels={labels}
               formatters={formatters}
+              excludedKeys={[
+                'Currency',
+                'Nationality',
+                'ReceiverIDType',
+                'ReceiverIDTypeName',
+                'CurrencyName',
+                'NationalityName',
+              ].filter((key) => !labels[key] || !data[key])}
             />
           </div>
         </div>

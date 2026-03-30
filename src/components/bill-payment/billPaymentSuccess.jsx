@@ -5,6 +5,24 @@ import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
+import billPaymentService from './billPayment.service'
+
+const firstFilled = (...values) => {
+  for (const value of values) {
+    if (value == null) continue
+    const text = String(value).trim()
+    if (text && text !== '-' && text.toUpperCase() !== 'N/A') return value
+  }
+  return null
+}
+
+const getResolvedCardholderName = (cardInfo) =>
+  firstFilled(
+    cardInfo?.card_holder_name,
+    cardInfo?.cardholder_name,
+    cardInfo?.name_on_card,
+    cardInfo?.card_name
+  )
 
 const BillPaymentSuccess = () => {
   const { t, i18n } = useTranslation()
@@ -16,7 +34,39 @@ const BillPaymentSuccess = () => {
     if (!raw) return
 
     try {
-      setDetails(JSON.parse(raw))
+      const parsed = JSON.parse(raw)
+      setDetails(parsed)
+
+      const rrn = parsed?.rrn
+      const tasks = []
+
+      if (rrn) {
+        tasks.push(
+          billPaymentService.fetchTransactionByRrn(rrn).then(({ data }) => ({ type: 'txn', data })).catch(() => null)
+        )
+      }
+      if (parsed?.from_card) {
+        tasks.push(
+          billPaymentService.verifyCard(parsed.from_card).then(({ data }) => ({ type: 'fromCard', data })).catch(() => null)
+        )
+      }
+
+      Promise.all(tasks).then((results) => {
+        const txnData = results.find((item) => item?.type === 'txn')?.data
+        const fromCardData = results.find((item) => item?.type === 'fromCard')?.data
+
+        const merged = {
+          ...parsed,
+          ...(txnData || {}),
+          from_card_name:
+            getResolvedCardholderName(fromCardData) ||
+            txnData?.from_card_name ||
+            parsed?.from_card_name,
+        }
+
+        setDetails(merged)
+        sessionStorage.setItem('billPaymentSuccess', JSON.stringify(merged))
+      })
     } catch {
       setDetails(null)
     }
@@ -35,7 +85,7 @@ const BillPaymentSuccess = () => {
 
   const txnId = details.txn_id ?? '-'
   const formattedFromCardNumber = details.from_card ? formatCardNumber(details.from_card) : '-'
-  const fromCardholderName = details.from_card_name || '-'
+  const fromCardholderName = firstFilled(details.from_card_name, details.card_name)
   const serviceName = details.service_name || t('bill_payment')
   const billNumber = details.bill_number || '-'
   const amount = details.txn_amount != null ? String(details.txn_amount) : '0.00'

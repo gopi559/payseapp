@@ -42,6 +42,15 @@ const formatDateTimeValue = (dateTimeStr) => {
   }
 }
 
+const getFullName = (person, fallback = '-') =>
+  [person?.first_name, person?.middle_name, person?.last_name]
+    .filter(Boolean)
+    .join(' ')
+    .trim() ||
+  person?.displayName ||
+  person?.name ||
+  fallback
+
 const downloadTransactionPdf = (
   details,
   senderName,
@@ -176,7 +185,9 @@ const SendTransactionDetails = () => {
   const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? t('wallet_to_wallet')
   const channel = details?.channel_type ?? 'WEB'
 
-  const receiverName = details?.beneficiary_name ?? details?.beneficiary?.displayName ?? '-'
+  const receiverName =
+    details?.beneficiary_name ??
+    getFullName(details?.beneficiary, details?.beneficiary_mobile ?? '-')
   const receiverMobile = details?.beneficiary_mobile ?? details?.beneficiary?.reg_mobile ?? '-'
   const receiverAccountNumber =
     details?.receiver_account_number ?? details?.beneficiary?.account_number ?? '-'

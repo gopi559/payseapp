@@ -1,7 +1,7 @@
 // src/services/walletToWallet.service.js
 
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
-import { WALLET_TO_WALLET } from '../../utils/constant.jsx'
+import { WALLET_TO_WALLET, FETCH_BY_RRN } from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
@@ -27,6 +27,23 @@ const walletToWalletService = {
     authService.fetchCustomerBalance().catch(() => {})
 
     return res
+  },
+
+  fetchTransactionByRrn: async (rrn) => {
+    const response = await fetchWithRefreshToken(FETCH_BY_RRN, {
+      method: 'POST',
+      body: JSON.stringify({
+        rrn: String(rrn || '').trim(),
+      }),
+    })
+
+    const res = await response.json().catch(() => null)
+
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || '')
+    }
+
+    return { data: res?.data ?? null, message: res?.message }
   },
 }
 

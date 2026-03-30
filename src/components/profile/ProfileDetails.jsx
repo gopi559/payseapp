@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { FiBriefcase, FiMapPin, FiUser } from 'react-icons/fi'
+import { useSelector } from 'react-redux'
+import { FiBriefcase, FiFileText, FiMapPin, FiUser } from 'react-icons/fi'
 import PageContainer from '../../Reusable/PageContainer'
 import profileService from './profile.service'
 
@@ -58,6 +59,40 @@ const translateProfileValue = (value, t, fallback) => {
   return translationKey ? t(translationKey, { defaultValue: formattedValue }) : formattedValue
 }
 
+const createDocumentUrl = (base64) => {
+  if (!base64) return null
+  if (String(base64).startsWith('data:')) return base64
+  return `data:image/jpeg;base64,${base64}`
+}
+
+const getDocumentPreviewTranslationKey = (document) => {
+  const columnName = String(document?.column_name || '').trim().toLowerCase()
+  const face = String(document?.face || '').trim().toLowerCase()
+
+  if (columnName === 'request_image' && face === 'front') return 'profile_address_document'
+  if (columnName === 'request_image' && face === 'back') return 'profile_identity_document'
+  if (columnName === 'candidate_image' && face === 'selfie') return 'profile_selfie_document'
+
+  return null
+}
+
+const getDocumentPreviewLabel = (document, index, t) => {
+  const translationKey = getDocumentPreviewTranslationKey(document)
+  if (translationKey) return t(translationKey)
+
+  const columnName = String(document?.column_name || '').trim().toLowerCase()
+  const face = String(document?.face || '').trim().toLowerCase()
+  const combined = [columnName.replace(/_/g, ' '), face].filter(Boolean).join(' - ')
+  return combined || `Document ${index + 1}`
+}
+
+const resolveUserId = (user) =>
+  user?.reg_info?.user_id ??
+  user?.reg_info?.id ??
+  user?.user_id ??
+  user?.id ??
+  null
+
 const DetailGrid = ({ items, fallback }) => {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -79,10 +114,20 @@ const DetailGrid = ({ items, fallback }) => {
 const ProfileDetails = () => {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+  const user = useSelector((state) => state.auth.user)
+  const walletId = useSelector((state) => state.wallet.walletId)
   const [loading, setLoading] = useState(true)
   const [profileData, setProfileData] = useState({ kyc: {}, occupation: {}, address: [] })
+  const [documents, setDocuments] = useState([])
   const [error, setError] = useState('')
+  const [documentsError, setDocumentsError] = useState('')
+  const [selectedDocument, setSelectedDocument] = useState(null)
+  const [showDocuments, setShowDocuments] = useState(true)
   const notAvailable = t('not_available')
+  const regInfo = user?.reg_info || user
+  const userId = resolveUserId(user)
+  const userRef = regInfo?.user_ref || walletId || null
+  const userMobile = regInfo?.mobile || regInfo?.reg_mobile || user?.mobile || null
 
   useEffect(() => {
     let isMounted = true
@@ -90,17 +135,45 @@ const ProfileDetails = () => {
     const fetchPersonalDetails = async () => {
       setLoading(true)
       setError('')
+      setDocumentsError('')
 
       try {
-        const data = await profileService.getPersonalInformationList()
+        const personalDetailsPromise = profileService.getPersonalInformationList()
+        const documentPromise = userId
+          ? profileService.getDocumentList({
+              user_id: userId,
+              userId,
+              user_ref: userRef,
+              userRef,
+              mobile: userMobile,
+              reg_mobile: userMobile,
+            })
+          : Promise.resolve([])
+
+        const [personalResult, documentResult] = await Promise.allSettled([
+          personalDetailsPromise,
+          documentPromise,
+        ])
 
         if (!isMounted) return
 
+        if (personalResult.status !== 'fulfilled') {
+          throw personalResult.reason
+        }
+
+        const data = personalResult.value
         setProfileData({
           kyc: data?.kyc ?? {},
           occupation: data?.occupation ?? {},
           address: Array.isArray(data?.address) ? data.address : [],
         })
+
+        if (documentResult.status === 'fulfilled') {
+          setDocuments(Array.isArray(documentResult.value) ? documentResult.value : [])
+        } else {
+          setDocuments([])
+          setDocumentsError(documentResult.reason?.message || t('profile_unable_to_load_personal_documents'))
+        }
       } catch (err) {
         if (!isMounted) return
         setError(err?.message || t('profile_unable_to_load_details'))
@@ -114,7 +187,7 @@ const ProfileDetails = () => {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [t, userId, userRef, userMobile])
 
   const kycItems = useMemo(() => {
     const kyc = profileData.kyc || {}
@@ -148,6 +221,50 @@ const ProfileDetails = () => {
       { label: t('profile_place_of_posting'), value: occupation.place_of_posting },
     ]
   }, [profileData.occupation, t])
+
+  const primaryAddress = profileData.address?.[0] || {}
+  const identityImage =
+    documents.find((document) => String(document?.face || '').toLowerCase() === 'front') ||
+    documents.find((document) => String(document?.column_name || '').toLowerCase().includes('request')) ||
+    documents[0] ||
+    null
+
+  const addressDocumentItems = [
+    { label: t('profile_address_type_desc'), value: translateProfileValue(primaryAddress.address_type_name, t, notAvailable) },
+    { label: t('profile_address_label'), value: primaryAddress.address_line || primaryAddress.village_name },
+    { label: t('profile_doc_type'), value: translateProfileValue(primaryAddress.address_proof_type_name, t, notAvailable) },
+    {
+      label: t('profile_proof_number'),
+      value:
+        primaryAddress.address_proof_number ||
+        primaryAddress.proof_number ||
+        primaryAddress.address_proof_no ||
+        primaryAddress.doc_number,
+    },
+    { label: t('status'), value: primaryAddress.status },
+  ]
+
+  const identityDocumentItems = [
+    {
+      label: t('profile_document_name'),
+      value:
+        profileData.kyc?.id_type_name ||
+        profileData.kyc?.IDTypeName ||
+        profileData.kyc?.document_name ||
+        profileData.kyc?.DocumentName,
+    },
+    {
+      label: t('profile_document_number'),
+      value:
+        profileData.kyc?.document_number ||
+        profileData.kyc?.DocumentNumber ||
+        profileData.kyc?.id_number ||
+        profileData.kyc?.IdNumber ||
+        profileData.kyc?.IDNumber,
+    },
+    { label: t('profile_document_image_id'), value: identityImage?.id },
+    { label: t('status'), value: profileData.kyc?.status ?? identityImage?.status },
+  ]
 
   return (
     <PageContainer>
@@ -244,9 +361,124 @@ const ProfileDetails = () => {
               )}
             </div>
 
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <FiFileText className="text-gray-500" />
+                  <div>
+                    <h2 className="text-sm font-semibold text-gray-800">{t('profile_personal_documents')}</h2>
+                    <p className="text-xs text-gray-500">{t('profile_view_personal_documents')}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDocuments((previous) => !previous)}
+                  className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                >
+                  {showDocuments ? t('profile_hide_documents') : t('profile_show_documents')}
+                </button>
+              </div>
+
+              {showDocuments && (
+                <div className="space-y-5">
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <h3 className="text-sm font-semibold text-gray-900">{t('profile_address_document')}</h3>
+                  <div className="mt-4">
+                    <DetailGrid items={addressDocumentItems} fallback={notAvailable} />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <h3 className="text-sm font-semibold text-gray-900">{t('profile_identity_document')}</h3>
+                  <div className="mt-4">
+                    <DetailGrid items={identityDocumentItems} fallback={notAvailable} />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <div className="mb-4">
+                    <h3 className="text-sm font-semibold text-gray-900">{t('profile_document_images')}</h3>
+                  </div>
+
+                  {documents.length === 0 ? (
+                    <p className="text-sm text-gray-500">{documentsError || t('not_available')}</p>
+                  ) : (
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                      {documents.map((document, index) => {
+                        const previewUrl = createDocumentUrl(document?.image)
+
+                        return (
+                          <div
+                            key={document?.id || `${document?.column_name}-${document?.face}-${index}`}
+                            className="overflow-hidden rounded-xl border border-gray-200 bg-white"
+                          >
+                            <div className="aspect-[4/3] bg-gray-100">
+                              {previewUrl ? (
+                                <img
+                                  src={previewUrl}
+                                  alt={getDocumentPreviewLabel(document, index, t)}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-full items-center justify-center text-sm text-gray-400">
+                                  {t('profile_no_preview')}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="space-y-2 p-4">
+                              <p className="text-sm font-semibold text-gray-900">
+                                {getDocumentPreviewLabel(document, index, t)}
+                              </p>
+                              <p className="text-xs text-gray-500">{t('profile_image_id')}: {formatValue(document?.id, notAvailable)}</p>
+                              <button
+                                onClick={() =>
+                                  setSelectedDocument({
+                                    title: getDocumentPreviewLabel(document, index, t),
+                                    url: previewUrl,
+                                  })
+                                }
+                                className="rounded-lg border border-emerald-200 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
+                                disabled={!previewUrl}
+                              >
+                                {t('profile_preview_document')}
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+                </div>
+              )}
+            </div>
+
           </div>
         )}
       </div>
+
+      {selectedDocument?.url && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+              <h3 className="text-sm font-semibold text-gray-900">{selectedDocument.title}</h3>
+              <button
+                onClick={() => setSelectedDocument(null)}
+                className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-50"
+              >
+                {t('close')}
+              </button>
+            </div>
+            <div className="flex max-h-[calc(90vh-73px)] items-center justify-center overflow-auto bg-gray-100 p-4">
+              <img
+                src={selectedDocument.url}
+                alt={selectedDocument.title}
+                className="max-h-full w-auto rounded-xl bg-white object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </PageContainer>
   )
 }

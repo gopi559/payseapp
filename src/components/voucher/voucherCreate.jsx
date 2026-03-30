@@ -136,7 +136,7 @@ const VoucherCreate = () => {
       toast.error(
         !normalizedAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0
           ? t('please_enter_valid_amount')
-          : t('please_fill_all_required_fields')
+          : t('voucher_enter_all_mandatory_fields')
       )
       return
     }

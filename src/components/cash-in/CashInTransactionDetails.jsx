@@ -8,6 +8,45 @@ import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } fro
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import cashInService from './cashIn.service'
+
+const firstFilled = (...values) => {
+  for (const value of values) {
+    if (value == null) continue
+    const text = String(value).trim()
+    if (text && text !== '-' && text.toUpperCase() !== 'N/A') return value
+  }
+  return null
+}
+
+const getPrimaryEntry = (value) => (Array.isArray(value) ? value[0] ?? null : value ?? null)
+
+const formatMaskedCard = (value) => {
+  const raw = String(value ?? '').trim()
+  if (!raw) return null
+  if (raw.includes('*') || raw.includes('X')) return raw
+
+  const digits = raw.replace(/\D/g, '')
+  if (digits.length < 8) return raw
+
+  return `${digits.slice(0, 4)} **** **** ${digits.slice(-4)}`
+}
+
+const getDisplayName = (entry) =>
+  firstFilled(
+    entry?.cardholder_name,
+    entry?.name_on_card,
+    entry?.card_name,
+    [entry?.first_name, entry?.middle_name, entry?.last_name].filter(Boolean).join(' ').trim(),
+    entry?.customer_name,
+    entry?.name
+  )
+
+const getDisplayMobile = (entry) =>
+  firstFilled(entry?.mobile_number, entry?.mobile_no, entry?.cust_mobile, entry?.reg_mobile, entry?.phone)
+
+const getDisplayAccount = (entry) =>
+  firstFilled(entry?.account_number, entry?.acct_number, entry?.wallet_number, entry?.account_no, entry?.user_ref)
 
 function escapeHtml(str) {
   const s = String(str ?? '')
@@ -16,11 +55,14 @@ function escapeHtml(str) {
 
 const downloadTransactionPdf = (
   details,
-  senderName,
+  receiverName,
   senderMobile,
   senderAccountNumber,
-  cardNumber,
-  cardName,
+  senderCardNumber,
+  senderCardName,
+  receiverMobile,
+  receiverCardNumber,
+  receiverAccountNumber,
   labels
 ) => {
   const win = window.open('', '_blank')
@@ -61,18 +103,18 @@ const downloadTransactionPdf = (
   ]
 
   const senderRows = [
-    { label: labels.cardNumber, value: cardNumber },
-    { label: labels.cardName, value: cardName || '-' },
-    { label: labels.mobileNumber, value: labels.notAvailable },
-    { label: labels.accountNumber, value: labels.notAvailable },
-  ]
+    { label: labels.cardNumber, value: senderCardNumber },
+    { label: labels.cardName, value: senderCardName },
+    { label: labels.mobileNumber, value: senderMobile },
+    { label: labels.accountNumber, value: senderAccountNumber },
+  ].filter((row) => firstFilled(row.value))
 
   const receiverRows = [
-    { label: labels.name, value: senderName },
-    { label: labels.mobileNumber, value: senderMobile || '-' },
-    { label: labels.cardNumber, value: labels.notAvailable },
-    { label: labels.accountNumber, value: senderAccountNumber },
-  ]
+    { label: labels.name, value: receiverName },
+    { label: labels.mobileNumber, value: receiverMobile },
+    { label: labels.cardNumber, value: receiverCardNumber },
+    { label: labels.accountNumber, value: receiverAccountNumber },
+  ].filter((row) => firstFilled(row.value))
 
   const formatRows = (rows) => {
     return rows.map(({ label, value }) => {
@@ -155,7 +197,20 @@ const CashInTransactionDetails = () => {
     const raw = sessionStorage.getItem('cashInSuccess')
     if (raw) {
       try {
-        setDetails(JSON.parse(raw))
+        const parsed = JSON.parse(raw)
+        setDetails(parsed)
+
+        const rrn = parsed?.rrn
+        if (!rrn) return
+
+        cashInService.fetchTransactionByRrn(rrn)
+          .then(({ data }) => {
+            if (!data) return
+            const merged = { ...parsed, ...data }
+            setDetails(merged)
+            sessionStorage.setItem('cashInSuccess', JSON.stringify(merged))
+          })
+          .catch(() => {})
       } catch (_) {
         setDetails({})
       }
@@ -170,15 +225,14 @@ const CashInTransactionDetails = () => {
     if (!dateTimeStr) return '-'
     try {
       const date = new Date(dateTimeStr)
-      const options = {
-        year: 'numeric',
+      return date.toLocaleString('en-IN', {
+        day: '2-digit',
         month: 'short',
-        day: 'numeric',
+        year: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
         hour12: true,
-      }
-      return date.toLocaleString('en-US', options).replace(',', ' at')
+      })
     } catch {
       return dateTimeStr
     }
@@ -186,32 +240,65 @@ const CashInTransactionDetails = () => {
 
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
-  const receiverName = userKyc?.first_name || userKyc?.last_name
+  const debitDetails = getPrimaryEntry(details?.debit_details)
+  const creditDetails = getPrimaryEntry(details?.credit_details)
+
+  const fallbackReceiverName = userKyc?.first_name || userKyc?.last_name
     ? [userKyc.first_name, userKyc.middle_name, userKyc.last_name].filter(Boolean).join(' ')
     : regInfo?.first_name || regInfo?.name || t('user')
-  const receiverMobile = regInfo?.mobile ?? regInfo?.reg_mobile ?? user?.mobile ?? ''
-  const receiverAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || '-'
+  const fallbackReceiverMobile = regInfo?.mobile ?? regInfo?.reg_mobile ?? user?.mobile ?? ''
+  const fallbackReceiverAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || null
 
-  const amount = details?.txn_amount != null ? Number(details.txn_amount).toFixed(2) : '0.00'
+  const amountValue = firstFilled(details?.txn_amount, details?.amount, details?.txnAmount)
+  const amount = amountValue != null ? Number(amountValue).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
   const txnTime = details?.txn_time ?? details?.created_at ?? ''
-  const txnTypeRaw = details?.txn_type ?? 'CARD_TO_WALLET'
-  const txnType = txnTypeRaw === 'CARD_TO_WALLET' ? 'C2W' : txnTypeRaw
+  const txnType = details?.txn_type ?? 'CARD_TO_WALLET'
   const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? t('card_to_wallet')
-  const channel = details?.channel_type ?? 'WEB'
+  const channel = details?.channel_type ?? details?.channel ?? 'WEB'
 
-  const cardNumber = details?.card_number ?? ''
-  const maskedCard = cardNumber ? `${cardNumber.slice(0, 4)} **** **** ${cardNumber.slice(-4)}` : '-'
-  const cardName = details?.card_name ?? '-'
+  const senderCardNumber = firstFilled(
+    details?.from_card_number,
+    details?.card_number,
+    details?.from_card,
+    debitDetails?.masked_card,
+    debitDetails?.card_number,
+    debitDetails?.card_no
+  )
+  const maskedSenderCard = formatMaskedCard(senderCardNumber)
+  const senderCardName = firstFilled(
+    details?.from_card_name,
+    details?.card_name,
+    details?.display_cardholder_name,
+    getDisplayName(debitDetails)
+  )
+  const senderMobile = getDisplayMobile(debitDetails)
+  const senderAccountNumber = getDisplayAccount(debitDetails)
+
+  const receiverName = firstFilled(getDisplayName(creditDetails), details?.to, fallbackReceiverName)
+  const receiverMobile = firstFilled(
+    details?.beneficiary_mobile,
+    getDisplayMobile(creditDetails),
+    fallbackReceiverMobile
+  )
+  const receiverCardNumber = formatMaskedCard(firstFilled(creditDetails?.masked_card, creditDetails?.card_number, creditDetails?.card_no))
+  const receiverAccountNumber = firstFilled(
+    details?.receiver_account_number,
+    getDisplayAccount(creditDetails),
+    fallbackReceiverAccountNumber
+  )
 
   const handleDownloadPdf = () => {
     downloadTransactionPdf(
       details,
       receiverName,
+      senderMobile,
+      senderAccountNumber,
+      maskedSenderCard,
+      senderCardName,
       receiverMobile,
+      receiverCardNumber,
       receiverAccountNumber,
-      maskedCard,
-      cardName,
       {
         pleaseAllowPopups: t('please_allow_popups_to_download_pdf'),
         transactionId: t('transaction_id'),
@@ -345,37 +432,45 @@ const CashInTransactionDetails = () => {
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{maskedCard}</p>
+            {maskedSenderCard && (
+              <div className="flex items-start gap-3">
+                <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{maskedSenderCard}</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex items-start gap-3">
-              <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
-                <p className="text-sm font-medium text-gray-800">{cardName}</p>
+            {senderCardName && (
+              <div className="flex items-start gap-3">
+                <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
+                  <p className="text-sm font-medium text-gray-800">{senderCardName}</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex items-start gap-3">
-              <HiOutlinePhone className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number_label')}</p>
-                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
+            {senderMobile && (
+              <div className="flex items-start gap-3">
+                <HiOutlinePhone className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number_label')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{senderMobile}</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex items-start gap-3">
-              <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
-                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
+            {senderAccountNumber && (
+              <div className="flex items-start gap-3">
+                <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{senderAccountNumber}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -406,21 +501,25 @@ const CashInTransactionDetails = () => {
               </div>
             )}
 
-            <div className="flex items-start gap-3">
-              <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
-                <p className="text-sm font-medium text-gray-800">{t('not_available')}</p>
+            {receiverCardNumber && (
+              <div className="flex items-start gap-3">
+                <HiOutlineCreditCard className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{receiverCardNumber}</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex items-start gap-3">
-              <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{receiverAccountNumber}</p>
+            {receiverAccountNumber && (
+              <div className="flex items-start gap-3">
+                <HiOutlineBuildingOffice className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{receiverAccountNumber}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

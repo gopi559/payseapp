@@ -10,6 +10,11 @@ import {
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status).toUpperCase() === 'SUCCESS'
 
+const isNoDataResponse = (res) =>
+  String(res?.message ?? '')
+    .trim()
+    .toLowerCase() === 'no data found'
+
 const transactionService = {
   getList: async ({
     page = 1,
@@ -36,8 +41,8 @@ const transactionService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || '')
-    if (!isSuccess(res)) throw new Error(res?.message || '')
+    if (!response.ok && !isNoDataResponse(res)) throw new Error(res?.message || '')
+    if (!isSuccess(res) && !isNoDataResponse(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? [],
@@ -55,8 +60,8 @@ const transactionService = {
     })
 
     const res = await response.json().catch(() => null)
-    if (!response.ok) throw new Error(res?.message || '')
-    if (!isSuccess(res)) throw new Error(res?.message || '')
+    if (!response.ok && !isNoDataResponse(res)) throw new Error(res?.message || '')
+    if (!isSuccess(res) && !isNoDataResponse(res)) throw new Error(res?.message || '')
 
     return {
       data: res?.data ?? null,

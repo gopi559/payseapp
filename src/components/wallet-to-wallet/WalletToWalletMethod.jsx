@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import { HiChevronRight } from 'react-icons/hi2'
 import THEME_COLORS from '../../theme/colors'
+import walletToWalletIcon from '../../assets/wallet-to-wallet.svg'
 
 const WalletToWalletMethod = () => {
   const { t } = useTranslation()
@@ -36,6 +37,11 @@ const WalletToWalletMethod = () => {
               }}
             >
               <div className="pr-4">
+                <img
+                  src={walletToWalletIcon}
+                  alt={t('wallet_to_wallet')}
+                  className="w-12 h-12 object-contain mb-4"
+                />
                 <h2
                   className="text-xl font-semibold"
                   style={{ color: menuCard.cardTitle }}
