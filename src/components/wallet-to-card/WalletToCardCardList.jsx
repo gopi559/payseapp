@@ -386,6 +386,7 @@ const WalletToCardCardList = () => {
           ) : null
         }
         description={t('withdraw_to_card')}
+        showMobile={false}
         loading={loading}
         onSendOtp={handleSendOtp}
         onCancel={resetFlow}

@@ -9,6 +9,11 @@ import THEME_COLORS from '../../theme/colors'
 import requestMoneyService from './requestMoney.service'
 import { getCustomerId, normalizeMobile } from './requestMoney.utils'
 
+const isBeneficiaryNotFoundError = (message) =>
+  /beneficiary\s*not\s*found|user\s*not\s*found|customer\s*not\s*found|not\s*found/i.test(
+    String(message || '')
+  )
+
 const RequestStart = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -65,7 +70,11 @@ const RequestStart = () => {
         },
       })
     } catch (error) {
-      toast.error(error?.message || t('validation_failed'))
+      toast.error(
+        isBeneficiaryNotFoundError(error?.message)
+          ? t('beneficiary_not_found')
+          : error?.message || t('validation_failed')
+      )
     } finally {
       setLoading(false)
     }

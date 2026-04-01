@@ -147,7 +147,7 @@ const VoucherCreate = () => {
     }
 
     if (mobileDigits === currentUserMobile) {
-      toast.error(t('cannot_send_money_to_yourself'))
+      toast.error(t('cannot_create_voucher_to_yourself'))
       return
     }
 

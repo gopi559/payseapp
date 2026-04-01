@@ -371,6 +371,7 @@ const CashInCardList = () => {
         amount={amount}
         to={t('wallet')}
         description={t('add_money_to_wallet')}
+        showMobile={false}
         loading={loading}
         onSendOtp={handleSendOtp}
         onCancel={resetFlow}

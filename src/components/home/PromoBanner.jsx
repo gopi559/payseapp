@@ -115,7 +115,7 @@ const PromoBanner = () => {
  src={bannerSrc} 
  alt="Paysey Payment Banner" 
  onError={handleImageError}
- className={`w-full h-[190px] sm:h-[220px] rounded-xl object-cover ${isLoading ? 'opacity-80' : 'opacity-100'}`}
+ className={`w-full rounded-xl object-contain bg-white ${isLoading ? 'opacity-80' : 'opacity-100'}`}
  />
  </a>
  ) : (
@@ -123,7 +123,7 @@ const PromoBanner = () => {
  src={bannerSrc} 
  alt="Paysey Payment Banner" 
  onError={handleImageError}
- className={`w-full h-[190px] sm:h-[220px] rounded-xl object-cover ${isLoading ? 'opacity-80' : 'opacity-100'}`}
+ className={`w-full rounded-xl object-contain bg-white ${isLoading ? 'opacity-80' : 'opacity-100'}`}
  />
  )}
  </div>

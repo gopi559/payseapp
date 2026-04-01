@@ -443,6 +443,7 @@ const AirtimePage = () => {
         amount={amount}
         to={mobileNo}
         description={t('airtime_purchase')}
+        showMobile={false}
         loading={loading}
         onSendOtp={handleSendOtp}
         onCancel={resetFlow}

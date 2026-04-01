@@ -138,7 +138,7 @@ const VoucherPage = () => {
             </div>
           </div>
           <Button type="button" onClick={() => navigate('/customer/voucher/create')}>
-            {t('create_cash_code')}
+            {t('create_voucher')}
           </Button>
         </div>
       </div>

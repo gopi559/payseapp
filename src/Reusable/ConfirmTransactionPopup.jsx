@@ -12,6 +12,7 @@ const ConfirmTransactionPopup = ({
   to,
   description,
   mobile,
+  showMobile = true,
   loading,
   onSendOtp,
   onCancel,
@@ -104,15 +105,17 @@ const ConfirmTransactionPopup = ({
             )}
           </div>
 
-          <div className="flex justify-between">
-            <span style={{ color: confirmColors.label }}>{t('mobile_number_label')}</span>
-            <span
-              className="font-medium font-mono"
-              style={{ color: confirmColors.value }}
-            >
-              {mobile ? mobile.replace(/^\+93\s?/, '') : t('not_available')}
-            </span>
-          </div>
+          {showMobile && (
+            <div className="flex justify-between">
+              <span style={{ color: confirmColors.label }}>{t('mobile_number_label')}</span>
+              <span
+                className="font-medium font-mono"
+                style={{ color: confirmColors.value }}
+              >
+                {mobile ? mobile.replace(/^\+93\s?/, '') : t('not_available')}
+              </span>
+            </div>
+          )}
 
           <div className="flex justify-between pt-2">
             <span style={{ color: confirmColors.label }}>{t('amount')}</span>
