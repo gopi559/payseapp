@@ -2,18 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import Button from './Button'
 import { HiExclamationTriangle } from 'react-icons/hi2'
-import { BENIFICIARY_ADD, EXTERNAL_BIN_LIST } from '../utils/constant'
+import { BENIFICIARY_ADD, CARD_NUMBER_VERIFY } from '../utils/constant'
 import { getAuthToken, deviceId } from '../services/api'
-import { fetchWithBasicAuth } from '../services/basicAuth.service.js'
+import { validateCardBinForTransaction } from '../services/binValidation.jsx'
 import { toast } from 'react-toastify'
 import THEME_COLORS from '../theme/colors'
-
-const BIN_VALIDATION_RULES = {
-  CASH_IN: ['Bank', 'EMI'],
-  CASH_OUT: ['Bank'],
-  CARD_TO_CARD: ['Bank'],
-  WALLET_TO_WALLET: ['EMI'],
-}
+import fetchWithRefreshToken from '../services/fetchWithRefreshToken'
 
 const DEFAULT_TRANSACTION_TYPE = 'CASH_IN'
 
@@ -31,9 +25,12 @@ const AddBeneficiaryPopup = ({
   const [loading, setLoading] = useState(false)
   const [binStatus, setBinStatus] = useState('idle')
   const [validatedBin, setValidatedBin] = useState('')
+  const [cardholderName, setCardholderName] = useState('')
+  const [cardholderStatus, setCardholderStatus] = useState('idle')
   const popupColors = THEME_COLORS.popup
 
   const reqIdRef = useRef(0)
+  const cardholderReqIdRef = useRef(0)
   const validatedTransactionTypeRef = useRef(transactionType)
 
   // ✅ format for display: 1234 5678 9012 3456
@@ -51,10 +48,6 @@ const AddBeneficiaryPopup = ({
     if (!open) return
 
     const currentBin = cardNumber.slice(0, 6)
-    const allowedInstTypes =
-      BIN_VALIDATION_RULES[transactionType] ||
-      BIN_VALIDATION_RULES[DEFAULT_TRANSACTION_TYPE]
-
     if (currentBin.length < 6) {
       setBinStatus('idle')
       setValidatedBin('')
@@ -85,34 +78,12 @@ const AddBeneficiaryPopup = ({
 
     const run = async () => {
       try {
-        const res = await fetchWithBasicAuth(EXTERNAL_BIN_LIST)
+        const matchedBin = await validateCardBinForTransaction(currentBin, transactionType)
         if (myReqId !== reqIdRef.current) return
-
-        const list = Array.isArray(res) ? res : []
-        const currentBinValue = Number(currentBin)
-
-        const matchedBin = list.find((item) => {
-          const startBin = Number(item?.start_bin)
-          const endBin = Number(item?.end_bin ?? item?.start_bin)
-
-          return (
-            Number(item?.status) === 1 &&
-            Number.isFinite(startBin) &&
-            Number.isFinite(endBin) &&
-            currentBinValue >= startBin &&
-            currentBinValue <= endBin
-          )
-        })
 
         if (!matchedBin) {
           setBinStatus('invalid')
           toast.error('Entered card BIN is not supported')
-          return
-        }
-
-        if (!allowedInstTypes.includes(matchedBin?.inst_type)) {
-          setBinStatus('invalid')
-          toast.error('This card is not allowed for this transaction type')
           return
         }
 
@@ -136,6 +107,63 @@ const AddBeneficiaryPopup = ({
   }, [cardNumber, open, transactionType, validatedBin])
 
   useEffect(() => {
+    if (!open) return
+
+    if (cardNumber.length !== 16) {
+      cardholderReqIdRef.current += 1
+      setCardholderName('')
+      setCardholderStatus('idle')
+      return
+    }
+
+    cardholderReqIdRef.current += 1
+    const myReqId = cardholderReqIdRef.current
+    setCardholderStatus('checking')
+
+    const run = async () => {
+      try {
+        const response = await fetchWithRefreshToken(CARD_NUMBER_VERIFY, {
+          method: 'POST',
+          body: JSON.stringify({
+            card_number: cardNumber,
+          }),
+        })
+
+        const result = await response.json().catch(() => null)
+        if (myReqId !== cardholderReqIdRef.current) return
+
+        const inquiryData = result?.data ?? {}
+        if (
+          !response.ok ||
+          (result?.code !== 1 && result?.success !== true) ||
+          (inquiryData?.code != null && Number(inquiryData.code) !== 0)
+        ) {
+          throw new Error(result?.message || 'Card name inquiry failed')
+        }
+
+        const resolvedName =
+          inquiryData.card_holder_name ||
+          inquiryData.cardholder_name ||
+          inquiryData.name_on_card ||
+          ''
+
+        setCardholderName(String(resolvedName).trim())
+        setCardholderStatus(resolvedName ? 'resolved' : 'idle')
+      } catch (_) {
+        if (myReqId !== cardholderReqIdRef.current) return
+        setCardholderName('')
+        setCardholderStatus('idle')
+      }
+    }
+
+    run()
+
+    return () => {
+      cardholderReqIdRef.current += 1
+    }
+  }, [cardNumber, open])
+
+  useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden'
     }
@@ -148,6 +176,8 @@ const AddBeneficiaryPopup = ({
       setCvv('')
       setBinStatus('idle')
       setValidatedBin('')
+      setCardholderName('')
+      setCardholderStatus('idle')
       validatedTransactionTypeRef.current = transactionType
     }
   }, [open])
@@ -196,7 +226,7 @@ const AddBeneficiaryPopup = ({
         body: JSON.stringify({
           // ✅ send digits-only value
           card_number: cardNumber,
-          cardholder_name: '',
+          cardholder_name: cardholderName,
           stan,
         }),
       })
@@ -280,6 +310,18 @@ const AddBeneficiaryPopup = ({
           {binStatus === 'invalid' && (
             <p className="text-xs px-1 text-[#DC2626]">
               {t('card_not_supported')}
+            </p>
+          )}
+
+          {cardholderStatus === 'checking' && (
+            <p className="text-xs px-1" style={{ color: popupColors.subtitle }}>
+              Verifying cardholder name...
+            </p>
+          )}
+
+          {cardholderName && (
+            <p className="text-xs px-1 text-[#16A34A]">
+              Cardholder: {cardholderName}
             </p>
           )}
 

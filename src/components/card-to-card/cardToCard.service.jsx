@@ -4,6 +4,7 @@ import {
   CARD_TO_CARD_SEND_OTP,
   CARD_NUMBER_VERIFY,
 } from '../../utils/constant.jsx'
+import { validateTransactionCards } from '../../services/binValidation.jsx'
 import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
@@ -33,6 +34,12 @@ const cardToCardService = {
   },
 
   sendOtp: async ({ from_card, to_card, cvv, expiry_date, txn_amount }) => {
+    await validateTransactionCards({
+      transactionType: 'CARD_TO_CARD',
+      sourceCard: from_card,
+      destinationCard: to_card,
+    })
+
     const body = {
       from_card: String(from_card).trim().replace(/\s/g, ''),
       to_card: String(to_card).trim().replace(/\s/g, ''),
@@ -67,6 +74,12 @@ const cardToCardService = {
     rrn,
     stan,
   }) => {
+    await validateTransactionCards({
+      transactionType: 'CARD_TO_CARD',
+      sourceCard: from_card,
+      destinationCard: to_card,
+    })
+
     const body = {
       from_card: String(from_card).trim().replace(/\s/g, ''),
       to_card: String(to_card).trim().replace(/\s/g, ''),

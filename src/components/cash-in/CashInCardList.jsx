@@ -20,6 +20,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
 
 import { generateStan } from '../../utils/generateStan'
+import { validateCardBinForTransaction } from '../../services/binValidation.jsx'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 
@@ -41,6 +42,29 @@ const getCardholderDisplayName = (card, fallback = '') =>
   card?.name_on_card?.trim() ||
   card?.card_name?.trim() ||
   fallback
+
+const hydrateValidatedCard = async (card, transactionType) => {
+  if (!card) return null
+
+  if (!card.external_inst_name) {
+    return card
+  }
+
+  const cardNumber = card.card_number || card.masked_card || ''
+  try {
+    const matchedBin = await validateCardBinForTransaction(cardNumber, transactionType)
+    return {
+      ...card,
+      external_inst_name: card.external_inst_name || matchedBin?.external_inst_name,
+      inst_short_name: card.inst_short_name || matchedBin?.inst_short_name,
+      inst_type: card.inst_type || matchedBin?.inst_type,
+      color_code: card.color_code || matchedBin?.color_code || '#0fb36c',
+      bank_logo: card.bank_logo || matchedBin?.bank_logo || null,
+    }
+  } catch (e) {
+    return null
+  }
+}
 
 const CashInCardList = () => {
   const { t } = useTranslation()
@@ -86,7 +110,13 @@ const CashInCardList = () => {
         throw new Error(data.message)
       }
 
-      const list = (data.data || []).map((card) => {
+      const list = (
+        await Promise.all(
+          (Array.isArray(data.data) ? data.data : []).map((card) =>
+            hydrateValidatedCard(card, 'CASH_IN')
+          )
+        )
+      ).filter(Boolean).map((card) => {
         const normalizedCard = {
           ...card,
           display_cardholder_name: getCardholderDisplayName(card, customerFullName),
@@ -149,22 +179,31 @@ const CashInCardList = () => {
     )
   }, [walletBalance])
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!amount || Number(amount) <= 0) {
       toast.error(t('enter_valid_amount'))
       return
     }
 
-    if (!cards?.length || !cards[activeIndex]) {
+    const activeCard = cards?.[activeIndex]
+    if (!cards?.length || !activeCard) {
       toast.error(t('please_select_card'))
       return
     }
 
-    setSelectedCard({
-      ...cards[activeIndex],
-      display_cardholder_name: getCardholderDisplayName(cards[activeIndex], customerFullName),
-    })
-    setStep('CVV')
+    try {
+      if (activeCard.external_inst_name) {
+        await validateCardBinForTransaction(activeCard.card_number, 'CASH_IN')
+      }
+
+      setSelectedCard({
+        ...activeCard,
+        display_cardholder_name: getCardholderDisplayName(activeCard, customerFullName),
+      })
+      setStep('CVV')
+    } catch (e) {
+      toast.error(e.message || t('card_not_supported'))
+    }
   }
 
   const handleTransactionCvvConfirm = ({ cvv, expiry }) => {

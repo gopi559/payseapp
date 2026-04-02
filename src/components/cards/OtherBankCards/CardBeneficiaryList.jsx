@@ -246,7 +246,9 @@ const CardBeneficiaryList = () => {
     
   >
     {selectedCard ? (
-      <OtherCardPreview card={selectedCard} fullWidth />
+      <div className="w-full flex justify-center">
+        <OtherCardPreview card={selectedCard} />
+      </div>
     ) : (
       <p className="text-gray-500">Select a card</p>
     )}

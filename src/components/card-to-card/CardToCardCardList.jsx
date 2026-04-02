@@ -20,16 +20,42 @@ import cardToCardService from './cardToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getCurrentUserId } from '../../services/api'
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
+import {
+  validateCardBinForTransaction,
+  validateTransactionCards,
+} from '../../services/binValidation.jsx'
 import { generateStan } from '../../utils/generateStan'
 import { CARD_CHECK_BALANCE } from '../../utils/constant'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
-const filterBankCards = (cards) =>
-  Array.isArray(cards) ? cards.filter((card) => card?.inst_type === 'Bank') : []
+const CARD_TO_CARD_INST_TYPES = new Set(['Bank', 'EMI'])
+const filterCardToCardCards = (cards) =>
+  Array.isArray(cards)
+    ? cards.filter((card) => CARD_TO_CARD_INST_TYPES.has(String(card?.inst_type || '').trim()))
+    : []
 const getCardholderName = (card) =>
   card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || 'No Name'
+
+const hydrateValidatedCard = async (card, transactionType) => {
+  if (!card) return null
+
+  const cardNumber = card.card_number || card.masked_card || ''
+  try {
+    const matchedBin = await validateCardBinForTransaction(cardNumber, transactionType)
+    return {
+      ...card,
+      external_inst_name: card.external_inst_name || matchedBin?.external_inst_name,
+      inst_short_name: card.inst_short_name || matchedBin?.inst_short_name,
+      inst_type: card.inst_type || matchedBin?.inst_type,
+      color_code: card.color_code || matchedBin?.color_code || '#0fb36c',
+      bank_logo: card.bank_logo || matchedBin?.bank_logo || null,
+    }
+  } catch (e) {
+    return null
+  }
+}
 
 const CardToCardCardList = () => {
   const { t } = useTranslation()
@@ -85,7 +111,13 @@ const CardToCardCardList = () => {
         throw new Error(data.message)
       }
 
-      const list = filterBankCards(data.data).map((card) =>
+      const list = (
+        await Promise.all(
+          filterCardToCardCards(data.data).map((card) =>
+            hydrateValidatedCard(card, 'CARD_TO_CARD')
+          )
+        )
+      ).filter(Boolean).map((card) =>
         !card.external_inst_name ? { ...card, balance: walletBalance } : card
       )
       setSourceCards(list)
@@ -115,7 +147,13 @@ const CardToCardCardList = () => {
         throw new Error(data.message)
       }
 
-      const list = filterBankCards(data.data).map((card) =>
+      const list = (
+        await Promise.all(
+          filterCardToCardCards(data.data).map((card) =>
+            hydrateValidatedCard(card, 'CARD_TO_CARD')
+          )
+        )
+      ).filter(Boolean).map((card) =>
         !card.external_inst_name ? { ...card, balance: walletBalance } : card
       )
       setDestCards(list)
@@ -215,7 +253,7 @@ const CardToCardCardList = () => {
   }
 
   /* ---------------- STEP 1 → CVV ---------------- */
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!amount || Number(amount) <= 0) {
       toast.error(t('enter_valid_amount'))
       return
@@ -230,6 +268,17 @@ const CardToCardCardList = () => {
     const toCard = destCard?.card_number
     if (fromCard === toCard) {
       toast.error(t('from_and_to_card_cannot_be_same'))
+      return
+    }
+
+    try {
+      await validateTransactionCards({
+        transactionType: 'CARD_TO_CARD',
+        sourceCard: fromCard,
+        destinationCard: toCard,
+      })
+    } catch (e) {
+      toast.error(e?.message || t('card_not_supported'))
       return
     }
 

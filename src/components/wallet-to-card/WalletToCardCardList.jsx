@@ -19,6 +19,7 @@ import walletToCardService from './walletToCard.service'
 import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getCurrentUserId } from '../../services/api'
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
+import { validateCardBinForTransaction } from '../../services/binValidation.jsx'
 import bankIcon from '../../assets/BankIcon.svg'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 
@@ -49,6 +50,25 @@ const getExistingOtpExpiryTime = (error) => {
 
 const isOtpAlreadyGeneratedMessage = (error) =>
   /otp\s+already\s+generated/i.test(String(error?.message || ''))
+
+const hydrateValidatedCard = async (card, transactionType) => {
+  if (!card) return null
+
+  const cardNumber = card.card_number || card.masked_card || ''
+  try {
+    const matchedBin = await validateCardBinForTransaction(cardNumber, transactionType)
+    return {
+      ...card,
+      external_inst_name: card.external_inst_name || matchedBin?.external_inst_name,
+      inst_short_name: card.inst_short_name || matchedBin?.inst_short_name,
+      inst_type: card.inst_type || matchedBin?.inst_type,
+      color_code: card.color_code || matchedBin?.color_code || '#0fb36c',
+      bank_logo: card.bank_logo || matchedBin?.bank_logo || null,
+    }
+  } catch (e) {
+    return null
+  }
+}
 
 const WalletToCardCardList = () => {
   const { t } = useTranslation()
@@ -122,9 +142,13 @@ const WalletToCardCardList = () => {
         throw new Error(json.message)
       }
 
-      const bankCards = Array.isArray(json.data)
-        ? json.data.filter((card) => card?.inst_type === 'Bank')
-        : []
+      const bankCards = (
+        await Promise.all(
+          (Array.isArray(json.data) ? json.data : [])
+            .filter((card) => Number(card?.beneficiary_type) === 1)
+            .map((card) => hydrateValidatedCard(card, 'CASH_OUT'))
+        )
+      ).filter(Boolean)
 
       setDestCards(bankCards)
     } catch (e) {

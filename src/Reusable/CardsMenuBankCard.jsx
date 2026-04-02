@@ -16,7 +16,13 @@ const formatExpiry = (rawExpiry) => {
   return `${digits.slice(0, 2)}/${digits.slice(2)}`
 }
 
-const BankCard = ({ card, onBalance }) => {
+const BankCard = ({
+  card,
+  onBalance,
+  className = '',
+  withMargin = true,
+  showBalanceSection = true,
+}) => {
   const isMyPayseCard = !card.external_inst_name
   const [showExpiry, setShowExpiry] = useState(false)
 
@@ -35,10 +41,38 @@ const BankCard = ({ card, onBalance }) => {
   const expiry = formatExpiry(card.expiry_date)
   const hasExpiry = !isMyPayseCard && Boolean(expiry)
   const cardBackgroundColor = resolveCardColorCode(card.color_code)
+  const balanceContent = showBalanceSection
+    ? card.balance !== undefined
+      ? (
+          <div className="shrink-0 text-right">
+            <div className="text-xs text-white/80">Balance</div>
+            <div className="flex items-center justify-end gap-2 text-lg font-semibold">
+              <img
+                src={AfganCurrency}
+                alt="Currency"
+                className="h-6 w-6"
+              />
+              <span>{card.balance}</span>
+            </div>
+          </div>
+        )
+      : onBalance
+        ? (
+            <button
+              onClick={onBalance}
+              className="text-sm font-semibold text-white underline underline-offset-4 hover:text-white/90"
+            >
+              Balance
+            </button>
+          )
+        : null
+    : null
 
   return (
     <div
-      className="relative w-full rounded-2xl p-5 mb-4 shadow-sm overflow-hidden text-white"
+      className={`relative w-full rounded-2xl p-5 shadow-sm overflow-hidden text-white ${
+        withMargin ? 'mb-4' : ''
+      } ${className}`.trim()}
       style={{ backgroundColor: cardBackgroundColor, aspectRatio: '85.6 / 53.98' }}
     >
       {isMyPayseCard && (
@@ -94,26 +128,7 @@ const BankCard = ({ card, onBalance }) => {
             </div>
           )}
 
-          {card.balance !== undefined ? (
-            <div className="shrink-0 text-right">
-              <div className="text-xs text-white/80">Balance</div>
-              <div className="flex items-center justify-end gap-2 text-lg font-semibold">
-                <img
-                  src={AfganCurrency}
-                  alt="Currency"
-                  className="h-6 w-6"
-                />
-                <span>{card.balance}</span>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={onBalance}
-              className="text-sm font-semibold text-white underline underline-offset-4 hover:text-white/90"
-            >
-              Balance
-            </button>
-          )}
+          {balanceContent}
         </div>
       </div>
     </div>

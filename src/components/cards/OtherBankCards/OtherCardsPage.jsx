@@ -153,12 +153,12 @@ const OtherCardsPage = () => {
         ) : cards.length === 0 ? (
           <p className="text-gray-600 text-center py-8">{t('no_other_bank_cards')}</p>
         ) : (
-          <div className="flex flex-col xl:flex-row gap-4 lg:gap-6 w-full min-w-0">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
             <div
-              className="flex-1 min-w-0 flex flex-col gap-3 rounded-lg shadow-sm p-3 h-[80vh]"
+              className="rounded-lg shadow-sm p-4 h-full min-h-[360px]"
               style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
             >
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-between mb-3 gap-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg" style={{ backgroundColor: contentCard.iconBackground }}>
                     <HiCreditCard className="w-5 h-5" style={{ color: contentCard.iconColor }} />
@@ -171,7 +171,7 @@ const OtherCardsPage = () => {
                   placeholder={t('search_card')}
                   value={cardSearchQuery}
                   onChange={(e) => setCardSearchQuery(e.target.value)}
-                  className="max-w-xs rounded-lg px-3 py-2 text-sm"
+                  className="rounded-lg px-3 py-2 text-sm max-w-xs"
                   style={{
                     border: `1px solid ${contentCard.border}`,
                     backgroundColor: THEME_COLORS.common.white,
@@ -180,112 +180,133 @@ const OtherCardsPage = () => {
                 />
               </div>
 
-              <div className="flex-1 overflow-hidden rounded-lg">
-                <div className="overflow-y-auto h-full">
-                  <table className="w-full text-sm">
-                    <thead className="sticky top-0 border-b" style={{ backgroundColor: contentCard.accentBackground, borderColor: contentCard.border }}>
-                      <tr>
-                        <th className="p-2 w-10"></th>
-                        <th className="p-2">{t('card')}</th>
-                        <th className="p-2">{t('cardholder')}</th>
-                        <th className="p-2">{t('nickname')}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredCards.map((card) => {
-                        const isSelected = selectedCard?.id === card.id
-                        return (
-                          <tr
-                            key={card.id}
-                            className={`border-b ${isSelected ? 'bg-brand-surfaceLight' : 'hover:bg-gray-50'}`}
-                            style={{ borderColor: contentCard.border }}
-                          >
-                            <td className="p-2">
-                              <input type="radio" checked={isSelected} onChange={() => setSelectedCard(card)} />
-                            </td>
-                            <td className="p-2 font-mono">{card.masked_card}</td>
-                            <td className="p-2">{card.cardholder_name}</td>
-                            <td className="p-2">{card.cardholder_nick_name || t('not_available')}</td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+              <div
+                className="overflow-y-auto rounded-lg"
+                style={{ maxHeight: hasMore ? '260px' : '300px', border: `1px solid ${contentCard.border}` }}
+              >
+                <table className="w-full text-sm">
+                  <thead
+                    className="sticky top-0 border-b"
+                    style={{ backgroundColor: contentCard.accentBackground, borderColor: contentCard.border }}
+                  >
+                    <tr>
+                      <th className="p-2 w-10"></th>
+                      <th className="p-2">{t('card')}</th>
+                      <th className="p-2">{t('cardholder')}</th>
+                      <th className="p-2">{t('nickname')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCards.map((card) => {
+                      const isSelected = selectedCard?.id === card.id
+                      return (
+                        <tr
+                          key={card.id}
+                          className={`border-b ${isSelected ? 'bg-brand-surfaceLight' : 'hover:bg-gray-50'}`}
+                          style={{ borderColor: contentCard.border }}
+                        >
+                          <td className="p-2">
+                            <input type="radio" checked={isSelected} onChange={() => setSelectedCard(card)} />
+                          </td>
+                          <td className="p-2 font-mono">{card.masked_card}</td>
+                          <td className="p-2">{card.cardholder_name}</td>
+                          <td className="p-2">{card.cardholder_nick_name || t('not_available')}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
 
               {hasMore && (
-                <Button onClick={() => loadList(page + 1, true)} variant="outline" size="sm" disabled={loadingMore}>
-                  {loadingMore ? t('loading') : t('load_more')}
-                </Button>
+                <div className="mt-3">
+                  <Button onClick={() => loadList(page + 1, true)} variant="outline" fullWidth size="sm" disabled={loadingMore}>
+                    {loadingMore ? t('loading') : t('load_more')}
+                  </Button>
+                </div>
               )}
             </div>
 
-            <div className="w-full xl:w-[480px] flex-shrink-0 flex flex-col gap-4">
+            <div
+              className="rounded-lg shadow-sm p-4 h-full min-h-[360px] flex items-center justify-center"
+              style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+            >
+              {selectedCard ? (
+                <div className="w-full flex justify-center">
+                  <OtherCardPreview card={selectedCard} />
+                </div>
+              ) : (
+                <div className="p-8 text-center">
+                  <p style={{ color: contentCard.subtitle }}>{t('select_card_preview_actions')}</p>
+                </div>
+              )}
+            </div>
+
+            <div
+              className="rounded-lg shadow-sm p-4 h-full min-h-[220px]"
+              style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+            >
+              <h3 className="text-lg font-semibold mb-3" style={{ color: contentCard.title }}>{t('card_transactions')}</h3>
+              {txnLoading ? (
+                <p className="text-sm" style={{ color: contentCard.subtitle }}>{t('loading_transactions')}</p>
+              ) : cardTransactions.length === 0 ? (
+                <p className="text-sm" style={{ color: contentCard.subtitle }}>{t('no_transactions_found')}</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="border-b text-gray-600 font-medium" style={{ backgroundColor: contentCard.accentBackground, borderColor: contentCard.border }}>
+                      <tr>
+                        <th className="p-2">{t('date')}</th>
+                        <th className="p-2">{t('amount')}</th>
+                        <th className="p-2">{t('merchant')}</th>
+                        <th className="p-2">{t('status')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cardTransactions.map((txn, index) => (
+                        <tr key={txn?.id ?? txn?.txn_id ?? `${txn?.rrn ?? 'txn'}-${index}`} className="border-b last:border-0" style={{ borderColor: contentCard.border }}>
+                          <td className="p-2 text-gray-800">{txn?.txn_time || txn?.created_on || t('not_available')}</td>
+                          <td className="p-2 text-gray-800">{txn?.txn_amount ?? txn?.amount ?? t('not_available')}</td>
+                          <td className="p-2 text-gray-800">{txn?.merchant_name || txn?.txn_desc || t('not_available')}</td>
+                          <td className="p-2 text-gray-800">{txn?.status_name || txn?.status || t('not_available')}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div
+              className="rounded-lg shadow-sm p-4 h-full min-h-[220px]"
+              style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}
+            >
               {selectedCard ? (
                 <>
-                  <OtherCardPreview card={selectedCard} fullWidth />
-
-                  <div className="rounded-2xl shadow-xl p-4" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                      <MetaRow label={t('bank')} value={getBankName(selectedCard)} t={t} />
-                      <MetaRow label={t('card_number')} value={selectedCard.masked_card} t={t} />
-                      <MetaRow label={t('cardholder')} value={selectedCard.cardholder_name} t={t} />
-                      <MetaRow label={t('nickname')} value={selectedCard.cardholder_nick_name} t={t} />
-                      <MetaRow label={t('status')} value={selectedCard.status === 1 ? t('active') : t('inactive')} t={t} />
-                    </div>
-
-                    <div className="mt-3 pt-3 border-t flex gap-3">
-                      <Button className="capitalize" onClick={() => navigate(`/customer/other-cards/edit/${selectedCard.id}`, { state: { row: selectedCard } })}>
-                        {t('edit')}
-                      </Button>
-
-                      <Button className="bg-red-600 text-white capitalize" onClick={() => navigate(`/customer/other-cards/delete/${selectedCard.id}`, { state: { row: selectedCard } })}>
-                        {t('delete')}
-                      </Button>
-
-                      <Button className="capitalize" variant="outline" onClick={() => navigate('/customer/other-cards/add')}>
-                        {t('add_new')}
-                      </Button>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <MetaRow label={t('bank')} value={getBankName(selectedCard)} t={t} />
+                    <MetaRow label={t('card_number')} value={selectedCard.masked_card} t={t} />
+                    <MetaRow label={t('cardholder')} value={selectedCard.cardholder_name} t={t} />
+                    <MetaRow label={t('nickname')} value={selectedCard.cardholder_nick_name} t={t} />
+                    <MetaRow label={t('status')} value={selectedCard.status === 1 ? t('active') : t('inactive')} t={t} />
                   </div>
 
-                  <div className="rounded-2xl shadow-xl p-4" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}>
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3">{t('card_transactions')}</h3>
-                    {txnLoading ? (
-                      <p className="text-sm text-gray-500">{t('loading_transactions')}</p>
-                    ) : cardTransactions.length === 0 ? (
-                      <p className="text-sm text-gray-500">{t('no_transactions_found')}</p>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                          <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-medium">
-                            <tr>
-                              <th className="p-2">{t('date')}</th>
-                              <th className="p-2">{t('amount')}</th>
-                              <th className="p-2">{t('merchant')}</th>
-                              <th className="p-2">{t('status')}</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {cardTransactions.map((txn, index) => (
-                              <tr key={txn?.id ?? txn?.txn_id ?? `${txn?.rrn ?? 'txn'}-${index}`} className="border-b border-gray-100 last:border-0">
-                                <td className="p-2 text-gray-800">{txn?.txn_time || txn?.created_on || t('not_available')}</td>
-                                <td className="p-2 text-gray-800">{txn?.txn_amount ?? txn?.amount ?? t('not_available')}</td>
-                                <td className="p-2 text-gray-800">{txn?.merchant_name || txn?.txn_desc || t('not_available')}</td>
-                                <td className="p-2 text-gray-800">{txn?.status_name || txn?.status || t('not_available')}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
+                  <div className="mt-3 pt-3 border-t flex gap-3 flex-wrap" style={{ borderColor: contentCard.border }}>
+                    <Button className="capitalize" onClick={() => navigate(`/customer/other-cards/edit/${selectedCard.id}`, { state: { row: selectedCard } })}>
+                      {t('edit')}
+                    </Button>
+
+                    <Button className="bg-red-600 text-white capitalize" onClick={() => navigate(`/customer/other-cards/delete/${selectedCard.id}`, { state: { row: selectedCard } })}>
+                      {t('delete')}
+                    </Button>
+
+                    <Button className="capitalize" variant="outline" onClick={() => navigate('/customer/other-cards/add')}>
+                      {t('add_new')}
+                    </Button>
                   </div>
                 </>
               ) : (
-                <div className="rounded-xl shadow-sm p-8 text-center" style={{ backgroundColor: contentCard.background, border: `1px solid ${contentCard.border}` }}>
-                  <p style={{ color: contentCard.subtitle }}>{t('select_card_preview_actions')}</p>
-                </div>
+                <p style={{ color: contentCard.subtitle }}>{t('select_card_preview_actions')}</p>
               )}
             </div>
           </div>

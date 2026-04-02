@@ -70,6 +70,9 @@ export const REQ_MONEY_LIST = REQUEST_MONEY_LIST;
 
 export const CARD_NUMBER_VERIFY = `${MAIN_API_URL}/external_card/cardname_inquiry`;
 export const WALLET_TO_CARD = `${MAIN_API_URL}/external_card/wallet_to_card_cnp`;
+
+
+
 export const EXTERNAL_BIN_LIST = `${MAIN_API_URL}/external_bin/list`;
 
 

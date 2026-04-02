@@ -6,12 +6,10 @@ import { PiCreditCardLight } from 'react-icons/pi'
 import { MdBrowserUpdated } from 'react-icons/md'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
+import CardsMenuBankCard from '../../../Reusable/CardsMenuBankCard.jsx'
 import cardService from './card.service'
 import fetchWithRefreshToken from '../../../services/fetchWithRefreshToken'
 import { CARD_TXN_LIST, CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '../../../utils/constant'
-import ChipIcon from '../../../assets/Chip.svg'
-import WifiIcon from '../../../assets/wifi.svg'
-import PayseyLogoWhite from '../../../assets/PayseyPaymentLogowhite.png'
 
 const NUM_DATA = 20
 
@@ -21,75 +19,29 @@ const formatExpiry = (iso) => {
   return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
 }
 
-const CardPreview = ({ card, onClick, selectable = true, fullWidth = false, t }) => (
-  <button
-    type="button"
-    onClick={() => selectable && onClick?.(card.id)}
-    className={`relative h-[200px] sm:h-[240px] rounded-2xl overflow-hidden shadow-xl text-left transition-transform ${
-      fullWidth ? 'w-full' : 'w-full max-w-[320px] sm:max-w-[400px]'
-    } ${selectable ? 'hover:scale-[1.02] active:scale-[0.98] cursor-pointer' : 'cursor-default'}`}
-  >
-    <div className="absolute inset-0 bg-gradient-to-br from-brand-primary via-brand-action to-brand-dark" />
-    <div className="absolute inset-0 bg-gradient-to-tr from-brand-surface/60 via-transparent to-brand-surfaceLight/40" />
-    <svg
-      className="absolute top-0 left-0 w-full h-16 sm:h-20 opacity-30 fill-white/15"
-      viewBox="0 0 480 80"
-      xmlns="http://www.w3.org/2000/svg"
-      preserveAspectRatio="none"
-    >
-      <path d="M0 40 Q120 0 240 40 T480 40 L480 80 L0 80 Z" />
-    </svg>
+const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) => {
+  const previewCard = {
+    ...card,
+    expiry_date: formatExpiry(card?.expiry_on).replace('/', ''),
+  }
 
-    <span
-      className={`absolute top-3 left-4 text-xs px-3 py-1 rounded-full font-semibold z-20 ${
-        ['Block', 'Blocked', 'Lost', 'Stolen', 'Lost/Stolen'].includes(card.card_status_name)
-          ? 'bg-red-600 text-white'
-          : 'bg-white text-brand-dark'
+  return (
+    <button
+      type="button"
+      onClick={() => selectable && onClick?.(card.id)}
+      className={`${fullWidth ? 'w-full' : 'w-full max-w-[320px] sm:max-w-[400px]'} text-left transition-transform ${
+        selectable ? 'hover:scale-[1.02] active:scale-[0.98] cursor-pointer' : 'cursor-default'
       }`}
     >
-      {card.card_status_name || t('personalized')}
-    </span>
-
-    <img
-      src={PayseyLogoWhite}
-      alt="Paysey"
-      className="absolute top-3 right-4 h-6 sm:h-7 z-20"
-      draggable={false}
-    />
-
-    <img
-      src={ChipIcon}
-      alt="Chip"
-      className="absolute top-12 sm:top-14 lg:top-16 left-4 w-10 sm:w-12 z-20"
-      draggable={false}
-    />
-
-    <img
-      src={WifiIcon}
-      alt="Contactless"
-      className="absolute top-16 sm:top-18 right-4 w-8 sm:w-9 z-20"
-      draggable={false}
-    />
-
-    <div className="absolute left-4 right-4 top-28 sm:top-32 text-amber-200 text-base sm:text-lg font-mono tracking-[0.25em] sm:tracking-[0.35em] z-20 truncate">
-      {card.masked_card || '**** **** **** ****'}
-    </div>
-
-    <div className="absolute left-4 bottom-4 z-20 text-amber-200">
-      <p className="text-xs text-amber-300/90">{t('cardholder')}</p>
-      <p className="font-semibold text-sm sm:text-base text-amber-200 truncate max-w-[140px] sm:max-w-[180px]">
-        {card.name_on_card || t('not_available')}
-      </p>
-    </div>
-
-    <div className="absolute right-4 bottom-4 z-20 flex flex-col items-end gap-0.5">
-      <div className="text-amber-200 text-right">
-        <p className="text-xs text-amber-300/90">{t('valid_thru')}</p>
-        <p className="font-semibold text-sm sm:text-base text-amber-200">{formatExpiry(card.expiry_on)}</p>
-      </div>
-    </div>
-  </button>
-)
+      <CardsMenuBankCard
+        card={previewCard}
+        withMargin={false}
+        showBalanceSection={false}
+        className="shadow-xl"
+      />
+    </button>
+  )
+}
 
 const MetaRow = ({ icon: Icon, label, value, t }) => (
   <>
@@ -321,7 +273,7 @@ const CardsPage = () => {
         ) : cards.length === 0 ? (
           <p className="text-gray-600 text-center py-8">{t('no_cards_yet')}</p>
         ) : (
-          <div className="grid grid-cols-1 xl:grid-cols-2 xl:auto-rows-[minmax(360px,1fr)] gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
             <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[360px]">
               <div className="flex items-center justify-between mb-3 gap-3">
                 <div className="flex items-center space-x-3">
@@ -402,7 +354,9 @@ const CardsPage = () => {
 
             <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[360px] flex items-center justify-center">
               {selectedCard ? (
-                <CardPreview card={selectedCard} selectable={false} fullWidth t={t} />
+                <div className="w-full flex justify-center">
+                  <CardPreview card={selectedCard} selectable={false} />
+                </div>
               ) : (
                 <div className="p-8 text-center">
                   <p className="text-gray-500">{t('select_card')}</p>
@@ -410,7 +364,7 @@ const CardsPage = () => {
               )}
             </div>
 
-            <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[360px]">
+            <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[220px]">
               <h3 className="text-lg font-semibold mb-3 text-gray-800">{t('card_transactions')}</h3>
               {txnLoading ? (
                 <p className="text-sm text-gray-500">{t('loading_transactions')}</p>
@@ -442,7 +396,7 @@ const CardsPage = () => {
               )}
             </div>
 
-            <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[360px]">
+            <div className="rounded-lg shadow-sm p-4 bg-white border border-gray-200 h-full min-h-[220px]">
               {selectedCard ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm sm:text-base">
