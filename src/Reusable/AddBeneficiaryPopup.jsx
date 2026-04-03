@@ -38,11 +38,32 @@ const AddBeneficiaryPopup = ({
     return cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ').trim()
   }, [cardNumber])
 
+  const expiryDigits = expiryDate.replace(/\D/g, '')
+  const getExpiryErrorKey = (digits) => {
+    if (digits.length !== 4) {
+      return 'please_enter_expiry_mmyy'
+    }
+
+    const month = Number(digits.slice(0, 2))
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      return 'please_enter_valid_expiry_month'
+    }
+
+    const year = Number(digits.slice(2, 4))
+    const currentYear = new Date().getFullYear() % 100
+    if (!Number.isInteger(year) || year < currentYear) {
+      return 'please_enter_valid_expiry_year'
+    }
+
+    return ''
+  }
+
   const isValid = useMemo(() => {
     const hasValidCard = cardNumber.length === 16
     const hasValidBin = binStatus === 'valid'
-    return hasValidCard && hasValidBin
-  }, [cardNumber, binStatus])
+    const hasValidExpiry = !getExpiryErrorKey(expiryDigits)
+    return hasValidCard && hasValidBin && hasValidExpiry
+  }, [cardNumber, binStatus, expiryDigits])
 
   useEffect(() => {
     if (!open) return
@@ -208,6 +229,12 @@ const AddBeneficiaryPopup = ({
 
   const handleContinue = async () => {
     if (!isValid) return
+
+    const expiryErrorKey = getExpiryErrorKey(expiryDigits)
+    if (expiryErrorKey) {
+      toast.error(t(expiryErrorKey))
+      return
+    }
 
     setLoading(true)
     try {

@@ -25,7 +25,18 @@ export const BENIFICIARY_DELETE = `${MAIN_API_URL}/card/beneficiary/remove`;
 
 export const CARD_TXN_LIST = `${MAIN_API_URL}/transaction_web/card/card_txn_list`;
 
-export const CHATBOT_BASE_URL = "https://aml.innovitegra.in"
+
+
+//CHAT BOT DEV URLS
+
+// export const CHATBOT_BASE_URL = "https://aml.innovitegra.in"
+
+
+
+//CHAT BOT DC URLS
+export const CHATBOT_BASE_URL = "https://api.dc.payseypayment.com/support/chatbot"
+
+//This is base url-https://api.dc.payseypayment.com/support/chatbot
 
 export const API_CHATBOT_CHAT = `${CHATBOT_BASE_URL}/chatbot/chat`
 export const API_CHATBOT_NEW_CHAT = `${CHATBOT_BASE_URL}/chatbot/chat`
