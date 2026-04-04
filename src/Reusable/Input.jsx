@@ -45,15 +45,15 @@ const Input = ({
         style={{
           color: inputColors.text,
           backgroundColor: inputColors.background,
-          borderColor: isFocused ? inputColors.focusBorder : inputColors.border,
-          outline: isFocused ? `1px solid ${inputColors.focusBorder}` : 'none',
+          borderColor: error ? '#dc2626' : isFocused ? inputColors.focusBorder : inputColors.border,
+          outline: error ? '1px solid #dc2626' : isFocused ? `1px solid ${inputColors.focusBorder}` : 'none',
           '--input-placeholder': inputColors.placeholder,
           opacity: disabled ? 0.7 : 1,
         }}
         {...props}
       />
       {error && (
-        <p className="mt-1 text-sm" style={{ color: inputColors.text }}>
+        <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>
           {error}
         </p>
       )}

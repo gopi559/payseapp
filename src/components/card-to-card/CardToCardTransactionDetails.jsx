@@ -7,126 +7,7 @@ import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } fro
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
-
-function escapeHtml(str) {
-  const s = String(str ?? '')
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;')
-}
-
-const downloadTransactionPdf = (details, t, language) => {
-  const win = window.open('', '_blank')
-  if (!win) {
-    alert(t('please_allow_popups_to_download_pdf'))
-    return
-  }
-
-  const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '-'
-    try {
-      const date = new Date(dateTimeStr)
-      return date.toLocaleString(language === 'ar' ? 'ar-SA' : 'en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      }).replace(',', ' at')
-    } catch {
-      return dateTimeStr
-    }
-  }
-
-  const maskedFromCard = details?.from_card
-    ? `${details.from_card.slice(0, 4)} **** **** ${details.from_card.slice(-4)}`
-    : '-'
-
-  const maskedToCard = details?.to_card
-    ? `${details.to_card.slice(0, 4)} **** **** ${details.to_card.slice(-4)}`
-    : '-'
-
-  const transactionRows = [
-    { label: t('transaction_id'), value: details?.txn_id ?? '-' },
-    { label: t('rrn'), value: details?.rrn ?? '-' },
-    { label: t('transaction_type'), value: details?.txn_type ?? 'CARD_TO_CARD' },
-    { label: t('description'), value: details?.txn_desc ?? t('card_to_card_transfer') },
-    { label: t('date_time'), value: formatDateTime(details?.txn_time) },
-    { label: t('amount'), value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
-    { label: t('channel'), value: details?.channel_type ?? 'WEB' },
-    { label: t('status'), value: details?.status === 1 ? t('success') : t('success') },
-    { label: t('fee_amount'), value: `${Number(details?.fee_amount ?? 0).toFixed(2)}` },
-    { label: t('remarks'), value: details?.remarks ?? '-' },
-  ]
-
-  const fromCardRows = [
-    { label: t('card_number'), value: maskedFromCard },
-    { label: t('card_name'), value: details?.from_card_name ?? '-' },
-    { label: t('mobile_number'), value: t('not_available') },
-    { label: t('account_number'), value: t('not_available') },
-  ]
-
-  const toCardRows = [
-    { label: t('card_number'), value: maskedToCard },
-    { label: t('card_name'), value: details?.to_card_name ?? '-' },
-    { label: t('mobile_number'), value: t('not_available') },
-    { label: t('account_number'), value: t('not_available') },
-  ]
-
-  const formatRows = (rows) =>
-    rows.map((r) => `
-      <tr>
-        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;">
-          ${escapeHtml(r.label)}
-        </td>
-        <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;">
-          ${escapeHtml(r.value)}
-        </td>
-      </tr>
-    `).join('')
-
-  win.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${escapeHtml(t('transaction'))} ${escapeHtml(details?.txn_id)}</title>
-      <style>
-        body { font-family: system-ui, sans-serif; padding: 24px; }
-        .header {
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          border-bottom:2px solid #e5e7eb;
-          padding-bottom:12px;
-          margin-bottom:20px;
-        }
-        img { height:40px; }
-        h1 { font-size:20px; margin:0; }
-        h2 { font-size:16px; margin-top:24px; color:#374151; }
-        table { width:100%; border-collapse:collapse; margin-bottom:24px; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>${escapeHtml(t('transaction_details'))}</h1>
-        <img src="${PAYSEY_LOGO_URL}" />
-      </div>
-
-      <table><tbody>${formatRows(transactionRows)}</tbody></table>
-
-      <h2>${escapeHtml(t('from_card_details'))}</h2>
-      <table><tbody>${formatRows(fromCardRows)}</tbody></table>
-
-      <h2>${escapeHtml(t('to_card_details'))}</h2>
-      <table><tbody>${formatRows(toCardRows)}</tbody></table>
-    </body>
-    </html>
-  `)
-
-  win.document.close()
-  win.focus()
-  win.print()
-  win.onafterprint = () => win.close()
-}
+import { formatPrintDateTime, openTransactionPrintWindow } from '../../utils/transactionPrint'
 
 const CardToCardTransactionDetails = () => {
   const { t, i18n } = useTranslation()
@@ -182,7 +63,47 @@ const CardToCardTransactionDetails = () => {
   const toCardName = details?.to_card_name ?? '-'
 
   const handleDownloadPdf = () => {
-    downloadTransactionPdf(details, t, i18n.language)
+    openTransactionPrintWindow({
+      title: `${t('transaction_details')} ${details?.txn_id ?? ''}`,
+      pageTitle: t('transaction_details'),
+      logoUrl: PAYSEY_LOGO_URL,
+      popupMessage: t('please_allow_popups_to_download_pdf'),
+      sections: [
+        {
+          title: t('transaction_details'),
+          rows: [
+            { label: t('transaction_id'), value: details?.txn_id ?? '-' },
+            { label: t('rrn'), value: details?.rrn ?? '-' },
+            { label: t('transaction_type'), value: details?.txn_type ?? 'CARD_TO_CARD' },
+            { label: t('description'), value: details?.txn_desc ?? t('card_to_card_transfer') },
+            { label: t('date_time'), value: formatPrintDateTime(details?.txn_time, i18n.language === 'ar' ? 'ar-SA' : 'en-US') },
+            { label: t('amount'), value: `${Number(details?.txn_amount ?? 0).toFixed(2)}` },
+            { label: t('channel'), value: details?.channel_type ?? 'WEB' },
+            { label: t('status'), value: details?.status === 1 ? t('success') : t('success') },
+            { label: t('fee_amount'), value: `${Number(details?.fee_amount ?? 0).toFixed(2)}` },
+            { label: t('remarks'), value: details?.remarks ?? '-' },
+          ],
+        },
+        {
+          title: t('debit_details'),
+          rows: [
+            { label: t('card_number'), value: maskedFromCard },
+            { label: t('card_name'), value: fromCardName },
+            { label: t('mobile_number'), value: t('not_available') },
+            { label: t('account_number'), value: t('not_available') },
+          ],
+        },
+        {
+          title: t('credit_details'),
+          rows: [
+            { label: t('card_number'), value: maskedToCard },
+            { label: t('card_name'), value: toCardName },
+            { label: t('mobile_number'), value: t('not_available') },
+            { label: t('account_number'), value: t('not_available') },
+          ],
+        },
+      ],
+    })
   }
 
   const handleDone = () => {

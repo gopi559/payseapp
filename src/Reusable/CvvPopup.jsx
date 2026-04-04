@@ -9,6 +9,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
   const [cvv, setCvv] = useState('')
   const [expiry, setExpiry] = useState('')
   const [error, setError] = useState('')
+  const [expiryError, setExpiryError] = useState('')
   const popupColors = THEME_COLORS.popup
 
   const expiryDigits = expiry.replace(/\D/g, '')
@@ -38,6 +39,7 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
       setCvv('')
       setExpiry('')
       setError('')
+      setExpiryError('')
     }
   }, [open])
 
@@ -47,10 +49,11 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
     if (cvv.length !== 3) return
     const expiryErrorKey = getExpiryErrorKey(expiryDigits)
     if (expiryErrorKey) {
-      setError(t(expiryErrorKey))
+      setExpiryError(t(expiryErrorKey))
       return
     }
     setError('')
+    setExpiryError('')
     onConfirm({ cvv, expiry })
   }
 
@@ -60,11 +63,19 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
     if (digits.length > 2) {
       setExpiry(`${digits.slice(0, 2)}/${digits.slice(2)}`)
       setError('')
+      setExpiryError('')
       return
     }
 
     setExpiry(digits)
     setError('')
+    setExpiryError('')
+  }
+
+  const handleExpiryBlur = () => {
+    if (!expiryDigits) return
+    const expiryErrorKey = getExpiryErrorKey(expiryDigits)
+    setExpiryError(expiryErrorKey ? t(expiryErrorKey) : '')
   }
 
   return (
@@ -124,15 +135,22 @@ const CvvPopup = ({ open, onClose, onConfirm, loading }) => {
               maxLength={5}
               value={expiry}
               onChange={(e) => handleExpiryChange(e.target.value)}
+              onBlur={handleExpiryBlur}
               placeholder={t('expiry_mm_yy')}
               className="border rounded-xl px-4 py-3 text-lg focus:outline-none w-40"
               style={{
                 backgroundColor: popupColors.inputBackground,
-                borderColor: popupColors.inputBorder,
+                borderColor: expiryError ? '#dc2626' : popupColors.inputBorder,
                 color: popupColors.title,
+                outline: expiryError ? '1px solid #dc2626' : 'none',
               }}
             />
           </div>
+          {expiryError && (
+            <p className="text-sm mb-4" style={{ color: '#dc2626' }}>
+              {expiryError}
+            </p>
+          )}
           {error && (
             <p className="text-sm mb-4" style={{ color: popupColors.cvv.icon }}>
               {error}

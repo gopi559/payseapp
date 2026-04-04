@@ -20,6 +20,20 @@ const CardBeneficiaryEdit = () => {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
 
+  const getReadableErrorMessage = (err, fallback) => {
+    const message = String(err?.message || '').trim()
+
+    if (!message || message.toLowerCase() === 'failed to fetch') {
+      return t('unable_to_connect_try_again')
+    }
+
+    if (message.toLowerCase() === 'missing required fields') {
+      return t('beneficiary_edit_missing_required_fields')
+    }
+
+    return message || fallback
+  }
+
   useEffect(() => {
     if (row) setCardNumber(row.card_number ?? '')
   }, [row])
@@ -27,7 +41,7 @@ const CardBeneficiaryEdit = () => {
   const validate = () => {
     const e = {}
     const cardNum = cardNumber.trim().replace(/\s/g, '')
-    if (!cardNum) e.cardNumber = t('required')
+    if (!cardNum) e.cardNumber = t('field_is_required', { field: t('card_number') })
     else if (!/^\d{16}$/.test(cardNum)) e.cardNumber = t('must_be_16_digits')
     setErrors(e)
     return Object.keys(e).length === 0
@@ -55,12 +69,12 @@ const CardBeneficiaryEdit = () => {
       })
       const result = await response.json().catch(() => null)
       if (!response.ok || result?.code !== 1) {
-        throw new Error(result?.message || t('failed_to_update_beneficiary'))
+        throw new Error(getReadableErrorMessage({ message: result?.message }, t('failed_to_update_beneficiary')))
       }
       toast.success(result?.message || t('beneficiary_updated'))
       navigate('/customer/other-cards')
     } catch (err) {
-      toast.error(err?.message || t('failed_to_update_beneficiary'))
+      toast.error(getReadableErrorMessage(err, t('failed_to_update_beneficiary')))
     } finally {
       setLoading(false)
     }

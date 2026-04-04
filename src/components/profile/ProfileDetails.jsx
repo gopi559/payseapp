@@ -116,6 +116,7 @@ const ProfileDetails = () => {
   const { t, i18n } = useTranslation()
   const user = useSelector((state) => state.auth.user)
   const walletId = useSelector((state) => state.wallet.walletId)
+  const profileImage = useSelector((state) => state.auth.profileImage)
   const [loading, setLoading] = useState(true)
   const [profileData, setProfileData] = useState({ kyc: {}, occupation: {}, address: [] })
   const [documents, setDocuments] = useState([])
@@ -125,9 +126,15 @@ const ProfileDetails = () => {
   const [showDocuments, setShowDocuments] = useState(true)
   const notAvailable = t('not_available')
   const regInfo = user?.reg_info || user
+  const userKyc = user?.user_kyc || null
   const userId = resolveUserId(user)
   const userRef = regInfo?.user_ref || walletId || null
   const userMobile = regInfo?.mobile || regInfo?.reg_mobile || user?.mobile || null
+  const displayName =
+    userKyc?.first_name || userKyc?.last_name
+      ? [userKyc.first_name, userKyc.last_name].filter(Boolean).join(' ')
+      : regInfo?.mobile || regInfo?.email || t('user')
+  const accountType = regInfo?.user_type_name || profileData?.kyc?.UserTypeName || notAvailable
 
   useEffect(() => {
     let isMounted = true
@@ -297,6 +304,31 @@ const ProfileDetails = () => {
           </div>
         ) : (
           <div className="space-y-6">
+            <div className="rounded-2xl border bg-white p-6 shadow-sm">
+              <div className="flex flex-col items-center">
+                <div className="mb-4 flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-emerald-50">
+                  {profileImage ? (
+                    <img src={profileImage} alt="Profile" className="h-full w-full object-cover" />
+                  ) : (
+                    <FiUser className="text-4xl text-emerald-700" />
+                  )}
+                </div>
+
+                <h2 className="text-2xl font-semibold text-gray-900">{displayName}</h2>
+                <p className="mt-1 text-sm text-gray-600">{formatValue(userMobile, notAvailable)}</p>
+              </div>
+
+              <div className="mt-6 grid gap-4 border-t border-gray-200 pt-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm text-gray-500">{t('profile_user_ref')}</p>
+                  <p className="mt-1 break-all font-medium text-gray-900">{formatValue(userRef, notAvailable)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">{t('profile_account_type')}</p>
+                  <p className="mt-1 font-medium text-gray-900">{formatValue(accountType, notAvailable)}</p>
+                </div>
+              </div>
+            </div>
 
             <div className="rounded-2xl border bg-white p-6 shadow-sm">
               <div className="mb-4 flex items-center gap-2">

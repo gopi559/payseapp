@@ -80,11 +80,6 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
     setIsDropdownOpen(false)
   }
 
-  const handleProfile = () => {
-    navigate('/customer/profile')
-    setIsDropdownOpen(false)
-  }
-
   const handleLogout = () => {
     authService.logout()
     navigate('/')
@@ -92,6 +87,13 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
   }
 
   const headerColors = THEME_COLORS.header
+  const HamburgerIcon = () => (
+    <span className="flex h-5 w-5 flex-col items-center justify-center gap-1" aria-hidden="true">
+      <span className="block h-0.5 w-4 rounded-full bg-current" />
+      <span className="block h-0.5 w-4 rounded-full bg-current" />
+      <span className="block h-0.5 w-4 rounded-full bg-current" />
+    </span>
+  )
 
   return (
     <div
@@ -107,7 +109,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
             style={{ backgroundColor: headerColors.overlaySoft }}
             aria-label={t('menu')}
           >
-            <span className="text-xl">|||</span>
+            <HamburgerIcon />
           </button>
 
           {onToggleSidebar && (
@@ -117,7 +119,7 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
               style={{ backgroundColor: headerColors.overlaySoft }}
               aria-label={t('toggle_sidebar')}
             >
-              <span className="text-xl">|||</span>
+              <HamburgerIcon />
             </button>
           )}
 
@@ -212,19 +214,9 @@ const Header = ({ onMenuClick, onToggleSidebar }) => {
                     </button>
                   </li>
 
-                  <li>
-                    <button
-                      onClick={handleProfile}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-sm"
-                      style={{ backgroundColor: THEME_COLORS.common.transparent }}
-                    >
-                      {t('profile')}
-                    </button>
-                  </li>
-
-                  <li
-                    className="border-t"
-                    style={{ borderColor: headerColors.dropdownBorder }}
+                    <li
+                      className="border-t"
+                      style={{ borderColor: headerColors.dropdownBorder }}
                   >
                     <button
                       onClick={handleLogout}

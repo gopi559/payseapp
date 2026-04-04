@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import { toast } from 'react-toastify'
 import PageContainer from '../../Reusable/PageContainer'
 import Button from '../../Reusable/Button'
+import Input from '../../Reusable/Input'
 import MobileInput from '../../Reusable/MobileInput'
 import voucherService from './voucher.service.jsx'
 import {
@@ -74,6 +75,7 @@ const VoucherCreate = () => {
   })
 
   const [submitting, setSubmitting] = useState(false)
+  const [errors, setErrors] = useState({})
   const currentUserMobile = normalizeReceiverMobile(
     user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
   )
@@ -117,37 +119,79 @@ const VoucherCreate = () => {
       .catch((e) => toast.error(e.message || t('something_went_wrong')))
   }, [form.district_id, t])
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const getRequiredError = (label) => t('field_is_required', { field: label })
 
+  const validateForm = () => {
+    const nextErrors = {}
     const mobileDigits = normalizeReceiverMobile(form.receiver_mobile)
     const normalizedAmount = normalizeAmountInput(form.amount)
     const parsedAmount = Number(normalizedAmount)
 
-    if (
-      !normalizedAmount ||
-      Number.isNaN(parsedAmount) ||
-      parsedAmount <= 0 ||
-      !form.receiver_name ||
-      !form.receiver_mobile ||
-      !form.receiver_id_number ||
-      !form.receiver_id_type
-    ) {
-      toast.error(
-        !normalizedAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0
-          ? t('please_enter_valid_amount')
-          : t('voucher_enter_all_mandatory_fields')
-      )
-      return
+    if (!normalizedAmount || Number.isNaN(parsedAmount) || parsedAmount <= 0) {
+      nextErrors.amount = t('please_enter_valid_amount')
     }
 
-    if (mobileDigits.length !== 9) {
-      toast.error(t('receiver_mobile_must_be_9_digits'))
-      return
+    if (!String(form.receiver_name || '').trim()) {
+      nextErrors.receiver_name = getRequiredError(t('receiver_name'))
     }
 
-    if (mobileDigits === currentUserMobile) {
-      toast.error(t('cannot_create_voucher_to_yourself'))
+    if (!String(form.receiver_father_name || '').trim()) {
+      nextErrors.receiver_father_name = getRequiredError(t('father_name'))
+    }
+
+    if (!mobileDigits) {
+      nextErrors.receiver_mobile = getRequiredError(t('receiver_mobile'))
+    } else if (mobileDigits.length !== 9) {
+      nextErrors.receiver_mobile = t('receiver_mobile_must_be_9_digits')
+    } else if (mobileDigits === currentUserMobile) {
+      nextErrors.receiver_mobile = t('cannot_create_voucher_to_yourself')
+    }
+
+    if (!form.nationality_id) {
+      nextErrors.nationality_id = getRequiredError(t('nationality'))
+    }
+
+    if (!form.province_id) {
+      nextErrors.province_id = getRequiredError(t('province'))
+    }
+
+    if (!form.district_id) {
+      nextErrors.district_id = getRequiredError(t('district'))
+    }
+
+    if (!form.village_id) {
+      nextErrors.village_id = getRequiredError(t('village'))
+    }
+
+    if (!form.receiver_id_type) {
+      nextErrors.receiver_id_type = getRequiredError(t('id_type'))
+    }
+
+    if (!String(form.receiver_id_number || '').trim()) {
+      nextErrors.receiver_id_number = getRequiredError(t('id_number'))
+    }
+
+    setErrors(nextErrors)
+    return { isValid: Object.keys(nextErrors).length === 0, mobileDigits, normalizedAmount }
+  }
+
+  const handleFieldChange = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+    setErrors((prev) => {
+      if (!prev[field]) return prev
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+
+    const { isValid, mobileDigits, normalizedAmount } = validateForm()
+
+    if (!isValid) {
+      toast.error(t('please_fill_required_fields'))
       return
     }
 
@@ -203,6 +247,10 @@ amount: Number(normalizedAmount),
   const inputStyle = 'w-full border rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none'
   const selectStyle = `${inputStyle} voucher-select text-gray-900 bg-white`
   const optionStyle = { color: '#111827', backgroundColor: '#ffffff' }
+  const getFieldClassName = (field) =>
+    errors[field] ? `${inputStyle} border-red-500 focus:ring-red-500` : inputStyle
+  const getSelectClassName = (field) =>
+    errors[field] ? `${selectStyle} border-red-500 focus:ring-red-500` : selectStyle
 
   const getOptionLabel = (item, keys) => {
     for (const key of keys) {
@@ -227,37 +275,40 @@ amount: Number(normalizedAmount),
         <div className="bg-white shadow-md rounded-xl p-6 border">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="text-sm font-medium">{t('amount')}</label>
-              <input
-                className={inputStyle}
+              <Input
+                label={t('amount')}
+                className={getFieldClassName('amount')}
                 inputMode="decimal"
                 placeholder={t('enter_amount')}
+                error={errors.amount}
                 value={form.amount}
-                onChange={(e) => setForm({ ...form, amount: normalizeAmountInput(e.target.value) })}
+                onChange={(e) => handleFieldChange('amount', normalizeAmountInput(e.target.value))}
                 onPaste={(e) => {
                   e.preventDefault()
                   const pasted = e.clipboardData.getData('text')
-                  setForm((prev) => ({ ...prev, amount: normalizeAmountInput(pasted) }))
+                  handleFieldChange('amount', normalizeAmountInput(pasted))
                 }}
               />
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">{t('receiver_name')}</label>
-                <input
-                  className={inputStyle}
+                <Input
+                  label={t('receiver_name')}
+                  className={getFieldClassName('receiver_name')}
+                  error={errors.receiver_name}
                   value={form.receiver_name}
-                  onChange={(e) => setForm({ ...form, receiver_name: e.target.value })}
+                  onChange={(e) => handleFieldChange('receiver_name', e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium">{t('father_name')}</label>
-                <input
-                  className={inputStyle}
+                <Input
+                  label={t('father_name')}
+                  className={getFieldClassName('receiver_father_name')}
+                  error={errors.receiver_father_name}
                   value={form.receiver_father_name}
-                  onChange={(e) => setForm({ ...form, receiver_father_name: e.target.value })}
+                  onChange={(e) => handleFieldChange('receiver_father_name', e.target.value)}
                 />
               </div>
             </div>
@@ -265,89 +316,113 @@ amount: Number(normalizedAmount),
             <MobileInput
               label={t('receiver_mobile')}
               value={form.receiver_mobile}
-              onChange={(e) => setForm({ ...form, receiver_mobile: e.target.value })}
+              error={errors.receiver_mobile}
+              className={errors.receiver_mobile ? 'border-red-500 focus:ring-red-500 focus:outline-none' : ''}
+              onChange={(e) => handleFieldChange('receiver_mobile', e.target.value)}
             />
 
             <div className="grid md:grid-cols-2 gap-4">
-              <select
-                className={selectStyle}
-                style={optionStyle}
-                value={form.nationality_id}
-                onChange={(e) => setForm({ ...form, nationality_id: e.target.value })}
-              >
-                <option value="" style={optionStyle}>{t('select_nationality')}</option>
-                {lists.nationalities.map((n) => (
-                  <option key={n.id} value={n.id} style={optionStyle}>
-                    {getOptionLabel(n, ['nationality_name', 'type_name', 'name', 'title'])}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('nationality')}</label>
+                <select
+                  className={getSelectClassName('nationality_id')}
+                  style={optionStyle}
+                  value={form.nationality_id}
+                  onChange={(e) => handleFieldChange('nationality_id', e.target.value)}
+                >
+                  <option value="" style={optionStyle}>{t('select_nationality')}</option>
+                  {lists.nationalities.map((n) => (
+                    <option key={n.id} value={n.id} style={optionStyle}>
+                      {getOptionLabel(n, ['nationality_name', 'type_name', 'name', 'title'])}
+                    </option>
+                  ))}
+                </select>
+                {errors.nationality_id && <p className="mt-1 text-sm text-red-600">{errors.nationality_id}</p>}
+              </div>
 
-              <select
-                className={selectStyle}
-                style={optionStyle}
-                value={form.province_id}
-                onChange={(e) => setForm({ ...form, province_id: e.target.value })}
-              >
-                <option value="" style={optionStyle}>{t('select_province')}</option>
-                {lists.provinces.map((p) => (
-                  <option key={p.id} value={p.id} style={optionStyle}>
-                    {getOptionLabel(p, ['province_name', 'type_name', 'name', 'title'])}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('province')}</label>
+                <select
+                  className={getSelectClassName('province_id')}
+                  style={optionStyle}
+                  value={form.province_id}
+                  onChange={(e) => handleFieldChange('province_id', e.target.value)}
+                >
+                  <option value="" style={optionStyle}>{t('select_province')}</option>
+                  {lists.provinces.map((p) => (
+                    <option key={p.id} value={p.id} style={optionStyle}>
+                      {getOptionLabel(p, ['province_name', 'type_name', 'name', 'title'])}
+                    </option>
+                  ))}
+                </select>
+                {errors.province_id && <p className="mt-1 text-sm text-red-600">{errors.province_id}</p>}
+              </div>
 
-              <select
-                className={selectStyle}
-                style={optionStyle}
-                value={form.district_id}
-                disabled={!lists.districts.length}
-                onChange={(e) => setForm({ ...form, district_id: e.target.value })}
-              >
-                <option value="" style={optionStyle}>{t('select_district')}</option>
-                {lists.districts.map((d) => (
-                  <option key={d.id} value={d.id} style={optionStyle}>
-                    {getOptionLabel(d, ['type_name', 'district_name', 'name', 'title'])}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('district')}</label>
+                <select
+                  className={getSelectClassName('district_id')}
+                  style={optionStyle}
+                  value={form.district_id}
+                  disabled={!lists.districts.length}
+                  onChange={(e) => handleFieldChange('district_id', e.target.value)}
+                >
+                  <option value="" style={optionStyle}>{t('select_district')}</option>
+                  {lists.districts.map((d) => (
+                    <option key={d.id} value={d.id} style={optionStyle}>
+                      {getOptionLabel(d, ['type_name', 'district_name', 'name', 'title'])}
+                    </option>
+                  ))}
+                </select>
+                {errors.district_id && <p className="mt-1 text-sm text-red-600">{errors.district_id}</p>}
+              </div>
 
-              <select
-                className={selectStyle}
-                style={optionStyle}
-                value={form.village_id}
-                disabled={!lists.villages.length}
-                onChange={(e) => setForm({ ...form, village_id: e.target.value })}
-              >
-                <option value="" style={optionStyle}>{t('select_village')}</option>
-                {lists.villages.map((v) => (
-                  <option key={v.id} value={v.id} style={optionStyle}>
-                    {getOptionLabel(v, ['type_name', 'village_name', 'name', 'title'])}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('village')}</label>
+                <select
+                  className={getSelectClassName('village_id')}
+                  style={optionStyle}
+                  value={form.village_id}
+                  disabled={!lists.villages.length}
+                  onChange={(e) => handleFieldChange('village_id', e.target.value)}
+                >
+                  <option value="" style={optionStyle}>{t('select_village')}</option>
+                  {lists.villages.map((v) => (
+                    <option key={v.id} value={v.id} style={optionStyle}>
+                      {getOptionLabel(v, ['type_name', 'village_name', 'name', 'title'])}
+                    </option>
+                  ))}
+                </select>
+                {errors.village_id && <p className="mt-1 text-sm text-red-600">{errors.village_id}</p>}
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4">
-              <select
-                className={selectStyle}
-                style={optionStyle}
-                value={form.receiver_id_type}
-                onChange={(e) => setForm({ ...form, receiver_id_type: e.target.value })}
-              >
-                <option value="" style={optionStyle}>{t('select_id_type')}</option>
-                {lists.idTypes.map((i) => (
-                  <option key={i.id} value={i.id} style={optionStyle}>
-                    {getOptionLabel(i, ['type_name', 'id_type_name', 'name', 'title'])}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('id_type')}</label>
+                <select
+                  className={getSelectClassName('receiver_id_type')}
+                  style={optionStyle}
+                  value={form.receiver_id_type}
+                  onChange={(e) => handleFieldChange('receiver_id_type', e.target.value)}
+                >
+                  <option value="" style={optionStyle}>{t('select_id_type')}</option>
+                  {lists.idTypes.map((i) => (
+                    <option key={i.id} value={i.id} style={optionStyle}>
+                      {getOptionLabel(i, ['type_name', 'id_type_name', 'name', 'title'])}
+                    </option>
+                  ))}
+                </select>
+                {errors.receiver_id_type && <p className="mt-1 text-sm text-red-600">{errors.receiver_id_type}</p>}
+              </div>
 
-              <input
-                className={inputStyle}
+              <Input
+                label={t('id_number')}
+                className={getFieldClassName('receiver_id_number')}
                 placeholder={t('id_number')}
+                error={errors.receiver_id_number}
                 value={form.receiver_id_number}
-                onChange={(e) => setForm({ ...form, receiver_id_number: e.target.value })}
+                onChange={(e) => handleFieldChange('receiver_id_number', e.target.value)}
               />
             </div>
 

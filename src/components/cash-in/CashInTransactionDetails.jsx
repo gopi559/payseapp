@@ -8,6 +8,7 @@ import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } fro
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import { formatPrintDateTime, openTransactionPrintWindow } from '../../utils/transactionPrint'
 import cashInService from './cashIn.service'
 
 const firstFilled = (...values) => {
@@ -47,144 +48,6 @@ const getDisplayMobile = (entry) =>
 
 const getDisplayAccount = (entry) =>
   firstFilled(entry?.account_number, entry?.acct_number, entry?.wallet_number, entry?.account_no, entry?.user_ref)
-
-function escapeHtml(str) {
-  const s = String(str ?? '')
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
-
-const downloadTransactionPdf = (
-  details,
-  receiverName,
-  senderMobile,
-  senderAccountNumber,
-  senderCardNumber,
-  senderCardName,
-  receiverMobile,
-  receiverCardNumber,
-  receiverAccountNumber,
-  labels
-) => {
-  const win = window.open('', '_blank')
-  if (!win) {
-    alert(labels.pleaseAllowPopups)
-    return
-  }
-
-  const formatDateTime = (dateTimeStr) => {
-    if (!dateTimeStr) return '-'
-    try {
-      const date = new Date(dateTimeStr)
-      const options = {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      }
-      return date.toLocaleString('en-US', options).replace(',', ' at')
-    } catch {
-      return dateTimeStr
-    }
-  }
-
-  const transactionRows = [
-    { label: labels.transactionId, value: details?.txn_id != null ? String(details.txn_id) : '-' },
-    { label: labels.rrn, value: details?.rrn ?? '-' },
-    { label: labels.transactionType, value: details?.txn_type ?? 'CARD_TO_WALLET' },
-    { label: labels.description, value: details?.txn_desc ?? details?.txn_short_desc ?? labels.cardToWallet },
-    { label: labels.dateTime, value: formatDateTime(details?.txn_time ?? details?.created_at ?? '') },
-    { label: labels.amount, value: details?.txn_amount != null ? `${Number(details.txn_amount).toFixed(2)}` : '0.00' },
-    { label: labels.channel, value: details?.channel_type ?? 'WEB' },
-    { label: labels.status, value: details?.status === 1 ? labels.success : String(details?.status ?? 'SUCCESS') },
-    { label: labels.feeAmount, value: details?.fee_amount != null ? `${Number(details.fee_amount).toFixed(2)}` : '0.00' },
-    { label: labels.remarks, value: details?.remarks ?? '-' },
-  ]
-
-  const senderRows = [
-    { label: labels.cardNumber, value: senderCardNumber },
-    { label: labels.cardName, value: senderCardName },
-    { label: labels.mobileNumber, value: senderMobile },
-    { label: labels.accountNumber, value: senderAccountNumber },
-  ].filter((row) => firstFilled(row.value))
-
-  const receiverRows = [
-    { label: labels.name, value: receiverName },
-    { label: labels.mobileNumber, value: receiverMobile },
-    { label: labels.cardNumber, value: receiverCardNumber },
-    { label: labels.accountNumber, value: receiverAccountNumber },
-  ].filter((row) => firstFilled(row.value))
-
-  const formatRows = (rows) => {
-    return rows.map(({ label, value }) => {
-      const displayValue = value == null || value === '' ? '-' : String(value)
-      return `<tr><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;vertical-align:top;">${escapeHtml(displayValue)}</td></tr>`
-    }).join('')
-  }
-
-  win.document.write(`
-<!DOCTYPE html>
-<html>
-<head>
-  <title>${escapeHtml(labels.transactionDetails)} ${escapeHtml(String(details?.txn_id ?? ''))}</title>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      padding: 24px;
-      color: #111;
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #e5e7eb;
-      padding-bottom: 12px;
-      margin-bottom: 20px;
-    }
-    .logo {
-      height: 40px;
-    }
-    h1 {
-      font-size: 20px;
-      margin: 0;
-    }
-    h2 {
-      font-size: 16px;
-      margin-top: 24px;
-      margin-bottom: 12px;
-      color: #374151;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 24px;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="header">
-    <h1>${escapeHtml(labels.transactionDetails)}</h1>
-    <img src="${PAYSEY_LOGO_URL}" class="logo" alt="PayseyPay Logo" />
-  </div>
-
-  <table><tbody>${formatRows(transactionRows)}</tbody></table>
-
-  <h2>${escapeHtml(labels.senderDetails)}</h2>
-  <table><tbody>${formatRows(senderRows)}</tbody></table>
-
-  <h2>${escapeHtml(labels.receiverDetails)}</h2>
-  <table><tbody>${formatRows(receiverRows)}</tbody></table>
-</body>
-</html>
-`)
-
-  win.document.close()
-  win.focus()
-  win.print()
-  win.onafterprint = () => win.close()
-}
 
 const CashInTransactionDetails = () => {
   const { t } = useTranslation()
@@ -289,41 +152,47 @@ const CashInTransactionDetails = () => {
   )
 
   const handleDownloadPdf = () => {
-    downloadTransactionPdf(
-      details,
-      receiverName,
-      senderMobile,
-      senderAccountNumber,
-      maskedSenderCard,
-      senderCardName,
-      receiverMobile,
-      receiverCardNumber,
-      receiverAccountNumber,
-      {
-        pleaseAllowPopups: t('please_allow_popups_to_download_pdf'),
-        transactionId: t('transaction_id'),
-        rrn: t('rrn'),
-        transactionType: t('transaction_type'),
-        description: t('description'),
-        dateTime: t('date_time'),
-        amount: t('amount'),
-        channel: t('channel'),
-        status: t('status'),
-        success: t('success'),
-        feeAmount: t('fee_amount'),
-        remarks: t('remarks'),
-        cardNumber: t('card_number'),
-        cardName: t('card_name'),
-        mobileNumber: t('mobile_number_label'),
-        accountNumber: t('account_number'),
-        name: t('name'),
-        notAvailable: t('not_available'),
-        transactionDetails: t('transaction_details'),
-        senderDetails: t('sender_details'),
-        receiverDetails: t('receiver_details'),
-        cardToWallet: t('card_to_wallet'),
-      }
-    )
+    openTransactionPrintWindow({
+      title: `${t('transaction_details')} ${details?.txn_id ?? ''}`,
+      pageTitle: t('transaction_details'),
+      logoUrl: PAYSEY_LOGO_URL,
+      popupMessage: t('please_allow_popups_to_download_pdf'),
+      sections: [
+        {
+          title: t('transaction_details'),
+          rows: [
+            { label: t('transaction_id'), value: details?.txn_id ?? '-' },
+            { label: t('rrn'), value: details?.rrn ?? '-' },
+            { label: t('transaction_type'), value: details?.txn_type ?? 'CARD_TO_WALLET' },
+            { label: t('description'), value: details?.txn_desc ?? details?.txn_short_desc ?? t('card_to_wallet') },
+            { label: t('date_time'), value: formatPrintDateTime(details?.txn_time ?? details?.created_at ?? '', 'en-US') },
+            { label: t('amount'), value: details?.txn_amount != null ? `${Number(details.txn_amount).toFixed(2)}` : '0.00' },
+            { label: t('channel'), value: details?.channel_type ?? 'WEB' },
+            { label: t('status'), value: details?.status === 1 ? t('success') : String(details?.status ?? 'SUCCESS') },
+            { label: t('fee_amount'), value: details?.fee_amount != null ? `${Number(details.fee_amount).toFixed(2)}` : '0.00' },
+            { label: t('remarks'), value: details?.remarks ?? '-' },
+          ],
+        },
+        {
+          title: t('debit_details'),
+          rows: [
+            { label: t('card_number'), value: maskedSenderCard },
+            { label: t('card_name'), value: senderCardName },
+            { label: t('mobile_number_label'), value: senderMobile },
+            { label: t('account_number'), value: senderAccountNumber },
+          ].filter((row) => firstFilled(row.value)),
+        },
+        {
+          title: t('credit_details'),
+          rows: [
+            { label: t('name'), value: receiverName },
+            { label: t('mobile_number_label'), value: receiverMobile },
+            { label: t('card_number'), value: receiverCardNumber },
+            { label: t('account_number'), value: receiverAccountNumber },
+          ].filter((row) => firstFilled(row.value)),
+        },
+      ],
+    })
   }
 
   const handleDone = () => {

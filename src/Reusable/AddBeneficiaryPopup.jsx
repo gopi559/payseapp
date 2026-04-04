@@ -27,7 +27,22 @@ const AddBeneficiaryPopup = ({
   const [validatedBin, setValidatedBin] = useState('')
   const [cardholderName, setCardholderName] = useState('')
   const [cardholderStatus, setCardholderStatus] = useState('idle')
+  const [expiryError, setExpiryError] = useState('')
   const popupColors = THEME_COLORS.popup
+
+  const getReadableErrorMessage = (err, fallback) => {
+    const message = String(err?.message || '').trim()
+
+    if (!message || message.toLowerCase() === 'failed to fetch') {
+      return t('unable_to_connect_try_again')
+    }
+
+    if (message.toLowerCase() === 'missing required fields') {
+      return t('beneficiary_add_missing_required_fields')
+    }
+
+    return message || fallback
+  }
 
   const reqIdRef = useRef(0)
   const cardholderReqIdRef = useRef(0)
@@ -199,6 +214,7 @@ const AddBeneficiaryPopup = ({
       setValidatedBin('')
       setCardholderName('')
       setCardholderStatus('idle')
+      setExpiryError('')
       validatedTransactionTypeRef.current = transactionType
     }
   }, [open])
@@ -217,9 +233,17 @@ const AddBeneficiaryPopup = ({
     }
     if (raw.length <= 2) {
       setExpiryDate(raw)
+      setExpiryError('')
       return
     }
     setExpiryDate(`${raw.slice(0, 2)}/${raw.slice(2)}`)
+    setExpiryError('')
+  }
+
+  const handleExpiryBlur = () => {
+    if (!expiryDigits) return
+    const expiryErrorKey = getExpiryErrorKey(expiryDigits)
+    setExpiryError(expiryErrorKey ? t(expiryErrorKey) : '')
   }
 
   const handleClose = () => {
@@ -228,14 +252,17 @@ const AddBeneficiaryPopup = ({
   }
 
   const handleContinue = async () => {
-    if (!isValid) return
-
     const expiryErrorKey = getExpiryErrorKey(expiryDigits)
     if (expiryErrorKey) {
-      toast.error(t(expiryErrorKey))
+      setExpiryError(t(expiryErrorKey))
       return
     }
 
+    if (!isValid) {
+      return
+    }
+
+    setExpiryError('')
     setLoading(true)
     try {
       const stan = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
@@ -260,14 +287,14 @@ const AddBeneficiaryPopup = ({
 
       const result = await response.json().catch(() => null)
       if (!response.ok || result?.code !== 1) {
-        throw new Error(result?.message || 'Failed to add beneficiary')
+        throw new Error(getReadableErrorMessage({ message: result?.message }, t('failed_to_add_beneficiary')))
       }
 
       toast.success(result?.message || 'Card added successfully')
       handleClose()
       onSuccess?.()
     } catch (err) {
-      toast.error(err?.message || 'Failed to add beneficiary')
+      toast.error(getReadableErrorMessage(err, t('failed_to_add_beneficiary')))
     } finally {
       setLoading(false)
     }
@@ -376,15 +403,20 @@ const AddBeneficiaryPopup = ({
               maxLength={5}
               value={expiryDate}
               onChange={(e) => handleExpiryChange(e.target.value)}
+              onBlur={handleExpiryBlur}
               placeholder="MM/YY"
               className="w-full border rounded-xl px-4 py-3 text-base focus:outline-none"
               style={{
                 backgroundColor: popupColors.inputBackground,
-                borderColor: popupColors.inputBorder,
+                borderColor: expiryError ? '#dc2626' : popupColors.inputBorder,
                 color: popupColors.title,
+                outline: expiryError ? '1px solid #dc2626' : 'none',
               }}
             />
           </div>
+          {expiryError && (
+            <p className="text-xs px-1 text-[#DC2626]">{expiryError}</p>
+          )}
 
         </div>
 

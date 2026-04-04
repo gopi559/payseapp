@@ -21,6 +21,7 @@ const MobileInput = ({
     typeof placeholder === 'string' && i18n.exists(placeholder)
       ? t(placeholder)
       : placeholder || t('mobile_placeholder')
+  const borderColor = error ? '#dc2626' : inputColors.border
 
   const handleChange = (e) => {
     const inputValue = e.target.value
@@ -66,9 +67,10 @@ const MobileInput = ({
           disabled={disabled}
           className={`w-full pl-12 pr-3 py-2 rounded-md border text-sm disabled:cursor-not-allowed ${className}`}
           style={{
-            borderColor: inputColors.border,
+            borderColor,
             backgroundColor: inputColors.background,
             color: inputColors.text,
+            outline: error ? '1px solid #dc2626' : 'none',
             opacity: disabled ? 0.7 : 1,
           }}
           maxLength={maxDigits}
@@ -76,7 +78,7 @@ const MobileInput = ({
         />
       </div>
       {error && (
-        <p className="mt-1 text-sm" style={{ color: inputColors.text }}>{error}</p>
+        <p className="mt-1 text-sm" style={{ color: '#dc2626' }}>{error}</p>
       )}
     </div>
   )

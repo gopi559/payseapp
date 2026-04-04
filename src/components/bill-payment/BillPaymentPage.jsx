@@ -117,6 +117,8 @@ const BillPaymentPage = () => {
   const [loading, setLoading] = useState(false)
 
   const serviceName = getBillServiceName(serviceId, t)
+  const numericAmount = Number(amount || 0)
+  const showAmountInput = !billInfo || numericAmount > 0
 
   useEffect(() => {
     if (!serviceId) {
@@ -256,9 +258,11 @@ const BillPaymentPage = () => {
       setBillInfo(enrichedBillInfo)
       const fetchedAmount = getFetchedBillAmount(enrichedBillInfo)
       setAmount(fetchedAmount != null ? String(fetchedAmount) : '')
+      const resolvedRrn = firstFilled(enrichedBillInfo?.rrn, fallbackRrn)
+      const resolvedStan = firstFilled(enrichedBillInfo?.stan, fallbackStan)
       setTxnMeta({
-        rrn: String(enrichedBillInfo?.rrn ?? fallbackRrn),
-        stan: String(enrichedBillInfo?.stan ?? fallbackStan),
+        rrn: String(resolvedRrn ?? fallbackRrn),
+        stan: String(resolvedStan ?? fallbackStan),
       })
 
       toast.success(t('bill_details_fetched_otp_sent'))
@@ -274,10 +278,6 @@ const BillPaymentPage = () => {
   const handleContinue = () => {
     if (!txnMeta?.rrn || !txnMeta?.stan || !selectedCard) {
       toast.error(t('fetch_bill_details_first'))
-      return
-    }
-    if (!amount || Number(amount) <= 0) {
-      toast.error(t('enter_valid_amount'))
       return
     }
     setStep('CONFIRM')
@@ -487,28 +487,25 @@ const BillPaymentPage = () => {
               type="text"
               value={billNumber}
               onChange={(e) => setBillNumber(e.target.value)}
-              onBlur={() => {
-                if (!txnMeta?.rrn && !loading) {
-                  handleFetchBillDetails(true)
-                }
-              }}
               placeholder={t('enter_bill_number')}
               className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
-          <div className="mt-4">
-            <AmountInput
-              label={t('amount')}
-              value={amount}
-              onChange={setAmount}
-              readOnly={false}
-              disabled={false}
-            />
-            {!billInfo && (
-              <p className="mt-2 text-xs text-gray-500">{t('bill_amount_will_be_auto_fetched')}</p>
-            )}
-          </div>
+          {showAmountInput && (
+            <div className="mt-4">
+              <AmountInput
+                label={t('amount')}
+                value={amount}
+                onChange={setAmount}
+                readOnly
+                disabled
+              />
+              {!billInfo && (
+                <p className="mt-2 text-xs text-gray-500">{t('bill_amount_will_be_auto_fetched')}</p>
+              )}
+            </div>
+          )}
 
           <div className="mt-6">
             <Button fullWidth onClick={handleFetchBillDetails} disabled={loading || cards.length === 0}>

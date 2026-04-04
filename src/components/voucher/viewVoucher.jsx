@@ -96,6 +96,12 @@ const ViewVoucher = () => {
       const currencyName = pick('CurrencyName', 'currency_name')
       const nationalityName = pick('NationalityName', 'nationality_name')
       const receiverIdTypeName = pick('ReceiverIDTypeName', 'receiver_id_type_name', 'id_type_name')
+      const provinceName = pick('ProvinceName', 'province_name')
+      const districtName = pick('DistrictName', 'district_name')
+      const villageName = pick('VillageName', 'village_name')
+      const fullAddress =
+        pick('FullAddress', 'full_address', 'address') ||
+        [villageName, districtName, provinceName].filter(Boolean).join(', ')
 
       return {
         Cashcode: pick('Cashcode', 'cashcode', 'CashCode', 'cash_code', 'voucher_code', 'VoucherCode'),
@@ -105,13 +111,13 @@ const ViewVoucher = () => {
         ReceiverName: pick('ReceiverName', 'receiver_name', 'recv_cust_fname'),
         ReceiverMobile: pick('ReceiverMobile', 'receiver_mobile', 'mobile_number'),
         ReceiverFatherName: pick('ReceiverFatherName', 'receiver_father_name', 'father_name'),
-        ProvinceName: pick('ProvinceName', 'province_name'),
-        DistrictName: pick('DistrictName', 'district_name'),
-        VillageName: pick('VillageName', 'village_name'),
+        ProvinceName: provinceName,
+        DistrictName: districtName,
+        VillageName: villageName,
         ...(nationalityName ? { NationalityName: nationalityName } : {}),
         ...(receiverIdTypeName ? { ReceiverIDTypeName: receiverIdTypeName } : {}),
         ReceiverIDNumber: pick('ReceiverIDNumber', 'receiver_id_number', 'id_number'),
-        FullAddress: pick('FullAddress', 'full_address', 'address'),
+        FullAddress: fullAddress,
         CreatedAt: pick('CreatedAt', 'created_at', 'AddedOn', 'added_on'),
       }
     },

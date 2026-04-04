@@ -6,6 +6,7 @@ import Button from '../../Reusable/Button'
 import KeyValueDisplay from '../../Reusable/KeyValueDisplay'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 import THEME_COLORS from '../../theme/colors'
+import { openTransactionPrintWindow } from '../../utils/transactionPrint'
 
 const formatPdfValue = (key, value, t) => {
   if (value == null || value === '') return '-'
@@ -16,101 +17,56 @@ const formatPdfValue = (key, value, t) => {
 
 const keyToLabel = (k) => k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 
-const formatDetailsArrayForPdf = (arr) => {
-  if (!Array.isArray(arr) || arr.length === 0) return escapeHtml('-')
+const formatDetailsArrayForPrintRows = (arr) => {
+  if (!Array.isArray(arr) || arr.length === 0) return []
 
-  const blocks = arr.map((obj) => {
-    if (!obj || typeof obj !== 'object') return ''
+  return arr.flatMap((obj, index) => {
+    if (!obj || typeof obj !== 'object') return []
 
-    const rows = Object.entries(obj)
-      .map(([k, v]) => {
-        const val = v == null || v === '' ? '-' : String(v)
-        return `
-          <tr>
-            <td style="padding:4px 8px;color:#6b7280;font-size:12px;">${escapeHtml(keyToLabel(k))}</td>
-            <td style="padding:4px 8px;font-weight:500;">${escapeHtml(val)}</td>
-          </tr>`
-      })
-      .join('')
+    const entries = Object.entries(obj).map(([key, value]) => ({
+      label: keyToLabel(key),
+      value: value == null || value === '' ? '-' : String(value),
+    }))
 
-    return `
-      <div style="margin-bottom:10px;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;"><tbody>${rows}</tbody></table>
-      </div>`
+    if (arr.length === 1) return entries
+
+    return [
+      { label: `Entry ${index + 1}`, value: '' },
+      ...entries,
+    ]
   })
-
-  return blocks.join('')
 }
 
 const downloadTransactionPdf = (row, t, labels) => {
-  const win = window.open('', '_blank')
-  if (!win) {
-    alert(t('please_allow_popups_to_download_pdf'))
-    return
-  }
+  const summaryRows = Object.entries(row)
+    .filter(([key]) => Object.prototype.hasOwnProperty.call(labels, key) && key !== 'debit_details' && key !== 'credit_details')
+    .map(([key, value]) => ({
+      label: labels[key] ?? key,
+      value:
+        formatPdfValue(key, value, t) ??
+        (value == null ? '-' : JSON.stringify(value, null, 2)),
+    }))
 
-  const entries = Object.entries(row).filter(([key]) => Object.prototype.hasOwnProperty.call(labels, key))
-
-  const rows = entries
-    .map(([key, value]) => {
-      const label = labels[key] ?? key
-      const isDetailsArray =
-        (key === 'debit_details' || key === 'credit_details') &&
-        Array.isArray(value) &&
-        value.length > 0 &&
-        value.every((item) => item != null && typeof item === 'object')
-
-      const displayValue = isDetailsArray
-        ? formatDetailsArrayForPdf(value)
-        : (() => {
-            const formatted = formatPdfValue(key, value, t)
-            return formatted !== null ? escapeHtml(formatted) : escapeHtml(JSON.stringify(value, null, 2))
-          })()
-
-      const cellContent = isDetailsArray
-        ? displayValue
-        : `<span style="white-space:pre-wrap;word-break:break-word;">${displayValue}</span>`
-
-      return `
-        <tr>
-          <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#374151;font-weight:500;vertical-align:top;">${escapeHtml(label)}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;color:#111827;vertical-align:top;">${cellContent}</td>
-        </tr>`
-    })
-    .join('')
-
-  win.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>${escapeHtml(t('transaction'))} ${escapeHtml(String(row.txn_id ?? row.id ?? ''))}</title>
-      <style>
-        body { font-family: system-ui, sans-serif; padding: 24px; color: #111; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 12px; margin-bottom: 20px; }
-        .logo { height: 40px; }
-        h1 { font-size: 20px; margin: 0; }
-        table { width: 100%; border-collapse: collapse; }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>${escapeHtml(t('transaction_details'))}</h1>
-        <img src="${PAYSEY_LOGO_URL}" class="logo" alt="PayseyPay Logo" />
-      </div>
-      <table><tbody>${rows}</tbody></table>
-    </body>
-    </html>
-  `)
-
-  win.document.close()
-  win.focus()
-  win.print()
-  win.onafterprint = () => win.close()
-}
-
-function escapeHtml(str) {
-  const s = String(str ?? '')
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;')
+  openTransactionPrintWindow({
+    title: `${t('transaction')} ${String(row.txn_id ?? row.id ?? '')}`,
+    pageTitle: t('transaction_details'),
+    logoUrl: PAYSEY_LOGO_URL,
+    popupMessage: t('please_allow_popups_to_download_pdf'),
+    sections: [
+      {
+        title: t('transaction_details'),
+        rows: summaryRows,
+      },
+      {
+        title: t('debit_details'),
+        rows: formatDetailsArrayForPrintRows(row.debit_details),
+      },
+      {
+        title: t('credit_details'),
+        rows: formatDetailsArrayForPrintRows(row.credit_details),
+      },
+    ],
+  })
 }
 
 const ViewTransactionList = () => {

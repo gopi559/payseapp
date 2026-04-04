@@ -34,7 +34,7 @@ export const CARD_TXN_LIST = `${MAIN_API_URL}/transaction_web/card/card_txn_list
 
 
 //CHAT BOT DC URLS
-export const CHATBOT_BASE_URL = "https://api.dc.payseypayment.com/support/chatbot"
+export const CHATBOT_BASE_URL = "https://api.dc.payseypayment.com/support"
 
 //This is base url-https://api.dc.payseypayment.com/support/chatbot
 

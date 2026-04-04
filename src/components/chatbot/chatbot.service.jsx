@@ -19,13 +19,15 @@ class CustomerWebSocket {
   }
 
   connect(custId, onMessage, onConnectionChange) {
+    this.custId = custId
+    this.onConnectionChange = onConnectionChange
+    this.messageHandlers = []
+    this.addMessageHandler(onMessage)
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN && this.custId === custId) {
       return // Already connected
     }
 
-    this.custId = custId
-    this.onConnectionChange = onConnectionChange
-    this.addMessageHandler(onMessage)
     this._connect()
   }
 
@@ -141,7 +143,7 @@ sendMessage(sessionId, message) {
 }
 
   addMessageHandler(handler) {
-    if (typeof handler === 'function') {
+    if (typeof handler === 'function' && !this.messageHandlers.includes(handler)) {
       this.messageHandlers.push(handler)
     }
   }

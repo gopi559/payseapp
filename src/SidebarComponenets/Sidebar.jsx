@@ -204,6 +204,13 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
     backgroundColor: THEME_COLORS.common.transparent,
   }
 
+  const menuButtonClassName = (collapsed) =>
+    `w-full flex items-center gap-3 h-12 min-h-[48px] rounded-xl text-left transition-all duration-150 ${
+      collapsed ? 'justify-center px-2' : 'px-4'
+    }`
+
+  const iconWrapperClassName = 'flex h-8 w-8 shrink-0 items-center justify-center'
+
   const sidebarContentEl = (
     <div className="flex flex-col h-full" style={{ backgroundColor: sidebarColors.panelBackground }}>
       <div
@@ -224,7 +231,12 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
               className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
               style={{ backgroundColor: THEME_COLORS.brand.primary }}
             >
-              <img src={logoImage} alt="Paysey" className="h-full w-full object-contain p-1" />
+              <img
+                src={logoImage}
+                alt="Paysey"
+                className="h-full w-full object-contain p-1"
+                style={{ filter: 'brightness(0) invert(1)' }}
+              />
             </div>
           )}
         </Link>
@@ -271,8 +283,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
               type="button"
               onMouseEnter={() => setHoveredMenuRoute(item.route)}
               onMouseLeave={() => setHoveredMenuRoute('')}
-              className={`w-full flex items-center gap-3 px-4 h-12 min-h-[48px] rounded-xl text-left transition-all duration-150 ${isCollapsed ? 'justify-center px-2' : ''
-                }`}
+              className={menuButtonClassName(isCollapsed)}
               style={menuButtonStyle}
             >
               {isActive && (
@@ -288,14 +299,11 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                   }}
                 />
               )}
-              <span
-                className={`flex-none text-2xl ${isCollapsed ? 'text-2xl' : ''} ${item.isComponent || item.isImage ? 'flex items-center justify-center' : ''
-                  }`}
-              >
+              <span className={iconWrapperClassName}>
                 {item.isImage ? (
-                  <span className="flex items-center justify-center">{item.icon}</span>
+                  <span className="flex h-8 w-8 items-center justify-center">{item.icon}</span>
                 ) : item.isComponent ? (
-                  <span className="text-xl">{item.icon}</span>
+                  <span className="text-xl leading-none">{item.icon}</span>
                 ) : (
                   item.icon
                 )}
@@ -318,8 +326,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
             }}
             onMouseEnter={() => setHoveredMenuRoute('/customer/cards-group')}
             onMouseLeave={() => setHoveredMenuRoute('')}
-            className={`w-full flex items-center gap-3 px-4 h-12 min-h-[48px] rounded-xl text-left transition-all duration-150 ${isCollapsed ? 'justify-center px-2' : ''
-              }`}
+            className={menuButtonClassName(isCollapsed)}
             style={
               location.pathname.startsWith('/customer/cards') || location.pathname.startsWith('/customer/other-cards')
                 ? {
@@ -350,7 +357,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
                   }}
                 />
               )}
-            <span className="flex-none text-xl flex items-center justify-center">
+            <span className={iconWrapperClassName}>
               <FaCreditCard style={{ color: '#357219' }} />
             </span>
             {!isCollapsed && (
@@ -461,7 +468,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
             color: THEME_COLORS.common.white,
           }}
         >
-          <span className={`flex-none ${isCollapsed ? 'text-xl' : 'text-lg'} flex items-center justify-center`}>
+          <span className={`${iconWrapperClassName} ${isCollapsed ? 'text-xl' : 'text-lg'}`}>
             <CiLogout />
           </span>
           {!isCollapsed && <span className="flex-1 text-sm">{t('logout')}</span>}

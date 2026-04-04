@@ -84,7 +84,7 @@ const BankCard = ({
       )}
 
       {!isMyPayseCard && (
-        <div className="absolute top-5 right-5 text-base font-semibold text-gray-900 z-10">
+        <div className="absolute top-5 right-5 text-base font-semibold text-white z-10">
           {bankName}
         </div>
       )}
