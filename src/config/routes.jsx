@@ -31,6 +31,6 @@ export const ROUTES = {
   TRANSACTION_DETAILS: '/customer/history/:id',
   CARDS: '/customer/cards',
   CARD_DETAILS: '/customer/cards/:id',
-  PROFILE: '/customer/profile',
+  PROFILE: '/customer/home',
   PROFILE_DETAILS: '/customer/profile/details',
 }

@@ -8,7 +8,6 @@ import { toast } from 'react-toastify'
 
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import BankCard from '../../Reusable/BankCard'
-import AmountInput from '../../Reusable/AmountInput'
 import Button from '../../Reusable/Button'
 import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
@@ -65,6 +64,15 @@ const getResolvedCardholderName = (cardInfo) =>
     cardInfo?.card_name
   )
 
+const getFriendlyBillPaymentError = (message, t) => {
+  const normalized = String(message || '').trim().toLowerCase()
+
+  if (!normalized) return t('bill_payment_failed')
+  if (normalized.includes('txn_amount')) return t('bill_payment_missing_txn_amount')
+
+  return message
+}
+
 const generateRrn = () => {
   const d = new Date()
   const part = [
@@ -117,8 +125,6 @@ const BillPaymentPage = () => {
   const [loading, setLoading] = useState(false)
 
   const serviceName = getBillServiceName(serviceId, t)
-  const numericAmount = Number(amount || 0)
-  const showAmountInput = !billInfo || numericAmount > 0
 
   useEffect(() => {
     if (!serviceId) {
@@ -268,7 +274,7 @@ const BillPaymentPage = () => {
       toast.success(t('bill_details_fetched_otp_sent'))
     } catch (e) {
       if (!silent) {
-        toast.error(e?.message || t('failed_to_fetch_bill_details'))
+        toast.error(getFriendlyBillPaymentError(e?.message, t) || t('failed_to_fetch_bill_details'))
       }
     } finally {
       setLoading(false)
@@ -389,7 +395,7 @@ const BillPaymentPage = () => {
       resetFlow()
       navigate('/customer/bill-payment/success')
     } catch (e) {
-      toast.error(e?.message || t('bill_payment_failed'))
+      toast.error(getFriendlyBillPaymentError(e?.message, t) || t('bill_payment_failed'))
     } finally {
       setLoading(false)
     }
@@ -491,21 +497,6 @@ const BillPaymentPage = () => {
               className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
-
-          {showAmountInput && (
-            <div className="mt-4">
-              <AmountInput
-                label={t('amount')}
-                value={amount}
-                onChange={setAmount}
-                readOnly
-                disabled
-              />
-              {!billInfo && (
-                <p className="mt-2 text-xs text-gray-500">{t('bill_amount_will_be_auto_fetched')}</p>
-              )}
-            </div>
-          )}
 
           <div className="mt-6">
             <Button fullWidth onClick={handleFetchBillDetails} disabled={loading || cards.length === 0}>

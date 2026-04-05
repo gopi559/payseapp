@@ -6,11 +6,12 @@ import Button from '../../Reusable/Button'
 import KeyValueDisplay from '../../Reusable/KeyValueDisplay'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 import THEME_COLORS from '../../theme/colors'
-import { openTransactionPrintWindow } from '../../utils/transactionPrint'
+import { formatPrintDateTime, openTransactionPrintWindow } from '../../utils/transactionPrint'
 
-const formatPdfValue = (key, value, t) => {
+const formatPdfValue = (key, value, t, locale = 'en-US') => {
   if (value == null || value === '') return '-'
   if (key === 'status') return value === 1 ? t('success') : value === 0 ? t('failed') : String(value)
+  if (key === 'txn_time') return formatPrintDateTime(value, locale)
   if (typeof value === 'object') return null
   return String(value)
 }
@@ -37,13 +38,13 @@ const formatDetailsArrayForPrintRows = (arr) => {
   })
 }
 
-const downloadTransactionPdf = (row, t, labels) => {
+const downloadTransactionPdf = (row, t, labels, locale) => {
   const summaryRows = Object.entries(row)
     .filter(([key]) => Object.prototype.hasOwnProperty.call(labels, key) && key !== 'debit_details' && key !== 'credit_details')
     .map(([key, value]) => ({
       label: labels[key] ?? key,
       value:
-        formatPdfValue(key, value, t) ??
+        formatPdfValue(key, value, t, locale) ??
         (value == null ? '-' : JSON.stringify(value, null, 2)),
     }))
 
@@ -70,7 +71,7 @@ const downloadTransactionPdf = (row, t, labels) => {
 }
 
 const ViewTransactionList = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const row = location.state?.row ?? null
@@ -118,7 +119,11 @@ const ViewTransactionList = () => {
           <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
             <h2 className="text-xl font-bold" style={{ color: contentCard.title }}>{t('view_transaction')}</h2>
             <div className="flex gap-2 shrink-0">
-              <Button type="button" variant="outline" onClick={() => downloadTransactionPdf(row, t, labels)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => downloadTransactionPdf(row, t, labels, i18n.language === 'ar' ? 'ar-SA' : 'en-US')}
+              >
                 {t('download_pdf')}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate('/customer/transactions')}>

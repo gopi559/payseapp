@@ -1,4 +1,5 @@
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
+import i18n from '../../i18n'
 import {
   TRANSACTION_LIST,
   FETCH_BY_RRN,
@@ -13,7 +14,10 @@ const isSuccess = (res) =>
 const isNoDataResponse = (res) =>
   String(res?.message ?? '')
     .trim()
-    .toLowerCase() === 'no data found'
+    .toLowerCase() === String(i18n.t('no_data_found') ?? '')
+      .trim()
+      .replace(/\.$/, '')
+      .toLowerCase()
 
 const transactionService = {
   getList: async ({

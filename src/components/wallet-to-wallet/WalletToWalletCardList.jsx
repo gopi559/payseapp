@@ -30,6 +30,15 @@ import bankIcon from '../../assets/BankIcon.svg'
 const QUICK_AMOUNTS = [50, 100, 200, 500, 1000]
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
+const getReadableWalletToWalletError = (message, fallback, t) => {
+  const normalized = String(message || '').trim().toLowerCase()
+
+  if (!normalized) return fallback
+  if (normalized === 'No Data Found') return t('no_data_found')
+
+  return message
+}
+
 const WalletToWalletCardList = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -153,7 +162,7 @@ const WalletToWalletCardList = () => {
 
       const json = await res.json()
       if (!res.ok || json.code !== 1) {
-        throw new Error(json.message)
+        throw new Error(getReadableWalletToWalletError(json?.message, t('failed_to_load_destination_cards'), t))
       }
 
       const emiCards = Array.isArray(json.data)
@@ -162,7 +171,7 @@ const WalletToWalletCardList = () => {
 
       setDestCards(emiCards)
     } catch (e) {
-      toast.error(e.message || t('failed_to_load_destination_cards'))
+      toast.error(getReadableWalletToWalletError(e?.message, t('failed_to_load_destination_cards'), t))
     }
   }
 
@@ -198,7 +207,7 @@ const WalletToWalletCardList = () => {
 
       const json = await res.json()
       if (!res.ok || json.code !== 1) {
-        throw new Error(json.message)
+        throw new Error(getReadableWalletToWalletError(json?.message, t('failed_to_fetch_source_card_balance'), t))
       }
 
       setSourceCards((prev) =>
@@ -207,7 +216,7 @@ const WalletToWalletCardList = () => {
         )
       )
     } catch (e) {
-      toast.error(e.message || t('failed_to_fetch_source_card_balance'))
+      toast.error(getReadableWalletToWalletError(e?.message, t('failed_to_fetch_source_card_balance'), t))
     }
   }
 
@@ -220,7 +229,7 @@ const WalletToWalletCardList = () => {
       setStep(null)
       setBalanceCardIndex(null)
     } catch (e) {
-      toast.error(e.message || t('failed_to_fetch_source_card_balance'))
+      toast.error(getReadableWalletToWalletError(e?.message, t('failed_to_fetch_source_card_balance'), t))
     } finally {
       setLoading(false)
     }
@@ -286,7 +295,7 @@ const WalletToWalletCardList = () => {
       setStep('OTP')
       toast.success(t('otp_sent'))
     } catch (e) {
-      toast.error(e.message || t('failed_to_send_otp'))
+      toast.error(getReadableWalletToWalletError(e?.message, t('failed_to_send_otp'), t))
     } finally {
       setLoading(false)
     }
@@ -337,7 +346,7 @@ const WalletToWalletCardList = () => {
       resetFlow()
       navigate('/customer/wallet-to-wallet/success')
     } catch (e) {
-      toast.error(e.message || t('transaction_failed'))
+      toast.error(getReadableWalletToWalletError(e?.message, t('transaction_failed'), t))
     } finally {
       setLoading(false)
     }
