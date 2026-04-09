@@ -37,6 +37,12 @@ import CashInTransactionDetails from '../components/cash-in/CashInTransactionDet
 
 import CashInMethod from '../components/cash-in/CashInMethod'
 import CashInCardList from '../components/cash-in/CashInCardList'
+import CashInBankTransferAccounts from '../components/cash-in-BankTransfer/CashInBankTransferAccounts'
+import CashInBankTransferAddAccount from '../components/cash-in-BankTransfer/CashInBankTransferAddAccount'
+import CashInBankTransferAmount from '../components/cash-in-BankTransfer/CashInBankTransferAmount'
+import CashInBankTransferConfirm from '../components/cash-in-BankTransfer/CashInBankTransferConfirm'
+import CashInBankTransferSuccess from '../components/cash-in-BankTransfer/CashInBankTransferSuccess'
+import CashInBankTransferTransactionDetails from '../components/cash-in-BankTransfer/CashInBankTransferTransactionDetails'
 
 
 import CardToCardCardList from '../components/card-to-card/CardToCardCardList'
@@ -342,6 +348,54 @@ export const customerRoutes = [
   element: (
     <Suspense fallback={<LinearProgress />}>
       <CashInCardList />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/bank-transfer',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInBankTransferAccounts />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/bank-transfer/add-account',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInBankTransferAddAccount />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/bank-transfer/amount',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInBankTransferAmount />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/bank-transfer/confirm',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInBankTransferConfirm />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/bank-transfer/success',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInBankTransferSuccess />
+    </Suspense>
+  ),
+},
+{
+  path: 'cash-in/bank-transfer/details',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashInBankTransferTransactionDetails />
     </Suspense>
   ),
 },

@@ -78,3 +78,27 @@ export const postWithBasicAuth = async (url, body) => {
 
   return fetch(resolvedUrl, options)
 }
+
+export const getWithBasicAuth = async (url, query = {}) => {
+  const resolvedUrl = new URL(toUrl(url))
+
+  Object.entries(query || {}).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') return
+    resolvedUrl.searchParams.set(key, String(value))
+  })
+
+  const response = await fetch(resolvedUrl.toString(), {
+    method: 'GET',
+    headers: {
+      Authorization: getBasicAuthHeader(),
+    },
+  })
+
+  const json = await response.json().catch(() => null)
+
+  if (!response.ok || json?.code !== 1) {
+    throw new Error(json?.message || 'Request failed')
+  }
+
+  return json?.data
+}

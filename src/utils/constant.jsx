@@ -85,6 +85,60 @@ export const WALLET_TO_CARD = `${MAIN_API_URL}/external_card/wallet_to_card_cnp`
 
 
 export const EXTERNAL_BIN_LIST = `${MAIN_API_URL}/external_bin/list`;
+export const BANK_MASTER_LIST = `${MAIN_API_URL}/bank_master/list`;
+export const BENEFICIARY_BANK_LIST =
+  'https://api.dc.payseypayment.com/webcust/beneficiary/bank/list?bank_id=0';
+
+// ========================
+// BANK_MASTER_LIST
+// ========================
+
+// URL
+// GET http://WEBPROCESSOR_HOST:PORT/bank_master/list?status=1&auth_status=APPROVED&include_deleted=false
+
+// Headers
+// Authorization: Basic d2ViYWRtaW46NDk3MEZBQjI5OEUyNzFFNDMwMDEwMjM1RTlDODhFQTVFNDY3REVFRg==
+
+// Body
+// N/A (GET API)
+
+// Response
+// {
+//   "message": "bank master list fetched successfully",
+//   "status": "SUCCESS",
+//   "code": 1,
+//   "data": [
+//     {
+//       "id": 1,
+//       "bank_name": "Sample Bank",
+//       "bank_short_code": "SB",
+//       "bank_code": "001",
+//       "bank_short_name": "SBank",
+//       "status": 1,
+//       "process_status": 1,
+//       "auth_status": "APPROVED",
+//       "created_time": "2026-04-09T00:00:00Z",
+//       "auth_time": "2026-04-09T00:00:00Z",
+//       "created_userid": 1,
+//       "auth_userid": 2,
+//       "deauth_narration": "",
+//       "deleted_by": 0,
+//       "is_deleted": 0
+//     }
+//   ],
+//   "api": "/bank_master/list"
+// }
+
+// ========================
+// BENEFICIARY_BANK_LIST
+// ========================
+
+// URL
+// GET https://api.dc.payseypayment.com/beneficiary/bank/list?bank_id=0
+
+// Headers
+// Authorization: Bearer <MERCHANT_TOKEN>
+// Deviceinfo: {"device_id":"devtest","device_type":"WEBAPP","fcm_id":"dummy"}
 
 
 export const TRANSACTION_LIST = `${MAIN_API_URL}/transaction_web/customer/txn_list`;
@@ -155,3 +209,156 @@ export const DOCUMENT_LIST = `https://backend.api-innovitegra.in/webcust/persona
 
 export const WALLET_TO_WALLET = `${MAIN_API_URL}/external_card/wallet_ext_wallet_cnp_703`;
   
+
+
+
+export const AIRTIME_RECHARGE_API = `${MAIN_API_URL}/web/transaction/onus/airtime/recharge`;
+
+export const BRESHNA_BILL_DETAILS_API = `${MAIN_API_URL}/transaction_web/customer/onus/breshna/bill-details`;
+
+export const BRESHNA_BILL_PAYMENT_API = `${MAIN_API_URL}/transaction_web/customer/onus/breshna/bill-payment`;
+
+export const CUSTOMER_AIRTIME_RECHARGE_API = `${MAIN_API_URL}/transaction_web/customer/onus/airtime/recharge`;
+
+
+// https://api.dc.payseypayment.com/webcust/web/transaction/onus/airtime/recharge
+
+
+
+export const GB_BALANCE_CUSTOMER = `${MAIN_API_URL}/web/wallet/gb_balance`;
+export const GB_PUSH_CUSTOMER = `${MAIN_API_URL}/web/wallet/gb_push`;
+export const GB_PULL_CUSTOMER = `${MAIN_API_URL}/web/wallet/gb_pull`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ========================
+// GB_BALANCE_CUSTOMER
+// ========================
+
+// URL
+// POST {{MAIN_API_URL_CUSTOMER}}/web/wallet/gb_balance
+
+// Headers
+// Content-Type: application/json
+// Authorization: Bearer <CUSTOMER_JWT>
+// Deviceinfo: {"device_id":"devtest","device_type":"WEBAPP","ClientRefId":1234567}
+
+// Body
+// {
+//   "pin": "1234",
+//   "wallet_no": "93708568993"
+// }
+
+// Response
+// {
+//   "message": "Success",
+//   "status": "Success",
+//   "code": 1,
+//   "data": {
+//     "wallet_no": "93708568993",
+//     "external_ref_num": "004812982897",
+//     "gb": {
+//       "externalRefNum": "004812982897",
+//       "accountNumber": "I029910000374",
+//       "amount": "9412402.33",
+//       "ccy": "AFN",
+//       "respCode": "0",
+//       "respMsg": "Success"
+//     }
+//   },
+//   "api": "/web/wallet/gb_balance"
+// }
+
+
+
+// ========================
+// GB_PUSH_CUSTOMER
+// ========================
+
+// URL
+// POST {{MAIN_API_URL_CUSTOMER}}/web/wallet/gb_push
+
+// Headers
+// Content-Type: application/json
+// Authorization: Bearer <CUSTOMER_JWT>
+// Deviceinfo: {"device_id":"devtest","device_type":"WEBAPP","ClientRefId":1234567}
+
+// Body
+// {
+//   "pin": "1234",
+//   "wallet_no": "93708568993",
+//   "amount": 40.00,
+//   "currency": "AFN",
+//   "remarks": "web gb push",
+//   "auth_data": "<AUTH_DATA>"
+// }
+
+// Response
+// {
+//   "api": "/web/wallet/gb_push",
+//   "code": 1,
+//   "status": "Success",
+//   "message": "Success",
+//   "data": {
+//     "wallet_no": "93708568993",
+//     "external_ref_num": "004812982897",
+//     "gb": {
+//       "respCode": "0",
+//       "respMsg": "Success"
+//     },
+//     "rrn": "1775634092625"
+//   }
+// }
+
+
+
+// ========================
+// GB_PULL_CUSTOMER
+// ========================
+
+// URL
+// POST {{MAIN_API_URL_CUSTOMER}}/web/wallet/gb_pull
+
+// Headers
+// Content-Type: application/json
+// Authorization: Bearer <CUSTOMER_JWT>
+// Deviceinfo: {"device_id":"devtest","device_type":"WEBAPP","ClientRefId":1234567}
+
+// Body
+// {
+//   "pin": "1234",
+//   "wallet_no": "93708568993",
+//   "amount": 40.00,
+//   "currency": "AFN",
+//   "remarks": "web gb pull",
+//   "auth_data": "<AUTH_DATA>"
+// }
+
+// Response
+// {
+//   "message": "Success",
+//   "status": "Success",
+//   "code": 1,
+//   "data": {
+//     "rrn": "1775634092625",
+//     "wallet_no": "93708568993",
+//     "external_ref_num": "004812982897",
+//     "amount": 40,
+//     "gb": {
+//       "respCode": "0",
+//       "respMsg": "Success"
+//     }
+//   },
+//   "api": "/web/wallet/gb_pull"
+// }

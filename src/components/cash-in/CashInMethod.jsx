@@ -25,6 +25,53 @@ const CashInMethod = () => {
           </p>
 
           <button
+            onClick={() => navigate('/customer/cash-in/bank-transfer')}
+            className="w-full text-left mb-5"
+          >
+            <div
+              className="rounded-3xl p-6 flex items-center justify-between shadow-sm"
+              style={{
+                background: 'linear-gradient(135deg, #05C15D 0%, #0F8A00 55%, #8ED7C0 100%)',
+              }}
+            >
+              <div className="pr-4">
+                <h2
+                  className="text-xl font-semibold"
+                  style={{ color: menuCard.cardTitle }}
+                >
+                  {t('bank_transfer')}
+                </h2>
+
+                <p className="text-base mt-2" style={{ color: menuCard.cardSubtitle }}>
+                  {t('transfer_directly_from_bank')}
+                </p>
+
+                <div
+                  className="inline-flex items-center mt-4 px-4 py-1.5 text-sm rounded-full"
+                  style={{
+                    backgroundColor: menuCard.pillBackground,
+                    color: menuCard.pillText,
+                  }}
+                >
+                  {t('secure_fast_easy')}
+                </div>
+              </div>
+
+              <div className="flex-shrink-0">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: menuCard.iconBackground }}
+                >
+                  <HiChevronRight
+                    className="w-6 h-6"
+                    style={{ color: menuCard.iconColor }}
+                  />
+                </div>
+              </div>
+            </div>
+          </button>
+
+          <button
             onClick={() => navigate('/customer/cash-in/cards')}
             className="w-full text-left"
           >

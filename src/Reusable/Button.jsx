@@ -28,11 +28,21 @@ const Button = ({
   const widthClass = fullWidth ? 'w-full' : ''
 
   const resolveBackground = () => {
+    if (disabled && variant === 'outline') return '#FFFFFF'
     if (disabled) return buttonColors.disabled
+    if (variant === 'outline') return '#FFFFFF'
     if (variant === 'secondary') return buttonColors.secondary
     if (isHovered) return buttonColors.primaryHover
     return buttonColors.primary
   }
+
+  const resolveTextColor = () => {
+    if (variant === 'outline') return buttonColors.primary
+    return buttonColors.text
+  }
+
+  const resolveBorderWidth = () => (variant === 'outline' ? 2 : 0)
+  const resolveBorderColor = () => (variant === 'outline' ? buttonColors.primary : 'transparent')
 
   const resolvedChildren =
     typeof children === 'string' && i18n.exists(children) ? t(children) : children
@@ -47,9 +57,10 @@ const Button = ({
       className={`${baseClasses} ${sizeClasses[size]} ${widthClass} ${className}`}
       style={{
         backgroundColor: resolveBackground(),
-        color: buttonColors.text,
+        color: resolveTextColor(),
         borderStyle: 'solid',
-        borderWidth: 0,
+        borderWidth: resolveBorderWidth(),
+        borderColor: resolveBorderColor(),
       }}
     >
       {resolvedChildren}

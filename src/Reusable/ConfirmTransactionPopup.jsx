@@ -16,6 +16,13 @@ const ConfirmTransactionPopup = ({
   loading,
   onSendOtp,
   onCancel,
+  title,
+  fromValue,
+  fromSubValue,
+  toValue,
+  toSubValue,
+  actionLabel,
+  cancelLabel,
 }) => {
   const { t } = useTranslation()
   const popupColors = THEME_COLORS.popup
@@ -38,6 +45,14 @@ const ConfirmTransactionPopup = ({
     card?.cardholder_nick_name ||
     card?.name_on_card
 
+  const resolvedTitle = title || t('confirm_transaction')
+  const resolvedFromValue = fromValue || fromCardNumber || t('wallet_balance')
+  const resolvedFromSubValue = fromSubValue || fromCardholderName || ''
+  const resolvedToValue = toValue || to
+  const resolvedToSubValue = toSubValue || ''
+  const resolvedActionLabel = actionLabel || t('confirm_transaction')
+  const resolvedCancelLabel = cancelLabel || t('cancel_transaction')
+
   return (
 <div
   className="fixed inset-0 z-50 flex items-end justify-center px-4 md:pl-[17.99rem]"
@@ -59,7 +74,7 @@ const ConfirmTransactionPopup = ({
             className="text-xl font-semibold"
             style={{ color: popupColors.title }}
           >
-            {t('confirm_transaction')}
+            {resolvedTitle}
           </h2>
         </div>
 
@@ -67,21 +82,21 @@ const ConfirmTransactionPopup = ({
           <div>
             <p style={{ color: confirmColors.label }}>{t('from_label')}</p>
 
-            {fromCardNumber ? (
+            {resolvedFromValue ? (
               <div>
                 <p
-                  className="font-medium font-mono"
+                  className="font-medium"
                   style={{ color: confirmColors.value }}
                 >
-                  {fromCardNumber}
+                  {resolvedFromValue}
                 </p>
 
-                {fromCardholderName && (
+                {resolvedFromSubValue && (
                   <p
                     className="text-xs mt-1"
                     style={{ color: confirmColors.value }}
                   >
-                    {fromCardholderName}
+                    {resolvedFromSubValue}
                   </p>
                 )}
               </div>
@@ -94,14 +109,22 @@ const ConfirmTransactionPopup = ({
 
           <div>
             <p style={{ color: confirmColors.label }}>{t('to_label')}</p>
-            {typeof to === 'string' ? (
+            {typeof resolvedToValue === 'string' ? (
               <p className="font-medium" style={{ color: confirmColors.value }}>
-                {to}
+                {resolvedToValue}
               </p>
             ) : (
               <div className="font-medium" style={{ color: confirmColors.value }}>
-                {to}
+                {resolvedToValue}
               </div>
+            )}
+            {resolvedToSubValue && (
+              <p
+                className="text-xs mt-1"
+                style={{ color: confirmColors.value }}
+              >
+                {resolvedToSubValue}
+              </p>
             )}
           </div>
 
@@ -132,7 +155,7 @@ const ConfirmTransactionPopup = ({
 
         <div className="mt-6 space-y-3">
           <Button fullWidth onClick={onSendOtp} disabled={loading}>
-            {loading ? t('sending_otp') : t('confirm_transaction')}
+            {loading ? t('sending_otp') : resolvedActionLabel}
           </Button>
 
           <Button
@@ -140,7 +163,7 @@ const ConfirmTransactionPopup = ({
             onClick={onCancel}
             disabled={loading}
           >
-            {t('cancel_transaction')}
+            {resolvedCancelLabel}
           </Button>
         </div>
       </div>
