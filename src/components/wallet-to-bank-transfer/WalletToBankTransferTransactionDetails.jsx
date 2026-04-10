@@ -15,14 +15,14 @@ const maskAccount = (value) => {
   return raw.length <= 4 ? raw : `****${raw.slice(-4)}`
 }
 
-const CashInBankTransferTransactionDetails = () => {
+const WalletToBankTransferTransactionDetails = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem('cashInBankTransferSuccess')
+      const raw = sessionStorage.getItem('walletToBankTransferSuccess')
       if (!raw) {
         navigate('/customer/home')
         return
@@ -51,8 +51,8 @@ const CashInBankTransferTransactionDetails = () => {
             { label: t('transaction_id'), value: details?.txn_id ?? details?.rrn ?? '-' },
             { label: t('rrn'), value: details?.rrn ?? '-' },
             { label: t('external_reference_number'), value: details?.external_ref_num ?? '-' },
-            { label: t('transaction_type'), value: details?.txn_type ?? t('bank_to_wallet') },
-            { label: t('description'), value: details?.txn_desc ?? t('manual_bank_to_wallet') },
+            { label: t('transaction_type'), value: details?.txn_type ?? t('wallet_to_bank') },
+            { label: t('description'), value: details?.txn_desc ?? t('cash_out') },
             { label: t('date_time'), value: formatPrintDateTime(details?.txn_time ?? new Date().toISOString(), 'en-US') },
             { label: t('amount'), value: amount },
             { label: t('currency'), value: details?.currency ?? details?.gb?.ccy ?? 'AFN' },
@@ -64,16 +64,16 @@ const CashInBankTransferTransactionDetails = () => {
         {
           title: t('sender_details'),
           rows: [
-            { label: t('bank'), value: details?.from_bank_name ?? '-' },
-            { label: t('account_number'), value: maskAccount(details?.from_account_number) },
-            { label: t('full_name'), value: details?.from_account_holder_name ?? '-' },
+            { label: t('wallet'), value: details?.from ?? t('wallet') },
+            { label: t('wallet_number'), value: details?.wallet_no ?? '-' },
           ],
         },
         {
           title: t('receiver_details'),
           rows: [
-            { label: t('wallet'), value: details?.to ?? t('wallet') },
-            { label: t('wallet_number'), value: details?.wallet_no ?? '-' },
+            { label: t('bank'), value: details?.to_bank_name ?? '-' },
+            { label: t('account_number'), value: maskAccount(details?.to_account_number) },
+            { label: t('full_name'), value: details?.to_account_holder_name ?? '-' },
           ],
         },
       ],
@@ -103,7 +103,7 @@ const CashInBankTransferTransactionDetails = () => {
             <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
             <p className="text-[1.75rem] font-bold mb-3">{amount}</p>
             <div className="bg-white/20 rounded-lg px-4 py-2">
-              <span className="text-sm font-medium">{t('money_added')}</span>
+              <span className="text-sm font-medium">{t('money_sent')}</span>
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@ const CashInBankTransferTransactionDetails = () => {
               <FaExchangeAlt className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('transaction_type')}</p>
-                <p className="text-sm font-medium text-gray-800">{details?.txn_type ?? t('bank_to_wallet')}</p>
+                <p className="text-sm font-medium text-gray-800">{details?.txn_type ?? t('wallet_to_bank')}</p>
               </div>
             </div>
 
@@ -137,7 +137,7 @@ const CashInBankTransferTransactionDetails = () => {
               <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('description')}</p>
-                <p className="text-sm font-medium text-gray-800">{details?.txn_desc ?? t('manual_bank_to_wallet')}</p>
+                <p className="text-sm font-medium text-gray-800">{details?.txn_desc ?? t('cash_out')}</p>
               </div>
             </div>
 
@@ -179,24 +179,16 @@ const CashInBankTransferTransactionDetails = () => {
             <div className="flex items-start gap-3">
               <HiOutlineBuildingLibrary className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('bank')}</p>
-                <p className="text-sm font-medium text-gray-800">{details?.from_bank_name ?? '-'}</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('wallet')}</p>
+                <p className="text-sm font-medium text-gray-800">{details?.from ?? t('wallet')}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <HiOutlineWallet className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('full_name')}</p>
-                <p className="text-sm font-medium text-gray-800">{details?.from_account_holder_name ?? '-'}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <HiOutlineBuildingLibrary className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{maskAccount(details?.from_account_number) ?? '-'}</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('wallet_number')}</p>
+                <p className="text-sm font-medium text-gray-800">{details?.wallet_no ?? '-'}</p>
               </div>
             </div>
           </div>
@@ -212,18 +204,26 @@ const CashInBankTransferTransactionDetails = () => {
 
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <HiOutlineWallet className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <HiOutlineBuildingLibrary className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('wallet')}</p>
-                <p className="text-sm font-medium text-gray-800">{details?.to ?? t('wallet')}</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('bank')}</p>
+                <p className="text-sm font-medium text-gray-800">{details?.to_bank_name ?? '-'}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <HiOutlineWallet className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <HiOutlineUser className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('wallet_number')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{details?.wallet_no ?? '-'}</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('full_name')}</p>
+                <p className="text-sm font-medium text-gray-800">{details?.to_account_holder_name ?? '-'}</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <HiOutlineBuildingLibrary className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-xs text-gray-500 mb-0.5">{t('account_number')}</p>
+                <p className="text-sm font-medium text-gray-800 font-mono">{maskAccount(details?.to_account_number) ?? '-'}</p>
               </div>
             </div>
           </div>
@@ -242,8 +242,8 @@ const CashInBankTransferTransactionDetails = () => {
 
         <Button
           onClick={() => {
-            sessionStorage.removeItem('cashInBankTransferSuccess')
-            sessionStorage.removeItem('cashInBankTransferAccount')
+            sessionStorage.removeItem('walletToBankTransferSuccess')
+            sessionStorage.removeItem('walletToBankTransferAccount')
             navigate('/customer/home')
           }}
           fullWidth
@@ -256,4 +256,4 @@ const CashInBankTransferTransactionDetails = () => {
   )
 }
 
-export default CashInBankTransferTransactionDetails
+export default WalletToBankTransferTransactionDetails

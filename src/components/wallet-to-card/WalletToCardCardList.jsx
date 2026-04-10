@@ -287,7 +287,7 @@ const WalletToCardCardList = () => {
           <div className="relative flex items-center justify-between mb-5">
             <button
               type="button"
-              onClick={() => navigate('/customer/wallet-to-card')}
+              onClick={() => navigate('/customer/cash-out')}
               className="w-9 h-9 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center text-[#357219]"
               aria-label={t('go_back')}
             >

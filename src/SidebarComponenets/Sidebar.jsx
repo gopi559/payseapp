@@ -98,7 +98,7 @@ const Sidebar = ({ isOpen, onClose, isCollapsed = false }) => {
         />
       ),
       label: t('cash_out'),
-      route: '/customer/wallet-to-card',
+      route: '/customer/cash-out',
       isImage: true,
     },
     {

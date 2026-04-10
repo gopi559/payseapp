@@ -5,12 +5,10 @@ import i18n from '../../i18n'
 import {
   BENEFICIARY_BANK_LIST,
   FETCH_BY_RRN,
-  GB_BALANCE_CUSTOMER,
-  GB_PULL_CUSTOMER,
   GB_PUSH_CUSTOMER,
 } from '../../utils/constant.jsx'
 
-const STORAGE_KEY = 'cashInBankTransferAccounts'
+const STORAGE_KEY = 'walletToBankTransferAccounts'
 
 const isSuccess = (res) =>
   res?.code === 1 || String(res?.status || '').toUpperCase() === 'SUCCESS'
@@ -57,13 +55,19 @@ export const bankTransferStorage = {
       })
     }
 
+    if (account.isCashOutDefault) {
+      next.forEach((item) => {
+        item.isCashOutDefault = false
+      })
+    }
+
     next.unshift(account)
     this.save(next)
     return next
   },
 }
 
-const cashInBankTransferService = {
+const walletToBankTransferService = {
   getStoredAccounts: () => bankTransferStorage.list(),
 
   fetchBankList: async () => {
@@ -110,57 +114,6 @@ const cashInBankTransferService = {
     return { data: saved, message: i18n.t('saved') }
   },
 
-  fetchGbBalance: async ({ pin, wallet_no }) => {
-    const response = await fetchWithRefreshToken(GB_BALANCE_CUSTOMER, {
-      method: 'POST',
-      headers: getDeviceHeaders(),
-      body: JSON.stringify({
-        pin: String(pin).trim(),
-        wallet_no: String(wallet_no).trim(),
-      }),
-    })
-
-    const res = await getJson(response)
-
-    if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || res?.data?.gb?.respMsg || i18n.t('failed_to_fetch_bank_balance'))
-    }
-
-    return { data: res?.data ?? null, message: res?.message }
-  },
-
-  submitBankTransferPull: async ({
-    pin,
-    wallet_no,
-    amount,
-    currency,
-    remarks,
-    auth_data,
-  }) => {
-    const response = await fetchWithRefreshToken(GB_PULL_CUSTOMER, {
-      method: 'POST',
-      headers: getDeviceHeaders(),
-      body: JSON.stringify({
-        pin: String(pin).trim(),
-        wallet_no: String(wallet_no).trim(),
-        amount: Number(amount),
-        currency: String(currency || 'AFN').trim(),
-        remarks: String(remarks || i18n.t('web_gb_pull_remarks')).trim(),
-        auth_data: String(auth_data || '').trim(),
-      }),
-    })
-
-    const res = await getJson(response)
-
-    if (!response.ok || !isSuccess(res)) {
-      throw new Error(res?.message || res?.data?.gb?.respMsg || i18n.t('bank_transfer_failed'))
-    }
-
-    authService.fetchCustomerBalance().catch(() => {})
-
-    return { data: res?.data ?? null, message: res?.message }
-  },
-
   submitBankTransferPush: async ({
     pin,
     wallet_no,
@@ -188,6 +141,8 @@ const cashInBankTransferService = {
       throw new Error(res?.message || res?.data?.gb?.respMsg || i18n.t('bank_transfer_failed'))
     }
 
+    authService.fetchCustomerBalance().catch(() => {})
+
     return { data: res?.data ?? null, message: res?.message }
   },
 
@@ -209,4 +164,4 @@ const cashInBankTransferService = {
   },
 }
 
-export default cashInBankTransferService
+export default walletToBankTransferService

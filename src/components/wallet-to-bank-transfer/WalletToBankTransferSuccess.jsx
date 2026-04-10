@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
-import cashInBankTransferService from './cashInBankTransfer.service'
+import walletToBankTransferService from './walletToBankTransfer.service'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
 import Button from '../../Reusable/Button'
 
@@ -28,14 +28,14 @@ const maskAccount = (value) => {
   return raw.length <= 4 ? raw : `.... .... .... ${raw.slice(-4)}`
 }
 
-const CashInBankTransferSuccess = () => {
+const WalletToBankTransferSuccess = () => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem('cashInBankTransferSuccess')
+      const raw = sessionStorage.getItem('walletToBankTransferSuccess')
       if (!raw) return
 
       const parsed = JSON.parse(raw)
@@ -43,12 +43,12 @@ const CashInBankTransferSuccess = () => {
 
       if (!parsed?.rrn) return
 
-      cashInBankTransferService.fetchTransactionByRrn(parsed.rrn)
+      walletToBankTransferService.fetchTransactionByRrn(parsed.rrn)
         .then(({ data }) => {
           if (!data) return
           const merged = { ...parsed, ...data }
           setDetails(merged)
-          sessionStorage.setItem('cashInBankTransferSuccess', JSON.stringify(merged))
+          sessionStorage.setItem('walletToBankTransferSuccess', JSON.stringify(merged))
         })
         .catch(() => {})
     } catch {
@@ -82,14 +82,17 @@ const CashInBankTransferSuccess = () => {
             <div className="flex justify-between items-start gap-4 text-sm">
               <span className="text-gray-600">{t('from')}</span>
               <div className="text-right">
-                <div className="font-medium text-[#111827]">{details?.from_bank_name || '-'}</div>
-                <div className="mt-0.5 text-xs text-gray-600">{maskAccount(details?.from_account_number)}</div>
+                <div className="font-medium text-[#111827]">{t('wallet')}</div>
+                <div className="mt-0.5 text-xs text-gray-600">{details?.wallet_no || '-'}</div>
               </div>
             </div>
 
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">{t('to')}</span>
-              <span className="font-medium text-[#111827]">{t('wallet')}</span>
+              <div className="text-right">
+                <div className="font-medium text-[#111827]">{details?.to_bank_name || '-'}</div>
+                <div className="mt-0.5 text-xs text-gray-600">{maskAccount(details?.to_account_number)}</div>
+              </div>
             </div>
 
             <div className="flex justify-between items-center pt-2 border-t border-green-200">
@@ -104,7 +107,7 @@ const CashInBankTransferSuccess = () => {
 
         <div className="mt-6 w-full">
           <button
-            onClick={() => navigate('/customer/cash-in/bank-transfer/details')}
+            onClick={() => navigate('/customer/wallet-to-bank-transfer/details')}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-full border-2 border-[#2F7D12] text-[#2F7D12] font-medium"
           >
             <IoInformationCircleOutline className="w-5 h-5" />
@@ -115,7 +118,7 @@ const CashInBankTransferSuccess = () => {
         <div className="mt-6 w-full">
           <Button
             onClick={() => {
-              sessionStorage.removeItem('cashInBankTransferAccount')
+              sessionStorage.removeItem('walletToBankTransferAccount')
               navigate('/customer/home')
             }}
             fullWidth
@@ -128,4 +131,4 @@ const CashInBankTransferSuccess = () => {
   )
 }
 
-export default CashInBankTransferSuccess
+export default WalletToBankTransferSuccess

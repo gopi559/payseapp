@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'react-toastify'
 import { IoArrowBack, IoChevronDown } from 'react-icons/io5'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
-import cashInBankTransferService from './cashInBankTransfer.service'
+import walletToBankTransferService from './walletToBankTransfer.service'
 
 const ToggleRow = ({ label, checked, onChange, bordered = false }) => (
   <div className={`${bordered ? 'border-t border-[#E5E7EB] pt-4 mt-4' : ''} flex items-center justify-between gap-4`}>
@@ -31,23 +31,38 @@ const ToggleRow = ({ label, checked, onChange, bordered = false }) => (
   </div>
 )
 
-const CashInBankTransferAddAccount = () => {
+const WalletToBankTransferAddAccount = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
   const [bankOptions, setBankOptions] = useState([])
   const [bankName, setBankName] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [accountHolderName, setAccountHolderName] = useState('')
   const [isDefault, setIsDefault] = useState(true)
-  const [isCashInDefault, setIsCashInDefault] = useState(false)
+  const [isCashOutDefault, setIsCashOutDefault] = useState(false)
   const [loading, setLoading] = useState(false)
   const [banksLoading, setBanksLoading] = useState(true)
+
+  useEffect(() => {
+    const accountId = location.state?.accountId
+    if (!accountId) return
+
+    const existing = walletToBankTransferService.getStoredAccounts().find((item) => item.id === accountId)
+    if (!existing) return
+
+    setBankName(existing.bankName || '')
+    setAccountNumber(existing.accountNumber || '')
+    setAccountHolderName(existing.accountHolderName || '')
+    setIsDefault(Boolean(existing.isDefault))
+    setIsCashOutDefault(Boolean(existing.isCashOutDefault))
+  }, [location.state])
 
   useEffect(() => {
     const loadBanks = async () => {
       setBanksLoading(true)
       try {
-        const { data } = await cashInBankTransferService.fetchBankList()
+        const { data } = await walletToBankTransferService.fetchBankList()
         const normalizedBanks = data
           .map((item) => ({
             id: item.id || item.bank_id,
@@ -59,7 +74,7 @@ const CashInBankTransferAddAccount = () => {
           .filter((item) => item.name)
 
         setBankOptions(normalizedBanks)
-        setBankName(normalizedBanks[0]?.name || '')
+        setBankName((current) => current || normalizedBanks[0]?.name || '')
       } catch (error) {
         toast.error(error?.message || t('failed_to_load_bank_list'))
       } finally {
@@ -83,16 +98,17 @@ const CashInBankTransferAddAccount = () => {
 
     setLoading(true)
     try {
-      await cashInBankTransferService.saveAccount({
+      await walletToBankTransferService.saveAccount({
         bankName,
+        id: location.state?.accountId,
         bankMeta: bankOptions.find((item) => item.name === bankName) || null,
         accountNumber: accountNumber.trim(),
         accountHolderName: accountHolderName.trim(),
         isDefault,
-        isCashInDefault,
+        isCashOutDefault,
       })
       toast.success(t('bank_account_saved'))
-      navigate('/customer/cash-in/bank-transfer')
+      navigate('/customer/wallet-to-bank-transfer')
     } catch (error) {
       toast.error(error?.message || t('failed_to_save_bank_account'))
     } finally {
@@ -107,13 +123,13 @@ const CashInBankTransferAddAccount = () => {
           <div className="flex items-center gap-3 mb-4">
             <button
               type="button"
-              onClick={() => navigate('/customer/cash-in/bank-transfer')}
+              onClick={() => navigate('/customer/wallet-to-bank-transfer')}
               className="w-10 h-10 rounded-full bg-white border border-[#E5E7EB] flex items-center justify-center text-[#357219]"
               aria-label={t('go_back')}
             >
               <IoArrowBack size={18} />
             </button>
-            <h1 className="text-xl font-semibold text-[#357219]">{t('add_bank_account')}</h1>
+            <h1 className="text-xl font-semibold text-[#357219]">{t('cash_out')}</h1>
           </div>
 
           <h2 className="text-[2rem] font-semibold text-[#111827]">{t('add_bank_account')}</h2>
@@ -170,9 +186,9 @@ const CashInBankTransferAddAccount = () => {
           <section className="mt-5 rounded-[22px] bg-white p-4 shadow-[0_12px_34px_rgba(15,23,42,0.08)]">
             <ToggleRow label={t('bank_account_default_one')} checked={isDefault} onChange={setIsDefault} />
             <ToggleRow
-              label={t('bank_account_default_cash_in')}
-              checked={isCashInDefault}
-              onChange={setIsCashInDefault}
+              label={t('bank_account_default_cash_out')}
+              checked={isCashOutDefault}
+              onChange={setIsCashOutDefault}
               bordered
             />
           </section>
@@ -188,4 +204,4 @@ const CashInBankTransferAddAccount = () => {
   )
 }
 
-export default CashInBankTransferAddAccount
+export default WalletToBankTransferAddAccount

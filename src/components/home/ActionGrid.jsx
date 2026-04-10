@@ -12,7 +12,7 @@ import ActionTile from './ActionTile'
 const ActionGrid = () => {
   const actions = [
     { id: 'cash_in', icon: <img src={cashInIcon} alt="Cash In" />, labelKey: 'cash_in', route: '/customer/cash-in', isImage: true },
-    { id: 'cash_out', icon: <img src={cashOutIcon} alt="Cash Out" />, labelKey: 'cash_out', route: '/customer/wallet-to-card', isImage: true },
+    { id: 'cash_out', icon: <img src={cashOutIcon} alt="Cash Out" />, labelKey: 'cash_out', route: '/customer/cash-out', isImage: true },
     { id: 'send', icon: <img src={sendIcon} alt="Send" />, labelKey: 'send', route: '/customer/send', isImage: true },
     { id: 'receive', icon: <img src={receiveIcon} alt="Receive" />, labelKey: 'receive', route: '/customer/request-money', isImage: true },
     { id: 'voucher', icon: <img src={voucherIcon} alt="Voucher" />, labelKey: 'voucher', route: '/customer/voucher', isImage: true },

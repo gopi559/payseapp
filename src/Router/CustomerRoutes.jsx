@@ -19,6 +19,13 @@ import PayRequestStart from '../components/request-money/PayRequestStart.jsx'
 import WalletToCardCardList from '../components/wallet-to-card/WalletToCardCardList'
 
 import WalletToCardMethod from '../components/wallet-to-card/WalletToCardMethod'
+import CashOutMethod from '../components/wallet-to-bank-transfer/CashOutMethod'
+import WalletToBankTransferAccounts from '../components/wallet-to-bank-transfer/WalletToBankTransferAccounts'
+import WalletToBankTransferAddAccount from '../components/wallet-to-bank-transfer/WalletToBankTransferAddAccount'
+import WalletToBankTransferAmount from '../components/wallet-to-bank-transfer/WalletToBankTransferAmount'
+import WalletToBankTransferConfirm from '../components/wallet-to-bank-transfer/WalletToBankTransferConfirm'
+import WalletToBankTransferSuccess from '../components/wallet-to-bank-transfer/WalletToBankTransferSuccess'
+import WalletToBankTransferTransactionDetails from '../components/wallet-to-bank-transfer/WalletToBankTransferTransactionDetails'
 import WalletToWalletCardList from '../components/wallet-to-wallet/WalletToWalletCardList'
 import WalletToWalletMethod from '../components/wallet-to-wallet/WalletToWalletMethod'
 
@@ -175,6 +182,62 @@ export const customerRoutes = [
 
 
   
+{
+  path: 'cash-out',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <CashOutMethod />
+    </Suspense>
+  ),
+},
+{
+  path: 'wallet-to-bank-transfer',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <WalletToBankTransferAccounts />
+    </Suspense>
+  ),
+},
+{
+  path: 'wallet-to-bank-transfer/add-account',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <WalletToBankTransferAddAccount />
+    </Suspense>
+  ),
+},
+{
+  path: 'wallet-to-bank-transfer/amount',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <WalletToBankTransferAmount />
+    </Suspense>
+  ),
+},
+{
+  path: 'wallet-to-bank-transfer/confirm',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <WalletToBankTransferConfirm />
+    </Suspense>
+  ),
+},
+{
+  path: 'wallet-to-bank-transfer/success',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <WalletToBankTransferSuccess />
+    </Suspense>
+  ),
+},
+{
+  path: 'wallet-to-bank-transfer/details',
+  element: (
+    <Suspense fallback={<LinearProgress />}>
+      <WalletToBankTransferTransactionDetails />
+    </Suspense>
+  ),
+},
 {
   path: 'wallet-to-card',
   element: (
