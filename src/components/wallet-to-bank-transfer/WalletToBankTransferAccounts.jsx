@@ -20,8 +20,17 @@ const WalletToBankTransferAccounts = () => {
   const [selectedId, setSelectedId] = useState('')
 
   useEffect(() => {
-    const list = walletToBankTransferService.getStoredAccounts()
-    setAccounts(list)
+    const loadAccounts = async () => {
+      try {
+        const { data } = await walletToBankTransferService.fetchLinkedAccounts()
+        setAccounts(Array.isArray(data) ? data : [])
+      } catch (error) {
+        const fallback = walletToBankTransferService.getStoredAccounts()
+        setAccounts(fallback)
+      }
+    }
+
+    loadAccounts()
   }, [])
 
   useEffect(() => {

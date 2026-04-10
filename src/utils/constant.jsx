@@ -225,14 +225,14 @@ export const CUSTOMER_AIRTIME_RECHARGE_API = `${MAIN_API_URL}/transaction_web/cu
 
 
 
-export const GB_BALANCE_CUSTOMER = `${MAIN_API_URL}/web/wallet/gb_balance`;
-export const GB_PUSH_CUSTOMER = `${MAIN_API_URL}/web/wallet/gb_push`;
-export const GB_PULL_CUSTOMER = `${MAIN_API_URL}/web/wallet/gb_pull`;
+export const GB_BALANCE_CUSTOMER = `${MAIN_API_URL}/transaction_webcust/web/wallet/gb_balance`;
+export const GB_PUSH_CUSTOMER = `${MAIN_API_URL}/transaction_webcust/web/wallet/gb_push`;
+export const GB_PULL_CUSTOMER = `${MAIN_API_URL}/transaction_webcust/web/wallet/gb_pull`;
 
 
 
 
-
+ 
 
 
 

@@ -24,11 +24,14 @@ const maskAccountNumber = (value) => {
   return raw.length <= 4 ? raw : `**${raw.slice(-4)}`
 }
 
+const normalizeWalletNumber = (value) => String(value || '').replace(/[^\d]/g, '').trim()
+
 const CashInBankTransferAmount = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
   const walletId = useSelector((state) => state.wallet?.walletId ?? '')
+  const walletNumber = normalizeWalletNumber(walletId)
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [pinPopupOpen, setPinPopupOpen] = useState(false)
@@ -42,6 +45,7 @@ const CashInBankTransferAmount = () => {
       return null
     }
   }, [])
+  const beneficiaryWalletNumber = normalizeWalletNumber(selectedAccount?.accountNumber)
 
   const handleContinue = () => {
     if (!selectedAccount) {
@@ -58,7 +62,7 @@ const CashInBankTransferAmount = () => {
     const preparedPreview = {
       account: selectedAccount,
       amount,
-      walletNo: walletId,
+      walletNo: beneficiaryWalletNumber || walletNumber,
       currency: 'AFN',
       remarks: t('web_gb_pull_remarks'),
       authData: '',
@@ -86,7 +90,7 @@ const CashInBankTransferAmount = () => {
       const baseTransfer = pendingTransferData || {
         account: selectedAccount,
         amount,
-        walletNo: walletId,
+        walletNo: beneficiaryWalletNumber || walletNumber,
         currency: 'AFN',
         remarks: t('web_gb_pull_remarks'),
         authData: '',
@@ -94,7 +98,7 @@ const CashInBankTransferAmount = () => {
 
       const { data } = await cashInBankTransferService.fetchGbBalance({
         pin: pinValue,
-        wallet_no: walletId,
+        wallet_no: beneficiaryWalletNumber || walletNumber,
       })
 
       const preparedTransfer = {
@@ -102,7 +106,7 @@ const CashInBankTransferAmount = () => {
         pin: pinValue,
         gbBalance: data?.gb || {},
         external_ref_num: data?.external_ref_num,
-        wallet_no: data?.wallet_no || walletId,
+        wallet_no: data?.wallet_no || beneficiaryWalletNumber || walletNumber,
         currency: data?.gb?.ccy || 'AFN',
       }
 
@@ -121,14 +125,29 @@ const CashInBankTransferAmount = () => {
     try {
       const { data } = await cashInBankTransferService.submitBankTransferPull({
         pin: transferData.pin,
-        wallet_no: transferData.wallet_no || transferData.walletNo || walletId,
+        wallet_no: transferData.wallet_no || transferData.walletNo || beneficiaryWalletNumber || walletNumber,
         amount: transferData.amount,
         currency: transferData.currency,
         remarks: transferData.remarks,
         auth_data: transferData.authData,
       })
 
-      const rrn = data?.rrn
+      let pushData = null
+      try {
+        const { data: gbPushData } = await cashInBankTransferService.submitBankTransferPush({
+          pin: transferData.pin,
+          wallet_no: transferData.wallet_no || transferData.walletNo || beneficiaryWalletNumber || walletNumber,
+          amount: transferData.amount,
+          currency: transferData.currency,
+          remarks: transferData.remarks,
+          auth_data: transferData.authData,
+        })
+        pushData = gbPushData
+      } catch (error) {
+        throw new Error(error?.message || t('bank_transfer_failed'))
+      }
+
+      const rrn = pushData?.rrn || data?.rrn
       let fetchedTransaction = null
 
       if (rrn) {
@@ -140,8 +159,8 @@ const CashInBankTransferAmount = () => {
 
       const successPayload = {
         ...(fetchedTransaction || {}),
-        rrn: data?.rrn,
-        txn_id: data?.txn_id || data?.rrn,
+        rrn,
+        txn_id: pushData?.txn_id || pushData?.rrn || data?.txn_id || data?.rrn,
         txn_amount: data?.amount ?? transferData.amount,
         amount: data?.amount ?? transferData.amount,
         txn_time: new Date().toISOString(),
@@ -149,14 +168,14 @@ const CashInBankTransferAmount = () => {
         txn_desc: t('cash_in'),
         channel_type: t('channel_web'),
         status: 1,
-        wallet_no: data?.wallet_no || transferData.wallet_no || transferData.walletNo || walletId,
-        external_ref_num: data?.external_ref_num || transferData.external_ref_num,
+        wallet_no: data?.wallet_no || transferData.wallet_no || transferData.walletNo || beneficiaryWalletNumber || walletNumber,
+        external_ref_num: pushData?.external_ref_num || data?.external_ref_num || transferData.external_ref_num,
         from_bank_name: transferData.account?.bankName,
         from_account_number: transferData.gbBalance?.accountNumber || transferData.account?.accountNumber,
         from_account_holder_name: transferData.account?.accountHolderName,
         to: t('wallet'),
         currency: transferData.currency || 'AFN',
-        gb: data?.gb || {},
+        gb: pushData?.gb || data?.gb || {},
         remarks: transferData.remarks,
       }
 
@@ -270,7 +289,7 @@ const CashInBankTransferAmount = () => {
         fromValue={confirmData?.account?.bankName || '-'}
         fromSubValue={t('bank_account_masked', { number: maskAccountNumber(confirmData?.account?.accountNumber) })}
         toValue={t('wallet')}
-        toSubValue={walletId || ''}
+        toSubValue={beneficiaryWalletNumber || walletId || ''}
         actionLabel={t('confirm_transaction')}
         cancelLabel={t('cancel')}
       />

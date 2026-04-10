@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
 import { HiOutlineBuildingLibrary } from 'react-icons/hi2'
-import { IoAdd, IoArrowBack, IoCheckmarkCircle, IoInformationCircleOutline } from 'react-icons/io5'
+import { IoAdd, IoArrowBack, IoCheckmarkCircle, IoInformationCircleOutline, IoTrashOutline } from 'react-icons/io5'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import cashInBankTransferService from './cashInBankTransfer.service'
@@ -20,8 +21,20 @@ const CashInBankTransferAccounts = () => {
   const [selectedId, setSelectedId] = useState('')
 
   useEffect(() => {
-    const list = cashInBankTransferService.getStoredAccounts()
-    setAccounts(list)
+    const loadAccounts = async () => {
+      try {
+        const { data } = await cashInBankTransferService.fetchLinkedAccounts()
+        setAccounts(Array.isArray(data) ? data : [])
+      } catch (error) {
+        const fallback = cashInBankTransferService.getStoredAccounts()
+        setAccounts(fallback)
+        if (!fallback.length) {
+          toast.error(error?.message || t('failed_to_load_bank_list'))
+        }
+      }
+    }
+
+    loadAccounts()
   }, [])
 
   useEffect(() => {
@@ -43,6 +56,35 @@ const CashInBankTransferAccounts = () => {
     if (!selectedAccount) return
     sessionStorage.setItem('cashInBankTransferAccount', JSON.stringify(selectedAccount))
     navigate('/customer/cash-in/bank-transfer/amount')
+  }
+
+  const handleRemoveAccount = async (event, accountId) => {
+    event.stopPropagation()
+
+    try {
+      const { data } = await cashInBankTransferService.removeStoredAccount(accountId)
+      const nextAccounts = Array.isArray(data) ? data : []
+      setAccounts(nextAccounts)
+
+      if (selectedId === accountId) {
+        const nextSelected = nextAccounts.find((item) => item.isDefault)?.id || nextAccounts[0]?.id || ''
+        setSelectedId(nextSelected)
+      }
+
+      const currentSelected = sessionStorage.getItem('cashInBankTransferAccount')
+      if (currentSelected) {
+        try {
+          const parsed = JSON.parse(currentSelected)
+          if (parsed?.id === accountId) {
+            sessionStorage.removeItem('cashInBankTransferAccount')
+          }
+        } catch {}
+      }
+
+      toast.success(t('beneficiary_removed'))
+    } catch (error) {
+      toast.error(error?.message || t('failed_to_remove_beneficiary'))
+    }
   }
 
   return (
@@ -115,6 +157,14 @@ const CashInBankTransferAccounts = () => {
                           <div className="text-sm leading-6 text-[#6B7280]">
                             {t('bank_account_masked', { number: getMaskedAccountNumber(account.accountNumber) })}
                           </div>
+                          <button
+                            type="button"
+                            onClick={(event) => handleRemoveAccount(event, account.id)}
+                            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-[#B42318]"
+                          >
+                            <IoTrashOutline size={16} />
+                            {t('remove')}
+                          </button>
                         </div>
                       </div>
 

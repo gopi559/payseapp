@@ -30,6 +30,18 @@ const getMerchantToken = () =>
   localStorage.getItem('auth_token') ||
   ''
 
+const normalizeLinkedAccount = (item) => ({
+  id: item.id || `bank-${Date.now()}`,
+  bankId: item.bank_id || null,
+  bankName: item.bank_name || item.beneficiary_alias || item.beneficiary_name || i18n.t('bank'),
+  accountNumber: String(item.bank_account_number || item.accountNumber || '').trim(),
+  accountHolderName: item.beneficiary_name || item.accountHolderName || item.beneficiary_alias || '',
+  alias: item.beneficiary_alias || '',
+  isDefault: false,
+  isCashOutDefault: false,
+  raw: item,
+})
+
 export const bankTransferStorage = {
   list() {
     try {
@@ -103,6 +115,16 @@ const walletToBankTransferService = {
     return { data: payload }
   },
 
+  fetchLinkedAccounts: async () => {
+    const { data } = await walletToBankTransferService.fetchBankList()
+    const normalized = data
+      .map(normalizeLinkedAccount)
+      .filter((item) => item.accountNumber)
+
+    bankTransferStorage.save(normalized)
+    return { data: normalized }
+  },
+
   saveAccount: async (account) => {
     const saved = {
       ...account,
@@ -120,19 +142,19 @@ const walletToBankTransferService = {
     amount,
     currency,
     remarks,
-    auth_data,
   }) => {
+    const payload = {
+      pin: String(pin).trim(),
+      wallet_no: String(wallet_no).trim(),
+      amount: Number(amount),
+      currency: String(currency || 'AFN').trim(),
+      remarks: String(remarks || i18n.t('web_gb_push_remarks')).trim(),
+    }
+
     const response = await fetchWithRefreshToken(GB_PUSH_CUSTOMER, {
       method: 'POST',
       headers: getDeviceHeaders(),
-      body: JSON.stringify({
-        pin: String(pin).trim(),
-        wallet_no: String(wallet_no).trim(),
-        amount: Number(amount),
-        currency: String(currency || 'AFN').trim(),
-        remarks: String(remarks || i18n.t('web_gb_push_remarks')).trim(),
-        auth_data: String(auth_data || '').trim(),
-      }),
+      body: JSON.stringify(payload),
     })
 
     const res = await getJson(response)

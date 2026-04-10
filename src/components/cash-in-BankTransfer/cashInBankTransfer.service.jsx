@@ -32,6 +32,18 @@ const getMerchantToken = () =>
   localStorage.getItem('auth_token') ||
   ''
 
+const normalizeLinkedAccount = (item) => ({
+  id: item.id || `bank-${Date.now()}`,
+  bankId: item.bank_id || null,
+  bankName: item.bank_name || item.beneficiary_alias || item.beneficiary_name || i18n.t('bank'),
+  accountNumber: String(item.bank_account_number || item.accountNumber || '').trim(),
+  accountHolderName: item.beneficiary_name || item.accountHolderName || item.beneficiary_alias || '',
+  alias: item.beneficiary_alias || '',
+  isDefault: false,
+  isCashInDefault: false,
+  raw: item,
+})
+
 export const bankTransferStorage = {
   list() {
     try {
@@ -58,6 +70,12 @@ export const bankTransferStorage = {
     }
 
     next.unshift(account)
+    this.save(next)
+    return next
+  },
+
+  remove(accountId) {
+    const next = this.list().filter((item) => item.id !== accountId)
     this.save(next)
     return next
   },
@@ -99,6 +117,16 @@ const cashInBankTransferService = {
     return { data: payload }
   },
 
+  fetchLinkedAccounts: async () => {
+    const { data } = await cashInBankTransferService.fetchBankList()
+    const normalized = data
+      .map(normalizeLinkedAccount)
+      .filter((item) => item.accountNumber)
+
+    bankTransferStorage.save(normalized)
+    return { data: normalized }
+  },
+
   saveAccount: async (account) => {
     const saved = {
       ...account,
@@ -108,6 +136,11 @@ const cashInBankTransferService = {
 
     bankTransferStorage.upsert(saved)
     return { data: saved, message: i18n.t('saved') }
+  },
+
+  removeStoredAccount: async (accountId) => {
+    const next = bankTransferStorage.remove(accountId)
+    return { data: next, message: i18n.t('beneficiary_removed') }
   },
 
   fetchGbBalance: async ({ pin, wallet_no }) => {
@@ -135,19 +168,19 @@ const cashInBankTransferService = {
     amount,
     currency,
     remarks,
-    auth_data,
   }) => {
+    const payload = {
+      pin: String(pin).trim(),
+      wallet_no: String(wallet_no).trim(),
+      amount: Number(amount),
+      currency: String(currency || 'AFN').trim(),
+      remarks: String(remarks || i18n.t('web_gb_pull_remarks')).trim(),
+    }
+
     const response = await fetchWithRefreshToken(GB_PULL_CUSTOMER, {
       method: 'POST',
       headers: getDeviceHeaders(),
-      body: JSON.stringify({
-        pin: String(pin).trim(),
-        wallet_no: String(wallet_no).trim(),
-        amount: Number(amount),
-        currency: String(currency || 'AFN').trim(),
-        remarks: String(remarks || i18n.t('web_gb_pull_remarks')).trim(),
-        auth_data: String(auth_data || '').trim(),
-      }),
+      body: JSON.stringify(payload),
     })
 
     const res = await getJson(response)
@@ -167,19 +200,19 @@ const cashInBankTransferService = {
     amount,
     currency,
     remarks,
-    auth_data,
   }) => {
+    const payload = {
+      pin: String(pin).trim(),
+      wallet_no: String(wallet_no).trim(),
+      amount: Number(amount),
+      currency: String(currency || 'AFN').trim(),
+      remarks: String(remarks || i18n.t('web_gb_push_remarks')).trim(),
+    }
+
     const response = await fetchWithRefreshToken(GB_PUSH_CUSTOMER, {
       method: 'POST',
       headers: getDeviceHeaders(),
-      body: JSON.stringify({
-        pin: String(pin).trim(),
-        wallet_no: String(wallet_no).trim(),
-        amount: Number(amount),
-        currency: String(currency || 'AFN').trim(),
-        remarks: String(remarks || i18n.t('web_gb_push_remarks')).trim(),
-        auth_data: String(auth_data || '').trim(),
-      }),
+      body: JSON.stringify(payload),
     })
 
     const res = await getJson(response)

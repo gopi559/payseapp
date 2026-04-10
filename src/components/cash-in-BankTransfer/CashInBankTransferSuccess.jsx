@@ -101,7 +101,7 @@ const CashInBankTransferSuccess = () => {
             </div>
           </div>
         </div>
-
+{/* 
         <div className="mt-6 w-full">
           <button
             onClick={() => navigate('/customer/cash-in/bank-transfer/details')}
@@ -110,12 +110,11 @@ const CashInBankTransferSuccess = () => {
             <IoInformationCircleOutline className="w-5 h-5" />
             {t('view_more')}
           </button>
-        </div>
+        </div> */}
 
         <div className="mt-6 w-full">
           <Button
             onClick={() => {
-              sessionStorage.removeItem('cashInBankTransferAccount')
               navigate('/customer/home')
             }}
             fullWidth

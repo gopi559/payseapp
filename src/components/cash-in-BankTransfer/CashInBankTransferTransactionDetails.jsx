@@ -243,7 +243,6 @@ const CashInBankTransferTransactionDetails = () => {
         <Button
           onClick={() => {
             sessionStorage.removeItem('cashInBankTransferSuccess')
-            sessionStorage.removeItem('cashInBankTransferAccount')
             navigate('/customer/home')
           }}
           fullWidth
