@@ -12,6 +12,7 @@ import Button from '../../Reusable/Button'
 import CvvPopup from '../../Reusable/CvvPopup'
 import ConfirmTransactionPopup from '../../Reusable/ConfirmTransactionPopup'
 import OtpPopup from '../../Reusable/OtpPopup'
+import PinPopup from '../../Reusable/PinPopup'
 
 import { BENIFICIARY_LIST } from '../../utils/constant'
 import { getCurrentUserId, getAuthUser } from '../../services/api'
@@ -20,6 +21,8 @@ import { generateStan } from '../../utils/generateStan'
 import billPaymentService from './billPayment.service'
 import { getBillServiceName } from './billPayment.constants'
 import { CARD_CHECK_BALANCE } from '../../utils/constant'
+import cardService from '../cards/PaysePayCards/card.service'
+import { validateCardBinForTransaction } from '../../services/binValidation.jsx'
 
 const firstFilled = (...values) => {
   for (const value of values) {
@@ -45,7 +48,7 @@ const getBillInfoRows = (billInfo, t) => {
 
   const rows = [
     { label: t('service'), value: firstFilled(billInfo?.service_name, billInfo?.service, billInfo?.biller_name) },
-    { label: t('account_number'), value: firstFilled(billInfo?.acc_number, billInfo?.account_number, billInfo?.account_no) },
+    { label: t('account_number'), value: firstFilled(billInfo?.breshna_account, billInfo?.breshna_account_no, billInfo?.acc_number, billInfo?.account_number, billInfo?.account_no) },
     { label: t('mobile_number'), value: firstFilled(billInfo?.mobile_no, billInfo?.mobile_number, billInfo?.customer_mobile) },
     { label: t('name'), value: firstFilled(billInfo?.customer_name, billInfo?.name, billInfo?.consumer_name) },
     { label: t('bill_number'), value: firstFilled(billInfo?.bill_number, billInfo?.bill_no) },
@@ -87,6 +90,29 @@ const generateRrn = () => {
 }
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
+const hydrateValidatedCard = async (card, transactionType) => {
+  if (!card) return null
+
+  if (!card.external_inst_name) {
+    return card
+  }
+
+  const cardNumber = card.card_number || card.masked_card || ''
+  try {
+    const matchedBin = await validateCardBinForTransaction(cardNumber, transactionType)
+    return {
+      ...card,
+      external_inst_name: card.external_inst_name || matchedBin?.external_inst_name,
+      inst_short_name: card.inst_short_name || matchedBin?.inst_short_name,
+      inst_type: card.inst_type || matchedBin?.inst_type,
+      color_code: card.color_code || matchedBin?.color_code || '#0fb36c',
+      bank_logo: card.bank_logo || matchedBin?.bank_logo || null,
+    }
+  } catch (e) {
+    return null
+  }
+}
+
 const resolveMobileNo = () => {
   const user = getAuthUser()
   const raw =
@@ -125,14 +151,17 @@ const BillPaymentPage = () => {
   const [loading, setLoading] = useState(false)
 
   const serviceName = getBillServiceName(serviceId, t)
+  const isBreshnaService = String(serviceId) === '2331'
 
   useEffect(() => {
     if (!serviceId) {
       navigate('/customer/bill-payment')
       return
     }
-    fetchCards()
-  }, [serviceId, navigate, t])
+    if (!isBreshnaService) {
+      fetchCards()
+    }
+  }, [serviceId, navigate, t, isBreshnaService])
 
   const fetchCards = async () => {
     setCardsLoading(true)
@@ -141,24 +170,41 @@ const BillPaymentPage = () => {
       const userId = getCurrentUserId()
       if (!userId) throw new Error(t('user_not_found'))
 
-      const res = await fetchWithRefreshToken(BENIFICIARY_LIST, {
-        method: 'POST',
-        body: JSON.stringify({
-          page: 1,
-          no_of_data: 50,
-          user_id: userId,
-          is_temp: 0,
+      const [walletCardsRes, beneficiaryRes] = await Promise.all([
+        cardService.getList({ card_status: 1 }),
+        fetchWithRefreshToken(BENIFICIARY_LIST, {
+          method: 'POST',
+          body: JSON.stringify({
+            page: 1,
+            no_of_data: 50,
+            user_id: userId,
+            is_temp: 0,
+            beneficiary_type: 1,
+          }),
         }),
-      })
+      ])
 
-      const data = await res.json().catch(() => null)
-      if (!res.ok || Number(data?.code) !== 1) {
-        throw new Error(data?.message || t('failed_to_load_cards'))
+      const beneficiaryJson = await beneficiaryRes.json().catch(() => null)
+      if (!beneficiaryRes.ok || Number(beneficiaryJson?.code) !== 1) {
+        throw new Error(beneficiaryJson?.message || t('failed_to_load_cards'))
       }
 
-      const list = (Array.isArray(data?.data) ? data.data : []).map((card) =>
-        !card.external_inst_name ? { ...card, balance: walletBalance } : card
-      )
+      const walletCards = (Array.isArray(walletCardsRes?.data) ? walletCardsRes.data : []).map((card) => ({
+        ...card,
+        cardholder_name: card.name_on_card,
+        color_code: card.color_code || '#0fb36c',
+        balance: walletBalance,
+      }))
+
+      const beneficiaryCards = (
+        await Promise.all(
+          (Array.isArray(beneficiaryJson?.data) ? beneficiaryJson.data : []).map((card) =>
+            hydrateValidatedCard(card, 'BILL_PAYMENT')
+          )
+        )
+      ).filter(Boolean)
+
+      const list = [...walletCards, ...beneficiaryCards]
       setCards(list)
       setActiveIndex(0)
       if (!list.length) setCardsError(t('no_beneficiary_cards_found_for_account'))
@@ -172,7 +218,7 @@ const BillPaymentPage = () => {
   }
 
   const validateBase = (silent = false) => {
-    if (!cards[activeIndex]) {
+    if (!isBreshnaService && !cards[activeIndex]) {
       if (!silent) toast.error(t('select_source_card'))
       return false
     }
@@ -233,6 +279,28 @@ const BillPaymentPage = () => {
 
     setLoading(true)
     try {
+      if (isBreshnaService) {
+        const { data } = await billPaymentService.fetchBreshnaBillDetails({
+          breshna_account_no: billNumber,
+        })
+
+        const enrichedBillInfo = {
+          ...(data || {}),
+          breshna_account_no: billNumber,
+          bill_number: billNumber,
+          service_name: serviceName,
+        }
+
+        setBillInfo(enrichedBillInfo)
+        setAmount((current) => current || '')
+        setTxnMeta({
+          rrn: String(firstFilled(enrichedBillInfo?.rrn, generateRrn())),
+          stan: '',
+        })
+        toast.success(t('bill_details_fetched_otp_sent'))
+        return
+      }
+
       const selected = cards[activeIndex]
       const fallbackStan = generateStan()
       const fallbackRrn = generateRrn()
@@ -282,6 +350,19 @@ const BillPaymentPage = () => {
   }
 
   const handleContinue = () => {
+    if (isBreshnaService) {
+      if (!txnMeta?.rrn) {
+        toast.error(t('fetch_bill_details_first'))
+        return
+      }
+      if (!amount || Number(amount) <= 0) {
+        toast.error(t('enter_valid_amount'))
+        return
+      }
+      setStep('CONFIRM')
+      return
+    }
+
     if (!txnMeta?.rrn || !txnMeta?.stan || !selectedCard) {
       toast.error(t('fetch_bill_details_first'))
       return
@@ -311,6 +392,50 @@ const BillPaymentPage = () => {
 
   const handleOpenCvv = () => {
     setStep('CVV')
+  }
+
+  const handleBreshnaPinConfirm = async (pinValue) => {
+    if (!pinValue || pinValue.length !== 4) {
+      toast.error(t('enter_wallet_pin'))
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { data } = await billPaymentService.payBreshnaBill({
+        breshna_account_no: billNumber,
+        txn_amount: Number(amount),
+        auth_data: pinValue,
+      })
+
+      const rrn = data?.rrn || txnMeta?.rrn
+      sessionStorage.setItem(
+        'billPaymentSuccess',
+        JSON.stringify({
+          txn_id: data?.txn_id || rrn,
+          rrn,
+          txn_amount: String(data?.amount ?? amount ?? ''),
+          txn_time: new Date().toISOString(),
+          channel_type: 'WEB',
+          status: 1,
+          remarks: null,
+          txn_type: 'BILL_PAYMENT',
+          txn_desc: t('bill_payment_for_service', { service: serviceName }),
+          service_id: String(serviceId),
+          service_name: serviceName,
+          bill_number: billNumber,
+          breshna_account: data?.breshna_account || billNumber,
+          bill_info: billInfo,
+        })
+      )
+
+      resetFlow()
+      navigate('/customer/bill-payment/success')
+    } catch (e) {
+      toast.error(getFriendlyBillPaymentError(e?.message, t) || t('bill_payment_failed'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleConfirmOtp = async (otp) => {
@@ -405,6 +530,7 @@ const BillPaymentPage = () => {
     setStep(null)
     setCvvData(null)
     setBalanceCardIndex(null)
+    setSelectedCard(null)
     setLoading(false)
   }
 
@@ -428,7 +554,11 @@ const BillPaymentPage = () => {
   const footer = (
     <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
       <div className="max-w-md mx-auto">
-        <Button fullWidth onClick={handleContinue} disabled={!txnMeta?.rrn || !txnMeta?.stan || loading}>
+        <Button
+          fullWidth
+          onClick={handleContinue}
+          disabled={isBreshnaService ? !txnMeta?.rrn || loading : !txnMeta?.rrn || !txnMeta?.stan || loading}
+        >
           {t('continue')}
         </Button>
       </div>
@@ -451,15 +581,17 @@ const BillPaymentPage = () => {
           <h1 className="text-2xl font-semibold">{serviceName}</h1>
         </div>
 
-        <p className="text-sm mb-5 text-gray-500">{t('pay_your_bill_with_your_card')}</p>
+        <p className="text-sm mb-5 text-gray-500">
+          {isBreshnaService ? t('bill_payment') : t('pay_your_bill_with_your_card')}
+        </p>
 
-        {cardsLoading ? (
+        {!isBreshnaService && cardsLoading ? (
           <p className="text-sm text-gray-500 mb-4">{t('loading_cards')}</p>
-        ) : cards.length === 0 ? (
+        ) : !isBreshnaService && cards.length === 0 ? (
           <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
             <p className="text-sm text-gray-600">{cardsError || t('no_cards_available')}</p>
           </div>
-        ) : (
+        ) : !isBreshnaService ? (
           <div
             ref={scrollRef}
             onScroll={() => {
@@ -482,24 +614,39 @@ const BillPaymentPage = () => {
               </div>
             ))}
           </div>
-        )}
+        ) : null}
 
         <div className="mt-6">
           <h3 className="text-sm font-medium mb-2">{t('bill_detail')}</h3>
 
           <div className="mt-3">
-            <label className="text-sm text-gray-700">{t('bill_number')}</label>
+            <label className="text-sm text-gray-700">
+              {isBreshnaService ? t('account_number') : t('bill_number')}
+            </label>
             <input
               type="text"
               value={billNumber}
               onChange={(e) => setBillNumber(e.target.value)}
-              placeholder={t('enter_bill_number')}
+              placeholder={isBreshnaService ? t('enter_account_number') : t('enter_bill_number')}
               className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
 
+          {isBreshnaService && (
+            <div className="mt-3">
+              <label className="text-sm text-gray-700">{t('amount')}</label>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder={t('amount')}
+                className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+            </div>
+          )}
+
           <div className="mt-6">
-            <Button fullWidth onClick={handleFetchBillDetails} disabled={loading || cards.length === 0}>
+            <Button fullWidth onClick={handleFetchBillDetails} disabled={loading || (!isBreshnaService && cards.length === 0)}>
               <span className="flex items-center justify-center gap-2">
                 <FaSearch className="w-4 h-4" />
                 {loading ? t('fetching') : t('fetch_bill_details')}
@@ -537,12 +684,14 @@ const BillPaymentPage = () => {
 
       <ConfirmTransactionPopup
         open={step === 'CONFIRM'}
-        card={selectedCard}
+        card={isBreshnaService ? null : selectedCard}
         amount={amount}
         to={
           <div className="space-y-1">
             <p className="font-medium">{serviceName}</p>
-            <p className="text-xs">{t('bill')} #{billNumber}</p>
+            <p className="text-xs">
+              {isBreshnaService ? `${t('account_number')} #${billNumber}` : `${t('bill')} #${billNumber}`}
+            </p>
             {fetchedBillRows.slice(0, 5).map((row) => (
               <p key={row.label} className="text-xs">
                 <span className="opacity-70">{row.label}:</span> {row.value}
@@ -552,7 +701,14 @@ const BillPaymentPage = () => {
         }
         description={t('bill_payment_for_service', { service: serviceName })}
         loading={loading}
-        onSendOtp={handleOpenCvv}
+        onSendOtp={isBreshnaService ? () => setStep('PIN') : handleOpenCvv}
+        onCancel={resetFlow}
+      />
+
+      <PinPopup
+        open={step === 'PIN'}
+        loading={loading}
+        onConfirm={handleBreshnaPinConfirm}
         onCancel={resetFlow}
       />
 

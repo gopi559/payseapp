@@ -11,6 +11,16 @@ import cardService from './card.service'
 
 const REFERENCE_CARD_TYPES = [2, 3]
 
+const getLocalizedRequestTypeLabel = (requestTypeItem, t) => {
+  const raw = String(requestTypeItem?.request_type || '').trim().toLowerCase()
+
+  if (raw === 'new card') return t('request_type_new_card')
+  if (raw === 'reissue card') return t('request_type_reissue_card')
+  if (raw === 'addon card') return t('request_type_addon_card')
+
+  return requestTypeItem?.request_type || ''
+}
+
 const CardRequest = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -140,7 +150,9 @@ const CardRequest = () => {
               >
                 <option value="">{t('select_request_type')}</option>
                 {types.map((requestTypeItem) => (
-                  <option key={requestTypeItem.id} value={requestTypeItem.id}>{requestTypeItem.request_type}</option>
+                  <option key={requestTypeItem.id} value={requestTypeItem.id}>
+                    {getLocalizedRequestTypeLabel(requestTypeItem, t)}
+                  </option>
                 ))}
               </select>
             </div>

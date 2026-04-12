@@ -2,6 +2,8 @@ import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import {
   BILL_PAYMENT_CNP,
   BILL_PAYMENT_INFO_CP,
+  BRESHNA_BILL_DETAILS_API,
+  BRESHNA_BILL_PAYMENT_API,
   CARD_NUMBER_VERIFY,
   FETCH_BY_RRN,
 } from '../../utils/constant.jsx'
@@ -89,6 +91,46 @@ const billPaymentService = {
     const response = await fetchWithRefreshToken(BILL_PAYMENT_CNP, {
       method: 'POST',
       body: JSON.stringify(body),
+    })
+
+    const res = await response.json().catch(() => null)
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || '')
+    }
+
+    authService.fetchCustomerBalance().catch(() => {})
+
+    return { data: res?.data ?? res, message: res?.message }
+  },
+
+  fetchBreshnaBillDetails: async ({ breshna_account_no }) => {
+    const response = await fetchWithRefreshToken(BRESHNA_BILL_DETAILS_API, {
+      method: 'POST',
+      body: JSON.stringify({
+        breshna_account_no: String(breshna_account_no).trim(),
+      }),
+    })
+
+    const res = await response.json().catch(() => null)
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || '')
+    }
+
+    return { data: res?.data ?? res, message: res?.message }
+  },
+
+  payBreshnaBill: async ({
+    breshna_account_no,
+    txn_amount,
+    auth_data,
+  }) => {
+    const response = await fetchWithRefreshToken(BRESHNA_BILL_PAYMENT_API, {
+      method: 'POST',
+      body: JSON.stringify({
+        breshna_account_no: String(breshna_account_no).trim(),
+        txn_amount: Number(txn_amount),
+        auth_data: String(auth_data).trim(),
+      }),
     })
 
     const res = await response.json().catch(() => null)

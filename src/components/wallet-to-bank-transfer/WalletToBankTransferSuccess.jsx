@@ -46,7 +46,12 @@ const WalletToBankTransferSuccess = () => {
       walletToBankTransferService.fetchTransactionByRrn(parsed.rrn)
         .then(({ data }) => {
           if (!data) return
-          const merged = { ...parsed, ...data }
+          const merged = {
+            ...parsed,
+            ...data,
+            rrn: parsed?.rrn || data?.rrn,
+            txn_id: parsed?.rrn || parsed?.txn_id || data?.txn_id || data?.rrn,
+          }
           setDetails(merged)
           sessionStorage.setItem('walletToBankTransferSuccess', JSON.stringify(merged))
         })
@@ -76,7 +81,7 @@ const WalletToBankTransferSuccess = () => {
           <div className="space-y-3">
             <div className="flex justify-between gap-3 text-sm">
               <span className="text-gray-600">{t('transaction_id')}</span>
-              <span className="text-right font-medium text-[#111827]">{details?.txn_id || details?.rrn || '-'}</span>
+              <span className="text-right font-medium text-[#111827]">{details?.rrn || details?.txn_id || '-'}</span>
             </div>
 
             <div className="flex justify-between items-start gap-4 text-sm">
@@ -105,7 +110,7 @@ const WalletToBankTransferSuccess = () => {
           </div>
         </div>
 
-        <div className="mt-6 w-full">
+        {/* <div className="mt-6 w-full">
           <button
             onClick={() => navigate('/customer/wallet-to-bank-transfer/details')}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-full border-2 border-[#2F7D12] text-[#2F7D12] font-medium"
@@ -113,7 +118,7 @@ const WalletToBankTransferSuccess = () => {
             <IoInformationCircleOutline className="w-5 h-5" />
             {t('view_more')}
           </button>
-        </div>
+        </div> */}
 
         <div className="mt-6 w-full">
           <Button

@@ -19,9 +19,34 @@ import { getCurrentUserId } from '../../services/api'
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
 import { generateStan } from '../../utils/generateStan'
 import { sendService } from '../send/send.service'
+import cardService from '../cards/PaysePayCards/card.service'
+import { validateCardBinForTransaction } from '../../services/binValidation.jsx'
 
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200]
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
+
+const hydrateValidatedCard = async (card, transactionType) => {
+  if (!card) return null
+
+  if (!card.external_inst_name) {
+    return card
+  }
+
+  const cardNumber = card.card_number || card.masked_card || ''
+  try {
+    const matchedBin = await validateCardBinForTransaction(cardNumber, transactionType)
+    return {
+      ...card,
+      external_inst_name: card.external_inst_name || matchedBin?.external_inst_name,
+      inst_short_name: card.inst_short_name || matchedBin?.inst_short_name,
+      inst_type: card.inst_type || matchedBin?.inst_type,
+      color_code: card.color_code || matchedBin?.color_code || '#0fb36c',
+      bank_logo: card.bank_logo || matchedBin?.bank_logo || null,
+    }
+  } catch (e) {
+    return null
+  }
+}
 
 const AirtimePage = () => {
   const { t } = useTranslation()
@@ -89,24 +114,41 @@ const AirtimePage = () => {
       const userId = getCurrentUserId()
       if (!userId) throw new Error(t('user_not_found'))
 
-      const res = await fetchWithRefreshToken(BENIFICIARY_LIST, {
-        method: 'POST',
-        body: JSON.stringify({
-          page: 1,
-          no_of_data: 50,
-          user_id: userId,
-          is_temp: 0,
+      const [walletCardsRes, beneficiaryRes] = await Promise.all([
+        cardService.getList({ card_status: 1 }),
+        fetchWithRefreshToken(BENIFICIARY_LIST, {
+          method: 'POST',
+          body: JSON.stringify({
+            page: 1,
+            no_of_data: 50,
+            user_id: userId,
+            is_temp: 0,
+            beneficiary_type: 1,
+          }),
         }),
-      })
+      ])
 
-      const data = await res.json()
-      if (!res.ok || Number(data?.code) !== 1) {
-        throw new Error(data?.message || t('failed_to_load_cards'))
+      const beneficiaryJson = await beneficiaryRes.json().catch(() => null)
+      if (!beneficiaryRes.ok || Number(beneficiaryJson?.code) !== 1) {
+        throw new Error(beneficiaryJson?.message || t('failed_to_load_cards'))
       }
 
-      const list = (Array.isArray(data?.data) ? data.data : []).map((card) =>
-        !card.external_inst_name ? { ...card, balance: walletBalance } : card
-      )
+      const walletCards = (Array.isArray(walletCardsRes?.data) ? walletCardsRes.data : []).map((card) => ({
+        ...card,
+        cardholder_name: card.name_on_card,
+        color_code: card.color_code || '#0fb36c',
+        balance: walletBalance,
+      }))
+
+      const beneficiaryCards = (
+        await Promise.all(
+          (Array.isArray(beneficiaryJson?.data) ? beneficiaryJson.data : []).map((card) =>
+            hydrateValidatedCard(card, 'AIRTIME')
+          )
+        )
+      ).filter(Boolean)
+
+      const list = [...walletCards, ...beneficiaryCards]
       setCards(list)
       setActiveIndex(0)
 

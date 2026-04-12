@@ -40,7 +40,7 @@ const CashInBankTransferTransactionDetails = () => {
 
   const handleDownloadPdf = () => {
     openTransactionPrintWindow({
-      title: `${t('transaction_details')} ${details?.txn_id ?? ''}`,
+      title: `${t('transaction_details')} ${details?.rrn ?? details?.txn_id ?? ''}`,
       pageTitle: t('transaction_details'),
       logoUrl: PAYSEY_LOGO_URL,
       popupMessage: t('please_allow_popups_to_download_pdf'),
@@ -48,7 +48,7 @@ const CashInBankTransferTransactionDetails = () => {
         {
           title: t('transaction_details'),
           rows: [
-            { label: t('transaction_id'), value: details?.txn_id ?? details?.rrn ?? '-' },
+            { label: t('transaction_id'), value: details?.rrn ?? details?.txn_id ?? '-' },
             { label: t('rrn'), value: details?.rrn ?? '-' },
             { label: t('external_reference_number'), value: details?.external_ref_num ?? '-' },
             { label: t('transaction_type'), value: details?.txn_type ?? t('bank_to_wallet') },

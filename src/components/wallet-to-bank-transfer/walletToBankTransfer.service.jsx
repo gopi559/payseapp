@@ -1,8 +1,12 @@
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
+import { getWithBasicAuth } from '../../services/basicAuth.service.js'
 import { getClientRefId } from '../../services/api.jsx'
 import authService from '../../Login/auth.service.jsx'
 import i18n from '../../i18n'
 import {
+  BANK_MASTER_LIST,
+  BENEFICIARY_BANK_ADD,
+  BENEFICIARY_BANK_DELETE,
   BENEFICIARY_BANK_LIST,
   FETCH_BY_RRN,
   GB_PUSH_CUSTOMER,
@@ -82,6 +86,21 @@ export const bankTransferStorage = {
 const walletToBankTransferService = {
   getStoredAccounts: () => bankTransferStorage.list(),
 
+  fetchBankMasterList: async () => {
+    const data = await getWithBasicAuth(BANK_MASTER_LIST, {
+      status: 1,
+      auth_status: 'APPROVED',
+      include_deleted: false,
+    })
+
+    const payload =
+      (Array.isArray(data) && data) ||
+      (Array.isArray(data?.data) && data.data) ||
+      []
+
+    return { data: payload }
+  },
+
   fetchBankList: async () => {
     const merchantToken = String(getMerchantToken() || '').trim()
 
@@ -126,14 +145,57 @@ const walletToBankTransferService = {
   },
 
   saveAccount: async (account) => {
-    const saved = {
-      ...account,
-      id: account.id || `bank-${Date.now()}`,
-      createdAt: account.createdAt || new Date().toISOString(),
+    const bankId =
+      account?.bankMeta?.bank_id ||
+      account?.bankMeta?.id ||
+      account?.bankId
+
+    const response = await fetchWithRefreshToken(BENEFICIARY_BANK_ADD, {
+      method: 'POST',
+      headers: getDeviceHeaders(),
+      body: JSON.stringify({
+        bank_id: Number(bankId),
+        beneficiary_name: String(account.accountHolderName || '').trim(),
+        bank_account_number: String(account.accountNumber || '').trim(),
+        beneficiary_alias: String(account.bankName || account.accountHolderName || '').trim(),
+      }),
+    })
+
+    const res = await getJson(response)
+
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || i18n.t('failed_to_save_bank_account'))
     }
 
-    bankTransferStorage.upsert(saved)
-    return { data: saved, message: i18n.t('saved') }
+    const refreshed = await walletToBankTransferService.fetchLinkedAccounts()
+    const saved =
+      refreshed.data.find(
+        (item) =>
+          item.accountNumber === String(account.accountNumber || '').trim() &&
+          item.accountHolderName === String(account.accountHolderName || '').trim()
+      ) || refreshed.data[0] || null
+
+    return { data: saved, message: res?.message || i18n.t('saved') }
+  },
+
+  removeStoredAccount: async (accountId) => {
+    const response = await fetchWithRefreshToken(BENEFICIARY_BANK_DELETE, {
+      method: 'POST',
+      headers: getDeviceHeaders(),
+      body: JSON.stringify({
+        id: Number(accountId),
+      }),
+    })
+
+    const res = await getJson(response)
+
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || i18n.t('failed_to_remove_beneficiary'))
+    }
+
+    const next = bankTransferStorage.list().filter((item) => item.id !== accountId)
+    bankTransferStorage.save(next)
+    return { data: next, message: res?.message || i18n.t('beneficiary_removed') }
   },
 
   submitBankTransferPush: async ({

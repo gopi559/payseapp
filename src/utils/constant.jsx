@@ -88,6 +88,10 @@ export const EXTERNAL_BIN_LIST = `${MAIN_API_URL}/external_bin/list`;
 export const BANK_MASTER_LIST = `${MAIN_API_URL}/bank_master/list`;
 export const BENEFICIARY_BANK_LIST =
   'https://api.dc.payseypayment.com/webcust/beneficiary/bank/list?bank_id=0';
+export const BENEFICIARY_BANK_ADD = `${MAIN_API_URL}/beneficiary/bank/add`;
+export const BENEFICIARY_BANK_DELETE = `${MAIN_API_URL}/beneficiary/bank/delete`;
+export const MERCHANT_BENEFICIARY_ADD = `${MAIN_API_URL}/transaction_webmerch/beneficiary/add`;
+export const MERCHANT_BENEFICIARY_DELETE = `${MAIN_API_URL}/transaction_webmerch/beneficiary/delete`;
 
 // ========================
 // BANK_MASTER_LIST
@@ -195,8 +199,8 @@ export const LOGIN_BANNER_IMAGE = `${MAIN_API_URL}/login/banner/image`;
 export const AIRTIME_TXN_SEND_OTP = `${MAIN_API_URL}/airtime/txn_send_otp`;
 export const AIRTIME_TXN_SEND = `${MAIN_API_URL}/airtime/txn_send`;
 
-export const BILL_PAYMENT_INFO_CP = `${MAIN_API_URL}/billpayment/billerinfocp`;
-export const BILL_PAYMENT_CNP = `${MAIN_API_URL}/billpayment/billpaymentcnp`;
+export const BILL_PAYMENT_INFO_CP = `${MAIN_API_URL}/web/transaction/onus/breshna/bill-details`;
+export const BILL_PAYMENT_CNP = `${MAIN_API_URL}/web/transaction/onus/breshna/bill-payment`;
 
 
 

@@ -46,7 +46,12 @@ const CashInBankTransferSuccess = () => {
       cashInBankTransferService.fetchTransactionByRrn(parsed.rrn)
         .then(({ data }) => {
           if (!data) return
-          const merged = { ...parsed, ...data }
+          const merged = {
+            ...parsed,
+            ...data,
+            rrn: parsed?.rrn || data?.rrn,
+            txn_id: parsed?.rrn || parsed?.txn_id || data?.txn_id || data?.rrn,
+          }
           setDetails(merged)
           sessionStorage.setItem('cashInBankTransferSuccess', JSON.stringify(merged))
         })
@@ -76,7 +81,7 @@ const CashInBankTransferSuccess = () => {
           <div className="space-y-3">
             <div className="flex justify-between gap-3 text-sm">
               <span className="text-gray-600">{t('transaction_id')}</span>
-              <span className="text-right font-medium text-[#111827]">{details?.txn_id || details?.rrn || '-'}</span>
+              <span className="text-right font-medium text-[#111827]">{details?.rrn || details?.txn_id || '-'}</span>
             </div>
 
             <div className="flex justify-between items-start gap-4 text-sm">

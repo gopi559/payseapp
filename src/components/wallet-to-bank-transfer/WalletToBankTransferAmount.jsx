@@ -137,7 +137,7 @@ const WalletToBankTransferAmount = () => {
       const successPayload = {
         ...(fetchedTransaction || {}),
         rrn: data?.rrn,
-        txn_id: data?.txn_id || data?.rrn,
+        txn_id: data?.rrn || data?.txn_id,
         txn_amount: data?.amount ?? transferData.amount,
         amount: data?.amount ?? transferData.amount,
         txn_time: new Date().toISOString(),
@@ -197,9 +197,6 @@ const WalletToBankTransferAmount = () => {
               <div className="flex-1">
                 <div className="text-[1.15rem] font-semibold text-[#111827]">{t('wallet')}</div>
                 <div className="mt-1 text-sm text-[#6B7280]">{formatBalance(walletBalance)}</div>
-                <div className="mt-1 text-sm text-[#6B7280]">
-                  {t('wallet_number')}: {walletId || '-'}
-                </div>
               </div>
             </div>
 
@@ -264,7 +261,7 @@ const WalletToBankTransferAmount = () => {
           setPendingTransferData(null)
         }}
         fromValue={t('wallet')}
-        fromSubValue={walletId || ''}
+        fromSubValue=""
         toValue={confirmData?.account?.bankName || '-'}
         toSubValue={t('bank_account_masked', { number: maskAccountNumber(confirmData?.account?.accountNumber) })}
         actionLabel={t('confirm_transaction')}

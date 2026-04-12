@@ -160,7 +160,7 @@ const CashInBankTransferAmount = () => {
       const successPayload = {
         ...(fetchedTransaction || {}),
         rrn,
-        txn_id: pushData?.txn_id || pushData?.rrn || data?.txn_id || data?.rrn,
+        txn_id: rrn || pushData?.txn_id || data?.txn_id || data?.rrn,
         txn_amount: data?.amount ?? transferData.amount,
         amount: data?.amount ?? transferData.amount,
         txn_time: new Date().toISOString(),
@@ -249,9 +249,6 @@ const CashInBankTransferAmount = () => {
               <div className="flex-1">
                 <div className="text-[1.15rem] font-semibold text-[#111827]">{t('wallet')}</div>
                 <div className="mt-1 text-sm text-[#6B7280]">{formatBalance(walletBalance)}</div>
-                <div className="mt-1 text-sm text-[#6B7280]">
-                  {t('wallet_number')}: {walletId || '-'}
-                </div>
               </div>
             </div>
 
@@ -289,7 +286,7 @@ const CashInBankTransferAmount = () => {
         fromValue={confirmData?.account?.bankName || '-'}
         fromSubValue={t('bank_account_masked', { number: maskAccountNumber(confirmData?.account?.accountNumber) })}
         toValue={t('wallet')}
-        toSubValue={beneficiaryWalletNumber || walletId || ''}
+        toSubValue=""
         actionLabel={t('confirm_transaction')}
         cancelLabel={t('cancel')}
       />

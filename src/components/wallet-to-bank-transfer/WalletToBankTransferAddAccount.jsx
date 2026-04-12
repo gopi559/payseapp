@@ -62,14 +62,15 @@ const WalletToBankTransferAddAccount = () => {
     const loadBanks = async () => {
       setBanksLoading(true)
       try {
-        const { data } = await walletToBankTransferService.fetchBankList()
+        const { data } = await walletToBankTransferService.fetchBankMasterList()
         const normalizedBanks = data
           .map((item) => ({
-            id: item.id || item.bank_id,
-            name: item.bank_name || item.beneficiary_name || item.beneficiary_alias,
+            id: item.id,
+            bank_id: item.id,
+            name: item.bank_name,
             shortCode: item.bank_short_code || '',
-            code: item.bank_code || item.bank_id,
-            shortName: item.bank_short_name || item.beneficiary_alias || item.beneficiary_name,
+            code: item.bank_code || item.id,
+            shortName: item.bank_short_name || item.bank_name,
           }))
           .filter((item) => item.name)
 

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
 import { HiOutlineBuildingLibrary } from 'react-icons/hi2'
-import { IoAdd, IoArrowBack, IoCreateOutline, IoInformationCircleOutline } from 'react-icons/io5'
+import { IoAdd, IoArrowBack, IoInformationCircleOutline, IoTrashOutline } from 'react-icons/io5'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import walletToBankTransferService from './walletToBankTransfer.service'
@@ -52,6 +53,35 @@ const WalletToBankTransferAccounts = () => {
     if (!selectedAccount) return
     sessionStorage.setItem('walletToBankTransferAccount', JSON.stringify(selectedAccount))
     navigate('/customer/wallet-to-bank-transfer/amount')
+  }
+
+  const handleRemoveAccount = async (event, accountId) => {
+    event.stopPropagation()
+
+    try {
+      const { data } = await walletToBankTransferService.removeStoredAccount(accountId)
+      const nextAccounts = Array.isArray(data) ? data : []
+      setAccounts(nextAccounts)
+
+      if (selectedId === accountId) {
+        const nextSelected = nextAccounts.find((item) => item.isDefault || item.isCashOutDefault)?.id || nextAccounts[0]?.id || ''
+        setSelectedId(nextSelected)
+      }
+
+      const currentSelected = sessionStorage.getItem('walletToBankTransferAccount')
+      if (currentSelected) {
+        try {
+          const parsed = JSON.parse(currentSelected)
+          if (parsed?.id === accountId) {
+            sessionStorage.removeItem('walletToBankTransferAccount')
+          }
+        } catch {}
+      }
+
+      toast.success(t('beneficiary_removed'))
+    } catch (error) {
+      toast.error(error?.message || t('failed_to_remove_beneficiary'))
+    }
   }
 
   return (
@@ -121,6 +151,14 @@ const WalletToBankTransferAccounts = () => {
                           <div className="mt-1 text-sm leading-6 text-[#6B7280]">
                             {t('bank_account_masked', { number: getMaskedAccountNumber(account.accountNumber) })}
                           </div>
+                          <button
+                            type="button"
+                            onClick={(event) => handleRemoveAccount(event, account.id)}
+                            className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-[#B42318]"
+                          >
+                            <IoTrashOutline size={16} />
+                            {t('remove')}
+                          </button>
                         </div>
                       </div>
 
@@ -134,15 +172,6 @@ const WalletToBankTransferAccounts = () => {
                         </button>
                       </div>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => navigate('/customer/wallet-to-bank-transfer/add-account', { state: { accountId: account.id } })}
-                      className="mt-5 inline-flex items-center gap-2 text-[1rem] font-semibold text-[#6B7280]"
-                    >
-                      <IoCreateOutline size={18} />
-                      {t('edit')}
-                    </button>
                   </div>
                 )
               })
