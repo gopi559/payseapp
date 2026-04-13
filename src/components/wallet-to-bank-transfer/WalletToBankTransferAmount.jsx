@@ -115,13 +115,35 @@ const WalletToBankTransferAmount = () => {
     if (!transferData) return
 
     try {
-      const { data } = await walletToBankTransferService.submitBankTransferPush({
+      const { data: balanceData } = await walletToBankTransferService.fetchGbBalance({
         pin: transferData.pin,
         wallet_no: transferData.wallet_no || transferData.walletNo || beneficiaryWalletNumber || walletNumber,
-        amount: transferData.amount,
-        currency: transferData.currency,
-        remarks: transferData.remarks,
-        auth_data: transferData.authData,
+      })
+
+      const preparedTransfer = {
+        ...transferData,
+        gbBalance: balanceData?.gb || {},
+        external_ref_num: balanceData?.external_ref_num || transferData.external_ref_num,
+        wallet_no: balanceData?.wallet_no || transferData.wallet_no || transferData.walletNo || beneficiaryWalletNumber || walletNumber,
+        currency: balanceData?.gb?.ccy || transferData.currency || 'AFN',
+      }
+
+      await walletToBankTransferService.submitBankTransferPull({
+        pin: preparedTransfer.pin,
+        wallet_no: preparedTransfer.wallet_no || preparedTransfer.walletNo || beneficiaryWalletNumber || walletNumber,
+        amount: preparedTransfer.amount,
+        currency: preparedTransfer.currency,
+        remarks: preparedTransfer.remarks,
+        auth_data: preparedTransfer.authData,
+      })
+
+      const { data } = await walletToBankTransferService.submitBankTransferPush({
+        pin: preparedTransfer.pin,
+        wallet_no: preparedTransfer.wallet_no || preparedTransfer.walletNo || beneficiaryWalletNumber || walletNumber,
+        amount: preparedTransfer.amount,
+        currency: preparedTransfer.currency,
+        remarks: preparedTransfer.remarks,
+        auth_data: preparedTransfer.authData,
       })
 
       const rrn = data?.rrn
@@ -138,22 +160,22 @@ const WalletToBankTransferAmount = () => {
         ...(fetchedTransaction || {}),
         rrn: data?.rrn,
         txn_id: data?.rrn || data?.txn_id,
-        txn_amount: data?.amount ?? transferData.amount,
-        amount: data?.amount ?? transferData.amount,
+        txn_amount: data?.amount ?? preparedTransfer.amount,
+        amount: data?.amount ?? preparedTransfer.amount,
         txn_time: new Date().toISOString(),
         txn_type: t('wallet_to_bank'),
         txn_desc: t('cash_out'),
         channel_type: t('channel_web'),
         status: 1,
-        wallet_no: data?.wallet_no || transferData.wallet_no || transferData.walletNo || beneficiaryWalletNumber || walletNumber,
-        external_ref_num: data?.external_ref_num || transferData.external_ref_num,
-        to_bank_name: transferData.account?.bankName,
-        to_account_number: transferData.account?.accountNumber,
-        to_account_holder_name: transferData.account?.accountHolderName,
+        wallet_no: data?.wallet_no || preparedTransfer.wallet_no || preparedTransfer.walletNo || beneficiaryWalletNumber || walletNumber,
+        external_ref_num: data?.external_ref_num || preparedTransfer.external_ref_num,
+        to_bank_name: preparedTransfer.account?.bankName,
+        to_account_number: preparedTransfer.account?.accountNumber,
+        to_account_holder_name: preparedTransfer.account?.accountHolderName,
         from: t('wallet'),
-        currency: transferData.currency || 'AFN',
+        currency: preparedTransfer.currency || 'AFN',
         gb: data?.gb || {},
-        remarks: transferData.remarks,
+        remarks: preparedTransfer.remarks,
       }
 
       sessionStorage.setItem('walletToBankTransferSuccess', JSON.stringify(successPayload))

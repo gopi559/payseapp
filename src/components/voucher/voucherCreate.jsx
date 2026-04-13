@@ -86,9 +86,27 @@ const VoucherCreate = () => {
       fetchWithBasicAuth(PROVINCE_LIST),
       fetchWithBasicAuth(ID_TYPE_LIST),
     ])
-      .then(([nationalities, provinces, idTypes]) =>
+      .then(([nationalities, provinces, idTypes]) => {
         setLists((p) => ({ ...p, nationalities, provinces, idTypes }))
-      )
+
+        setForm((prev) => {
+          if (prev.nationality_id) return prev
+
+          const afghanNationality = nationalities.find(
+            (item) =>
+              Number(item?.id) === 1 ||
+              String(item?.nationality_name || '').trim().toLowerCase() === 'afghan' ||
+              String(item?.country_name_official || '').trim().toLowerCase() === 'afghanistan'
+          )
+
+          if (!afghanNationality?.id) return prev
+
+          return {
+            ...prev,
+            nationality_id: String(afghanNationality.id),
+          }
+        })
+      })
       .catch((e) => toast.error(e.message || t('something_went_wrong')))
   }, [t])
 

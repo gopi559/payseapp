@@ -9,6 +9,8 @@ import {
   BENEFICIARY_BANK_DELETE,
   BENEFICIARY_BANK_LIST,
   FETCH_BY_RRN,
+  GB_BALANCE_CUSTOMER,
+  GB_PULL_CUSTOMER,
   GB_PUSH_CUSTOMER,
 } from '../../utils/constant.jsx'
 
@@ -196,6 +198,57 @@ const walletToBankTransferService = {
     const next = bankTransferStorage.list().filter((item) => item.id !== accountId)
     bankTransferStorage.save(next)
     return { data: next, message: res?.message || i18n.t('beneficiary_removed') }
+  },
+
+  fetchGbBalance: async ({ pin, wallet_no }) => {
+    const response = await fetchWithRefreshToken(GB_BALANCE_CUSTOMER, {
+      method: 'POST',
+      headers: getDeviceHeaders(),
+      body: JSON.stringify({
+        pin: String(pin).trim(),
+        wallet_no: String(wallet_no).trim(),
+      }),
+    })
+
+    const res = await getJson(response)
+
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || res?.data?.gb?.respMsg || i18n.t('failed_to_fetch_bank_balance'))
+    }
+
+    return { data: res?.data ?? null, message: res?.message }
+  },
+
+  submitBankTransferPull: async ({
+    pin,
+    wallet_no,
+    amount,
+    currency,
+    remarks,
+  }) => {
+    const payload = {
+      pin: String(pin).trim(),
+      wallet_no: String(wallet_no).trim(),
+      amount: Number(amount),
+      currency: String(currency || 'AFN').trim(),
+      remarks: String(remarks || i18n.t('web_gb_pull_remarks')).trim(),
+    }
+
+    const response = await fetchWithRefreshToken(GB_PULL_CUSTOMER, {
+      method: 'POST',
+      headers: getDeviceHeaders(),
+      body: JSON.stringify(payload),
+    })
+
+    const res = await getJson(response)
+
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || res?.data?.gb?.respMsg || i18n.t('bank_transfer_failed'))
+    }
+
+    authService.fetchCustomerBalance().catch(() => {})
+
+    return { data: res?.data ?? null, message: res?.message }
   },
 
   submitBankTransferPush: async ({
