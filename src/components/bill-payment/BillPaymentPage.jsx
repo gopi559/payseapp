@@ -41,6 +41,10 @@ const getFetchedBillAmount = (billInfo) =>
     billInfo?.due_amount,
     billInfo?.total_amount,
     billInfo?.bill_amt,
+    billInfo?.breshna?.data?.amount,
+    billInfo?.breshna?.data?.txn_amount,
+    billInfo?.breshna?.data?.bill_amount,
+    billInfo?.breshna?.data?.due_amount,
     billInfo?.breshna?.txn_amount,
     billInfo?.breshna?.amount,
     billInfo?.breshna?.bill_amount,
@@ -52,11 +56,15 @@ const getFetchedBillAmount = (billInfo) =>
 const getBillInfoRows = (billInfo, t) => {
   if (!billInfo) return []
 
+  const bd = billInfo?.breshna?.data
+
   const rows = [
     { label: t('service'), value: firstFilled(billInfo?.service_name, billInfo?.service, billInfo?.biller_name) },
-    { label: t('account_number'), value: firstFilled(billInfo?.breshna_account, billInfo?.breshna_account_no, billInfo?.acc_number, billInfo?.account_number, billInfo?.account_no, billInfo?.breshna?.breshna_account, billInfo?.breshna?.breshna_account_no, billInfo?.breshna?.acc_number, billInfo?.breshna?.account_number, billInfo?.breshna?.account_no) },
+    { label: t('account_number'), value: firstFilled(billInfo?.breshna_account, billInfo?.breshna_account_no, bd?.brishna_account_no, bd?.breshna_account_no, billInfo?.acc_number, billInfo?.account_number, billInfo?.account_no, billInfo?.breshna?.breshna_account, billInfo?.breshna?.breshna_account_no, billInfo?.breshna?.acc_number, billInfo?.breshna?.account_number, billInfo?.breshna?.account_no) },
     { label: t('mobile_number'), value: firstFilled(billInfo?.mobile_no, billInfo?.mobile_number, billInfo?.customer_mobile, billInfo?.breshna?.mobile_no, billInfo?.breshna?.mobile_number, billInfo?.breshna?.customer_mobile) },
-    { label: t('name'), value: firstFilled(billInfo?.customer_name, billInfo?.name, billInfo?.consumer_name, billInfo?.breshna?.customer_name, billInfo?.breshna?.name, billInfo?.breshna?.consumer_name) },
+    { label: t('name'), value: firstFilled(billInfo?.customer_name, bd?.customer_name, billInfo?.name, billInfo?.consumer_name, billInfo?.breshna?.customer_name, billInfo?.breshna?.name, billInfo?.breshna?.consumer_name) },
+    { label: t('location'), value: firstFilled(billInfo?.customer_location, bd?.customer_location, billInfo?.breshna?.customer_location) },
+    { label: t('bill_due_date'), value: firstFilled(billInfo?.bill_due_date, bd?.bill_due_date, billInfo?.breshna?.bill_due_date) },
     { label: t('bill_number'), value: firstFilled(billInfo?.bill_number, billInfo?.bill_no) },
     { label: t('card_number'), value: firstFilled(billInfo?.card_number, billInfo?.masked_card, billInfo?.breshna?.card_number, billInfo?.breshna?.masked_card) },
     { label: t('card_name'), value: firstFilled(billInfo?.card_name, billInfo?.card_holder_name, billInfo?.cardholder_name, billInfo?.breshna?.card_name, billInfo?.breshna?.card_holder_name, billInfo?.breshna?.cardholder_name) },
@@ -119,17 +127,25 @@ const hydrateValidatedCard = async (card, transactionType) => {
   }
 }
 
+// BillPaymentPage.jsx
+
 const resolveMobileNo = () => {
   const user = getAuthUser()
+
   const raw =
-    user?.reg_info?.reg_mobile ??
-    user?.reg_mobile ??
-    user?.mobile_no ??
+    user?.reg_info?.mobile ||   // ✅ THIS is your correct field
+    user?.reg_info?.reg_mobile ||
+    user?.mobile ||
+    user?.mobile_no ||
     ''
-  const digits = String(raw).replace(/\D/g, '')
-  if (!digits) return '+93'
-  if (digits.startsWith('93')) return `+${digits}`
-  return `+93${digits.slice(-9)}`
+
+  if (!raw) {
+    console.error('Mobile not found in user object:', user)
+    throw new Error('Mobile number not found')
+  }
+
+  // ensure + prefix
+  return raw.startsWith('+') ? raw : `+${raw}`
 }
 
 const BillPaymentPage = () => {
@@ -146,8 +162,17 @@ const BillPaymentPage = () => {
 
   const [amount, setAmount] = useState('')
   const [billNumber, setBillNumber] = useState('')
-  const [mobileNo] = useState(resolveMobileNo())
+const [mobileNo, setMobileNo] = useState('')
 
+useEffect(() => {
+  try {
+    const mobile = resolveMobileNo()
+    console.log("OTP MOBILE:", mobile) // debug
+    setMobileNo(mobile)
+  } catch (e) {
+    console.error(e)
+  }
+}, [])
   const [billInfo, setBillInfo] = useState(null)
   const [txnMeta, setTxnMeta] = useState(null)
   const [step, setStep] = useState(null)
@@ -408,8 +433,15 @@ const BillPaymentPage = () => {
 
     setLoading(true)
     try {
-      await sendService.generateTransactionOtp('MOBILE', mobileNo)
-      setTxnMeta((prev) => ({
+if (!mobileNo) {
+  toast.error('Mobile number not available')
+  return
+}
+
+await sendService.generateTransactionOtp('MOBILE', mobileNo)
+
+
+setTxnMeta((prev) => ({
         ...(prev || {}),
         otpEntityType: 'MOBILE',
         otpEntityId: mobileNo,

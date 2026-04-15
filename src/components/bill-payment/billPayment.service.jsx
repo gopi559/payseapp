@@ -17,18 +17,26 @@ const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 const normalizeBreshnaPayload = (payload, requestedAccountNo = '') => {
   const root = payload && typeof payload === 'object' ? payload : {}
   const nested = root?.breshna && typeof root.breshna === 'object' ? root.breshna : {}
+  const nestedData = nested?.data && typeof nested.data === 'object' ? nested.data : {}
 
   return {
     ...root,
     ...nested,
-    breshna: nested,
-    rrn: root?.rrn ?? nested?.rrn ?? null,
+    ...nestedData,
+    breshna: { ...nested, ...nestedData },
+    rrn: root?.rrn ?? nested?.rrn ?? nestedData?.rrn ?? null,
     breshna_account_no:
       root?.breshna_account_no ??
       nested?.breshna_account_no ??
+      nestedData?.brishna_account_no ??
+      nestedData?.breshna_account_no ??
       root?.breshna_account ??
       nested?.breshna_account ??
       String(requestedAccountNo).trim(),
+    customer_name: nestedData?.customer_name ?? nested?.customer_name ?? root?.customer_name ?? null,
+    customer_location: nestedData?.customer_location ?? nested?.customer_location ?? root?.customer_location ?? null,
+    amount: nestedData?.amount ?? nested?.amount ?? root?.amount ?? null,
+    bill_due_date: nestedData?.bill_due_date ?? nested?.bill_due_date ?? root?.bill_due_date ?? null,
   }
 }
 

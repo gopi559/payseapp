@@ -120,9 +120,15 @@ const BillPaymentSuccess = () => {
         <p className="mt-1 text-sm text-gray-500">{dateTime}</p>
 
         <div className="mt-6 w-full bg-green-100 rounded-2xl px-5 py-4 space-y-3">
+        
+
+        
+        
+        
+        
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">{t('transaction_id')}</span>
-            <span className="font-medium text-gray-900">{txnId}</span>
+            <span className="font-medium text-gray-900"> {details?.rrn ?? '-'}</span>
           </div>
 
           <div className="flex justify-between items-start text-sm">
