@@ -33,7 +33,7 @@ const AirtimeSuccess = () => {
 
   if (!details) return null
 
-  const txnId = details.txn_id ?? '-'
+  const txnId = details.rrn ?? details.txn_id ?? '-'
   const formattedFromCardNumber = details.from_card ? formatCardNumber(details.from_card) : '-'
   const fromCardholderName = details.from_card_name || '-'
   const toMobile = details.to_mobile || '-'

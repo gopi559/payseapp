@@ -1,6 +1,6 @@
 import { getClientRefId } from '../../services/api.jsx'
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
-import { AIRTIME_TXN_SEND, AIRTIME_TXN_SEND_OTP } from '../../utils/constant.jsx'
+import { AIRTIME_RECHARGE_API, AIRTIME_TXN_SEND, AIRTIME_TXN_SEND_OTP, FETCH_BY_RRN } from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
 const isSuccess = (res) =>
@@ -70,6 +70,46 @@ const airtimeService = {
     authService.fetchCustomerBalance().catch(() => {})
 
     return { data: res?.data ?? res, message: res?.message }
+  },
+
+  rechargeOwnCardAirtime: async ({
+    mobile_no,
+    txn_amount,
+  }) => {
+    const body = {
+      mobile_no: String(mobile_no).trim(),
+      txn_amount: Number(txn_amount),
+    }
+
+    const response = await fetchWithRefreshToken(AIRTIME_RECHARGE_API, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+
+    const res = await response.json().catch(() => null)
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || '')
+    }
+
+    authService.fetchCustomerBalance().catch(() => {})
+
+    return { data: res?.data ?? res, message: res?.message }
+  },
+
+  fetchTransactionByRrn: async (rrn) => {
+    const response = await fetchWithRefreshToken(FETCH_BY_RRN, {
+      method: 'POST',
+      body: JSON.stringify({
+        rrn: String(rrn || '').trim(),
+      }),
+    })
+
+    const res = await response.json().catch(() => null)
+    if (!response.ok || !isSuccess(res)) {
+      throw new Error(res?.message || '')
+    }
+
+    return { data: res?.data ?? null, message: res?.message }
   },
 }
 

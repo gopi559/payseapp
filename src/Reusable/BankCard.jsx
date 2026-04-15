@@ -1,24 +1,15 @@
 ﻿// src/components/BankCard.jsx
 
 import React from 'react'
-import { useState } from 'react'
 import Chip from '../assets/Chip.svg'
 import Wifi from '../assets/wifi.svg'
 import PayseyLogoWhite from '../assets/PayseyPaymentLogowhite.png'
 import AfganCurrency from '../assets/afgan_currency.svg'
 import { formatCardNumber } from '../utils/formatCardNumber'
 import { resolveCardColorCode } from '../services/binValidation.jsx'
-import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5'
-
-const formatExpiry = (rawExpiry) => {
-  const digits = String(rawExpiry || '').replace(/\D/g, '')
-  if (digits.length !== 4) return ''
-  return `${digits.slice(0, 2)}/${digits.slice(2)}`
-}
 
 const BankCard = ({ card, onBalance }) => {
   const isMyPayseCard = !card.external_inst_name
-  const [showExpiry, setShowExpiry] = useState(false)
 
   const cardNumberToFormat = card.card_number || card.masked_card || ''
   const formattedCardNumber = formatCardNumber(cardNumberToFormat)
@@ -32,8 +23,6 @@ const BankCard = ({ card, onBalance }) => {
     card.cardholder_nick_name ||
     card.name_on_card ||
     ''
-  const expiry = formatExpiry(card.expiry_date)
-  const hasExpiry = !isMyPayseCard && Boolean(expiry)
   const cardBackgroundColor = resolveCardColorCode(card.color_code)
 
   return (
@@ -74,25 +63,6 @@ const BankCard = ({ card, onBalance }) => {
               {cardholderName}
             </div>
           </div>
-
-          {hasExpiry && (
-            <div className="shrink-0 text-right">
-              <div className="text-xs text-white/80">Expiry</div>
-              <div className="flex items-center justify-end gap-1">
-                <div className="text-sm font-semibold tracking-wider">
-                  {showExpiry ? expiry : '**/**'}
-                </div>
-                <button
-                  type="button"
-                  aria-label={showExpiry ? 'Hide expiry' : 'Show expiry'}
-                  onClick={() => setShowExpiry((prev) => !prev)}
-                  className="p-1 rounded-full text-white/90 hover:text-white"
-                >
-                  {showExpiry ? <IoEyeOffOutline size={18} /> : <IoEyeOutline size={18} />}
-                </button>
-              </div>
-            </div>
-          )}
 
           {card.balance !== undefined ? (
             <div className="shrink-0 text-right">

@@ -14,6 +14,24 @@ const isSuccess = (res) =>
 
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
+const normalizeBreshnaPayload = (payload, requestedAccountNo = '') => {
+  const root = payload && typeof payload === 'object' ? payload : {}
+  const nested = root?.breshna && typeof root.breshna === 'object' ? root.breshna : {}
+
+  return {
+    ...root,
+    ...nested,
+    breshna: nested,
+    rrn: root?.rrn ?? nested?.rrn ?? null,
+    breshna_account_no:
+      root?.breshna_account_no ??
+      nested?.breshna_account_no ??
+      root?.breshna_account ??
+      nested?.breshna_account ??
+      String(requestedAccountNo).trim(),
+  }
+}
+
 const billPaymentService = {
   verifyCard: async (card_number) => {
     const response = await fetchWithRefreshToken(CARD_NUMBER_VERIFY, {
@@ -104,10 +122,11 @@ const billPaymentService = {
   },
 
   fetchBreshnaBillDetails: async ({ breshna_account_no }) => {
+    const accountNo = String(breshna_account_no).trim()
     const response = await fetchWithRefreshToken(BRESHNA_BILL_DETAILS_API, {
       method: 'POST',
       body: JSON.stringify({
-        breshna_account_no: String(breshna_account_no).trim(),
+        breshna_account_no: accountNo,
       }),
     })
 
@@ -116,21 +135,29 @@ const billPaymentService = {
       throw new Error(res?.message || '')
     }
 
-    return { data: res?.data ?? res, message: res?.message }
+    return {
+      data: normalizeBreshnaPayload(res?.data ?? res, accountNo),
+      message: res?.message,
+    }
   },
 
   payBreshnaBill: async ({
     breshna_account_no,
     txn_amount,
-    auth_data,
+    rrn = '',
   }) => {
+    const body = {
+      breshna_account_no: String(breshna_account_no).trim(),
+      txn_amount: Number(txn_amount),
+    }
+
+    if (String(rrn).trim()) {
+      body.rrn = String(rrn).trim()
+    }
+
     const response = await fetchWithRefreshToken(BRESHNA_BILL_PAYMENT_API, {
       method: 'POST',
-      body: JSON.stringify({
-        breshna_account_no: String(breshna_account_no).trim(),
-        txn_amount: Number(txn_amount),
-        auth_data: String(auth_data).trim(),
-      }),
+      body: JSON.stringify(body),
     })
 
     const res = await response.json().catch(() => null)
@@ -140,7 +167,10 @@ const billPaymentService = {
 
     authService.fetchCustomerBalance().catch(() => {})
 
-    return { data: res?.data ?? res, message: res?.message }
+    return {
+      data: normalizeBreshnaPayload(res?.data ?? res, breshna_account_no),
+      message: res?.message,
+    }
   },
 
   fetchTransactionByRrn: async (rrn) => {

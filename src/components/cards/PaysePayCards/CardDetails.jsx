@@ -15,7 +15,7 @@ const DetailRow = ({ label, value, emptyValue }) => (
 )
 
 const CardDetails = () => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const [card, setCard] = useState(null)
@@ -76,11 +76,6 @@ const CardDetails = () => {
             <div className="space-y-0">
               <DetailRow label={t('name_on_card')} value={card.name_on_card} emptyValue={t('not_available')} />
               <DetailRow label={t('card_number')} value={card.masked_card} emptyValue={t('not_available')} />
-              <DetailRow
-                label={t('expiry')}
-                value={card.expiry_on ? new Date(card.expiry_on).toLocaleDateString(i18n.language === 'ar' ? 'ar-SA' : 'en-GB', { month: '2-digit', year: 'numeric', day: '2-digit' }) : null}
-                emptyValue={t('not_available')}
-              />
               <DetailRow label={t('status')} value={card.card_status_name} emptyValue={t('not_available')} />
               <DetailRow label={t('auth_status')} value={card.auth_status} emptyValue={t('not_available')} />
               {card.card_type_nature != null && card.card_type_nature !== '' && (

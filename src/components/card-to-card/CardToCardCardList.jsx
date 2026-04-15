@@ -549,6 +549,7 @@ const CardToCardCardList = () => {
         open={step === 'CONFIRM'}
         card={selectedCard}
         amount={amount}
+        showMobile={false}
         to={
           destCard ? (
             <div>

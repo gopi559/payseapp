@@ -280,6 +280,8 @@ amount: Number(normalizedAmount),
     return `#${item?.id ?? ''}`
   }
 
+  const requiredLabel = (label) => `${label} *`
+
   return (
     <PageContainer>
       <div className="max-w-4xl mx-auto p-6">
@@ -294,7 +296,7 @@ amount: Number(normalizedAmount),
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <Input
-                label={t('amount')}
+                label={requiredLabel(t('amount'))}
                 className={getFieldClassName('amount')}
                 inputMode="decimal"
                 placeholder={t('enter_amount')}
@@ -312,7 +314,7 @@ amount: Number(normalizedAmount),
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <Input
-                  label={t('receiver_name')}
+                  label={requiredLabel(t('receiver_name'))}
                   className={getFieldClassName('receiver_name')}
                   error={errors.receiver_name}
                   value={form.receiver_name}
@@ -322,7 +324,7 @@ amount: Number(normalizedAmount),
 
               <div>
                 <Input
-                  label={t('father_name')}
+                  label={requiredLabel(t('father_name'))}
                   className={getFieldClassName('receiver_father_name')}
                   error={errors.receiver_father_name}
                   value={form.receiver_father_name}
@@ -332,7 +334,7 @@ amount: Number(normalizedAmount),
             </div>
 
             <MobileInput
-              label={t('receiver_mobile')}
+              label={requiredLabel(t('receiver_mobile'))}
               value={form.receiver_mobile}
               error={errors.receiver_mobile}
               className={errors.receiver_mobile ? 'border-red-500 focus:ring-red-500 focus:outline-none' : ''}
@@ -341,7 +343,7 @@ amount: Number(normalizedAmount),
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('nationality')}</label>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{requiredLabel(t('nationality'))}</label>
                 <select
                   className={getSelectClassName('nationality_id')}
                   style={optionStyle}
@@ -359,7 +361,7 @@ amount: Number(normalizedAmount),
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('province')}</label>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{requiredLabel(t('province'))}</label>
                 <select
                   className={getSelectClassName('province_id')}
                   style={optionStyle}
@@ -377,7 +379,7 @@ amount: Number(normalizedAmount),
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('district')}</label>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{requiredLabel(t('district'))}</label>
                 <select
                   className={getSelectClassName('district_id')}
                   style={optionStyle}
@@ -396,7 +398,7 @@ amount: Number(normalizedAmount),
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('village')}</label>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{requiredLabel(t('village'))}</label>
                 <select
                   className={getSelectClassName('village_id')}
                   style={optionStyle}
@@ -417,7 +419,7 @@ amount: Number(normalizedAmount),
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="mb-1.5 block text-xs font-medium text-gray-700">{t('id_type')}</label>
+                <label className="mb-1.5 block text-xs font-medium text-gray-700">{requiredLabel(t('id_type'))}</label>
                 <select
                   className={getSelectClassName('receiver_id_type')}
                   style={optionStyle}
@@ -435,7 +437,7 @@ amount: Number(normalizedAmount),
               </div>
 
               <Input
-                label={t('id_number')}
+                label={requiredLabel(t('id_number'))}
                 className={getFieldClassName('receiver_id_number')}
                 placeholder={t('id_number')}
                 error={errors.receiver_id_number}

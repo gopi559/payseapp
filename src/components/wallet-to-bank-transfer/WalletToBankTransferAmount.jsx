@@ -80,7 +80,7 @@ const WalletToBankTransferAmount = () => {
 
   const handlePinConfirm = async (pinValue) => {
     if (!pinValue || pinValue.length !== 4) {
-      toast.error(t('enter_wallet_pin'))
+      toast.error(t('enter_bank_pin'))
       return
     }
 
@@ -269,6 +269,8 @@ const WalletToBankTransferAmount = () => {
         loading={loading}
         onConfirm={handlePinConfirm}
         onCancel={() => setPinPopupOpen(false)}
+        title={t('bank_pin')}
+        subtitle={t('enter_bank_pin')}
       />
 
       <ConfirmTransactionPopup

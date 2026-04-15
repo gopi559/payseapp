@@ -49,6 +49,7 @@ const AirtimeTransactionDetails = () => {
 
   const amount = details?.txn_amount != null ? Number(details.txn_amount).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
+  const displayTxnId = details?.rrn ?? details?.txn_id ?? ''
   const txnTime = details?.txn_time ?? details?.created_at ?? ''
   const txnType = details?.txn_type ?? 'AIRTIME'
   const txnDesc = details?.txn_desc ?? details?.txn_short_desc ?? t('airtime_purchase')
@@ -63,7 +64,7 @@ const AirtimeTransactionDetails = () => {
 
   const handleDownloadPdf = () => {
     openTransactionPrintWindow({
-      title: `${t('transaction_details')} ${details?.txn_id ?? ''}`,
+      title: `${t('transaction_details')} ${displayTxnId}`,
       pageTitle: t('transaction_details'),
       logoUrl: PAYSEY_LOGO_URL,
       popupMessage: t('please_allow_popups_to_download_pdf'),
@@ -71,7 +72,7 @@ const AirtimeTransactionDetails = () => {
         {
           title: t('transaction_details'),
           rows: [
-            { label: t('transaction_id'), value: details?.txn_id ?? '-' },
+            { label: t('transaction_id'), value: displayTxnId || '-' },
             { label: t('rrn'), value: details?.rrn ?? '-' },
             { label: t('transaction_type'), value: details?.txn_type ?? 'AIRTIME' },
             { label: t('description'), value: details?.txn_desc ?? t('airtime_purchase') },

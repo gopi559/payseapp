@@ -50,7 +50,6 @@ const DisputeList = () => {
     { key: 'dispute_type_id', label: 'dispute_type_id' },
     { key: 'details', label: 'details' },
     { key: 'status', label: 'status' },
-    { key: 'assigned_to', label: 'assigned_to' },
     {
       key: 'created_at',
       label: 'created_at',

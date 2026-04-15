@@ -216,16 +216,13 @@ export const WALLET_TO_WALLET = `${MAIN_API_URL}/external_card/wallet_ext_wallet
 
 
 
-export const AIRTIME_RECHARGE_API = `${MAIN_API_URL}/web/transaction/onus/airtime/recharge`;
 
 export const BRESHNA_BILL_DETAILS_API = `${MAIN_API_URL}/transaction_web/customer/onus/breshna/bill-details`;
 
 export const BRESHNA_BILL_PAYMENT_API = `${MAIN_API_URL}/transaction_web/customer/onus/breshna/bill-payment`;
 
-export const CUSTOMER_AIRTIME_RECHARGE_API = `${MAIN_API_URL}/transaction_web/customer/onus/airtime/recharge`;
+export const AIRTIME_RECHARGE_API = `${MAIN_API_URL}/transaction_web/customer/onus/airtime/recharge`;
 
-
-// https://api.dc.payseypayment.com/webcust/web/transaction/onus/airtime/recharge
 
 
 

@@ -15,7 +15,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 
 import airtimeService from './airtime.service'
 import { BENIFICIARY_LIST, CARD_CHECK_BALANCE } from '../../utils/constant'
-import { getCurrentUserId } from '../../services/api'
+import { getAuthUser, getCurrentUserId } from '../../services/api'
 import fetchWithRefreshToken from '../../services/fetchWithRefreshToken'
 import { generateStan } from '../../utils/generateStan'
 import { sendService } from '../send/send.service'
@@ -24,6 +24,32 @@ import { validateCardBinForTransaction } from '../../services/binValidation.jsx'
 
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200]
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
+const isOwnCard = (card) =>
+  card?.is_own_card === true ||
+  card?.card_source === 'OWN_CARD_LIST' ||
+  (!card?.external_inst_name && Boolean(card?.name_on_card || card?.card_type_nature))
+const toLocalAirtimeMobileNo = (value) => {
+  const digits = String(value || '').replace(/\D/g, '')
+  if (digits.length === 11 && digits.startsWith('93')) {
+    return digits.slice(2)
+  }
+  if (digits.length === 10 && digits.startsWith('0')) {
+    return digits.slice(1)
+  }
+  return digits || String(value || '').trim()
+}
+const resolveCustomerOtpMobileNo = () => {
+  const user = getAuthUser()
+  const raw =
+    user?.reg_info?.reg_mobile ??
+    user?.reg_mobile ??
+    user?.mobile_no ??
+    ''
+  const digits = String(raw).replace(/\D/g, '')
+  if (!digits) return ''
+  if (digits.startsWith('93')) return `+${digits}`
+  return `+93${digits.slice(-9)}`
+}
 
 const hydrateValidatedCard = async (card, transactionType) => {
   if (!card) return null
@@ -135,6 +161,8 @@ const AirtimePage = () => {
 
       const walletCards = (Array.isArray(walletCardsRes?.data) ? walletCardsRes.data : []).map((card) => ({
         ...card,
+        is_own_card: true,
+        card_source: 'OWN_CARD_LIST',
         cardholder_name: card.name_on_card,
         color_code: card.color_code || '#0fb36c',
         balance: walletBalance,
@@ -146,7 +174,11 @@ const AirtimePage = () => {
             hydrateValidatedCard(card, 'AIRTIME')
           )
         )
-      ).filter(Boolean)
+      ).filter(Boolean).map((card) => ({
+        ...card,
+        is_own_card: false,
+        card_source: 'BENEFICIARY_CARD_LIST',
+      }))
 
       const list = [...walletCards, ...beneficiaryCards]
       setCards(list)
@@ -190,7 +222,7 @@ const AirtimePage = () => {
       const card = cards[cardIndex]
       if (!card) return
 
-      const isInternalCard = !card.external_inst_name
+      const isInternalCard = isOwnCard(card)
       if (!isInternalCard && !securityData) {
         setBalanceCardIndex(cardIndex)
         setStep('BALANCE_CVV')
@@ -245,8 +277,10 @@ const AirtimePage = () => {
       }
 
       setBeneficiary(validated)
-      setSelectedCard(cards[activeIndex])
-      setStep('CVV')
+      const card = cards[activeIndex]
+      setSelectedCard(card)
+      setCvvData(null)
+      setStep(isOwnCard(card) ? 'CONFIRM' : 'CVV')
     } catch (e) {
       setBeneficiary(null)
       toast.error(e.message || t('validation_failed'))
@@ -277,9 +311,23 @@ const AirtimePage = () => {
 
   const handleSendOtp = async () => {
     if (!selectedCard) return
+    const ownCardSelected = isOwnCard(selectedCard)
+    if (!ownCardSelected && !cvvData) return
 
     setLoading(true)
     try {
+      if (ownCardSelected) {
+        const otpMobileNo = resolveCustomerOtpMobileNo() || mobileNo
+        await sendService.generateTransactionOtp('MOBILE', otpMobileNo)
+        setTxnMeta({
+          otpEntityType: 'MOBILE',
+          otpEntityId: otpMobileNo,
+        })
+        setStep('OTP')
+        toast.success(t('otp_sent'))
+        return
+      }
+
       const fallbackStan = generateStan()
       const { data } = await airtimeService.sendOtp({
         card_number: selectedCard.card_number,
@@ -301,8 +349,14 @@ const AirtimePage = () => {
   }
 
   const handleConfirmOtp = async (otp) => {
-    if (!selectedCard || !cvvData) return
-    if (!txnMeta?.rrn || !txnMeta?.stan) {
+    const ownCardSelected = isOwnCard(selectedCard)
+    if (!selectedCard || (!ownCardSelected && !cvvData)) return
+    if (!ownCardSelected && (!txnMeta?.rrn || !txnMeta?.stan)) {
+      toast.error(t('session_expired_try_again'))
+      resetFlow()
+      return
+    }
+    if (ownCardSelected && (!txnMeta?.otpEntityType || !txnMeta?.otpEntityId)) {
       toast.error(t('session_expired_try_again'))
       resetFlow()
       return
@@ -310,39 +364,62 @@ const AirtimePage = () => {
 
     setLoading(true)
     try {
-      const { data } = await airtimeService.sendAirtime({
-        card_number: selectedCard.card_number,
-        txn_amount: amount,
-        cvv: cvvData.cvv,
-        expiry_date: cvvData.expiry,
-        otp,
-        rrn: txnMeta.rrn,
-        stan: txnMeta.stan,
-        mobile_no: beneficiary?.reg_mobile || mobileNo,
-      })
+      const mobileNumber = beneficiary?.reg_mobile || mobileNo
+      if (ownCardSelected) {
+        await sendService.verifyTransactionOtp(txnMeta.otpEntityType, txnMeta.otpEntityId, otp)
+      }
+
+      const { data } = ownCardSelected
+        ? await airtimeService.rechargeOwnCardAirtime({
+          mobile_no: toLocalAirtimeMobileNo(mobileNumber),
+          txn_amount: amount,
+        })
+        : await airtimeService.sendAirtime({
+          card_number: selectedCard.card_number,
+          txn_amount: amount,
+          cvv: cvvData.cvv,
+          expiry_date: cvvData.expiry,
+          otp,
+          rrn: txnMeta.rrn,
+          stan: txnMeta.stan,
+          mobile_no: mobileNumber,
+        })
 
       const beneficiaryName = [beneficiary?.first_name, beneficiary?.middle_name, beneficiary?.last_name]
         .filter(Boolean)
         .join(' ')
         .trim()
+      const rrn = data?.rrn
+      let fetchedTxn = null
+
+      if (rrn) {
+        try {
+          const fetched = await airtimeService.fetchTransactionByRrn(rrn)
+          fetchedTxn = fetched?.data ?? null
+        } catch (_) {
+          fetchedTxn = null
+        }
+      }
 
       sessionStorage.setItem(
         'airtimeSuccess',
         JSON.stringify({
-          txn_id: data?.txn_id,
-          rrn: data?.rrn,
-          txn_amount: data?.txn_amount ?? amount,
-          txn_time: data?.txn_time || new Date().toISOString(),
-          channel_type: data?.channel_type || 'WEB',
+          ...(fetchedTxn || {}),
+          txn_id: data?.txn_id ?? fetchedTxn?.txn_id ?? rrn,
+          rrn,
+          txn_amount: data?.txn_amount ?? data?.amount ?? fetchedTxn?.txn_amount ?? amount,
+          txn_time: data?.txn_time || fetchedTxn?.txn_time || new Date().toISOString(),
+          channel_type: data?.channel_type || fetchedTxn?.channel_type || 'WEB',
           status: 1,
-          fee_amount: data?.fee_amount ?? 0,
-          remarks: data?.remarks ?? null,
+          fee_amount: data?.fee_amount ?? fetchedTxn?.fee_amount ?? 0,
+          remarks: data?.remarks ?? fetchedTxn?.remarks ?? null,
           txn_type: 'AIRTIME',
           txn_desc: t('airtime_purchase'),
           from_card: selectedCard.card_number,
           from_card_name: selectedCard.cardholder_name || selectedCard.card_name || null,
-          to_mobile: beneficiary?.reg_mobile || mobileNo,
+          to_mobile: data?.mobile_no || fetchedTxn?.mobile_no || mobileNumber,
           beneficiary_name: beneficiaryName || null,
+          extbiller: data?.extbiller ?? null,
         })
       )
 
@@ -376,7 +453,7 @@ const AirtimePage = () => {
   useEffect(() => {
     setCards((prev) =>
       prev.map((c) =>
-        !c.external_inst_name ? { ...c, balance: walletBalance } : c
+        isOwnCard(c) ? { ...c, balance: walletBalance } : c
       )
     )
   }, [walletBalance])
@@ -435,7 +512,7 @@ const AirtimePage = () => {
         </div>
 
         <div className="mt-4">
-            <MobileInput
+          <MobileInput
             label={t('mobile_number')}
             value={mobileNo}
             onChange={(e) => {
@@ -494,6 +571,7 @@ const AirtimePage = () => {
       <OtpPopup
         open={step === 'OTP'}
         loading={loading}
+        length={6}
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
       />

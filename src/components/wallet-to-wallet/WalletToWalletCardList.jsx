@@ -546,6 +546,7 @@ const WalletToWalletCardList = () => {
         open={step === 'CONFIRM'}
         card={sourceCard}
         amount={amount}
+        showMobile={false}
         to={
           destinationCardDigits ? (
             <div>

@@ -13,18 +13,7 @@ import { CARD_TXN_LIST, CUSTOMER_GET_ACTIONS_CARD, UPDATE_CARD_STATUS } from '..
 
 const NUM_DATA = 20
 
-const formatExpiry = (iso) => {
-  if (!iso) return '--/--'
-  const d = new Date(iso)
-  return `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`
-}
-
 const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) => {
-  const previewCard = {
-    ...card,
-    expiry_date: formatExpiry(card?.expiry_on).replace('/', ''),
-  }
-
   return (
     <button
       type="button"
@@ -34,7 +23,7 @@ const CardPreview = ({ card, onClick, selectable = true, fullWidth = false }) =>
       }`}
     >
       <CardsMenuBankCard
-        card={previewCard}
+        card={card}
         withMargin={false}
         showBalanceSection={false}
         className="shadow-xl"
@@ -305,7 +294,6 @@ const CardsPage = () => {
                       <th className="p-2">{t('name_on_card')}</th>
                       <th className="p-2">{t('cardholder')}</th>
                       <th className="p-2">{t('status')}</th>
-                      <th className="p-2">{t('expiry')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -335,7 +323,6 @@ const CardsPage = () => {
                           <td className="p-2">
                             <span className={getStatusColorClass(card.card_status_name)}>{card.card_status_name ?? t('not_available')}</span>
                           </td>
-                          <td className="p-2 text-gray-800">{card.expiry_on ? formatExpiry(card.expiry_on) : t('not_available')}</td>
                         </tr>
                       )
                     })}
@@ -405,12 +392,6 @@ const CardsPage = () => {
                     <MetaRow icon={HiUserCircle} label={t('name_on_card')} value={selectedCard.name_on_card} t={t} />
                     <MetaRow icon={HiUserCircle} label={t('cardholder')} value={selectedCard.name_on_card} t={t} />
                     <MetaRow icon={HiInformationCircle} label={t('card_status')} value={selectedCard.card_status_name} t={t} />
-                    <MetaRow
-                      icon={HiInformationCircle}
-                      label={t('expiration_date')}
-                      value={selectedCard.expiry_on ? formatExpiry(selectedCard.expiry_on) : null}
-                      t={t}
-                    />
                     <div className="flex items-center gap-2">
                       <MdBrowserUpdated className="text-brand-secondary w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                       <span className="font-medium text-gray-500">{t('select_action')}</span>
