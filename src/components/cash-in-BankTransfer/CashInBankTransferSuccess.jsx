@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import cashInBankTransferService from './cashInBankTransfer.service'
@@ -28,9 +29,29 @@ const maskAccount = (value) => {
   return raw.length <= 4 ? raw : `.... .... .... ${raw.slice(-4)}`
 }
 
+const normalizeReceiverName = (value, fallback) => {
+  const text = String(value || '').trim()
+  if (!text) return fallback
+  if (text.toLowerCase() === 'wallet') return fallback
+  return text
+}
+
+const getUserFullName = (user, fallback = '') => {
+  const regInfo = user?.reg_info || user
+  const userKyc = user?.user_kyc || null
+
+  return (
+    [userKyc?.first_name, userKyc?.middle_name, userKyc?.last_name].filter(Boolean).join(' ').trim() ||
+    [regInfo?.first_name, regInfo?.middle_name, regInfo?.last_name].filter(Boolean).join(' ').trim() ||
+    regInfo?.name ||
+    fallback
+  )
+}
+
 const CashInBankTransferSuccess = () => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+  const user = useSelector((state) => state.auth?.user)
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
@@ -64,6 +85,7 @@ const CashInBankTransferSuccess = () => {
   if (!details) return null
 
   const amount = Number(details?.txn_amount ?? details?.amount ?? 0).toFixed(2)
+  const receiverName = normalizeReceiverName(details?.to, getUserFullName(user, t('user')) || t('wallet'))
 
   return (
     <MobileScreenContainer>
@@ -94,7 +116,7 @@ const CashInBankTransferSuccess = () => {
 
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">{t('to')}</span>
-              <span className="font-medium text-[#111827]">{t('wallet')}</span>
+              <span className="font-medium text-[#111827]">{receiverName}</span>
             </div>
 
             <div className="flex justify-between items-center pt-2 border-t border-green-200">
@@ -106,7 +128,7 @@ const CashInBankTransferSuccess = () => {
             </div>
           </div>
         </div>
-{/* 
+
         <div className="mt-6 w-full">
           <button
             onClick={() => navigate('/customer/cash-in/bank-transfer/details')}
@@ -115,7 +137,7 @@ const CashInBankTransferSuccess = () => {
             <IoInformationCircleOutline className="w-5 h-5" />
             {t('view_more')}
           </button>
-        </div> */}
+        </div>
 
         <div className="mt-6 w-full">
           <Button

@@ -54,7 +54,7 @@ const OtpPopup = ({
           className="text-lg font-semibold mb-2"
           style={{ color: popupColors.title }}
         >
-          {t('enter_otp')}
+          {t('enter_otp_with_length', { length })}
         </h2>
 
         <p

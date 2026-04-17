@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
 import PageContainer from '../../../Reusable/PageContainer'
 import Button from '../../../Reusable/Button'
 import cardService from './card.service'
@@ -35,7 +36,11 @@ const CardDetails = () => {
         const { data } = await cardService.getCard(id)
         if (!cancelled) setCard(data)
       } catch (err) {
-        if (!cancelled) setError(err?.message || t('failed_to_load_card_details'))
+        if (!cancelled) {
+          const message = err?.message || t('failed_to_load_card_details')
+          setError(message)
+          toast.error(message)
+        }
       } finally {
         if (!cancelled) setLoading(false)
       }

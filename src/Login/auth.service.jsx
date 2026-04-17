@@ -104,6 +104,7 @@ const authService = {
     clearAuthRuntime();
 
     localStorage.removeItem("reduxState");
+    localStorage.removeItem("auth_token");
     localStorage.removeItem("refreshToken");
   },
 

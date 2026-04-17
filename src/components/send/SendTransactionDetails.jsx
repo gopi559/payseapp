@@ -15,6 +15,7 @@ import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
 import { formatPrintDateTime, openTransactionPrintWindow } from '../../utils/transactionPrint'
+import { sendService } from './send.service'
 
 const formatDateTimeValue = (dateTimeStr) => {
   if (!dateTimeStr) return '-'
@@ -43,6 +44,20 @@ const getFullName = (person, fallback = '-') =>
   person?.name ||
   fallback
 
+const firstFilled = (...values) => {
+  for (const value of values) {
+    if (value == null) continue
+    const text = String(value).trim()
+    if (text && text !== '-' && text.toUpperCase() !== 'N/A' && text.toUpperCase() !== 'NA') return value
+  }
+  return null
+}
+
+const getPrimaryEntry = (value) => (Array.isArray(value) ? value[0] ?? null : value ?? null)
+
+const getDisplayAccount = (entry) =>
+  firstFilled(entry?.account_number, entry?.acct_number, entry?.wallet_number, entry?.account_no, entry?.user_ref)
+
 const SendTransactionDetails = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -69,16 +84,36 @@ const SendTransactionDetails = () => {
     }
   }, [navigate])
 
+  useEffect(() => {
+    if (isPayRequestFlow || !details?.rrn) return
+
+    sendService.fetchTransactionByRrn(details.rrn)
+      .then(({ data }) => {
+        if (!data) return
+        const merged = { ...details, ...data }
+        setDetails(merged)
+        sessionStorage.setItem('sendSuccess', JSON.stringify(merged))
+      })
+      .catch(() => {})
+  }, [details?.rrn, isPayRequestFlow])
+
   if (!details) return null
 
   const regInfo = user?.reg_info || user
   const userKyc = user?.user_kyc || null
+  const debitDetails = getPrimaryEntry(details?.debit_details)
+  const creditDetails = getPrimaryEntry(details?.credit_details)
   const senderName =
     userKyc?.first_name || userKyc?.last_name
       ? [userKyc.first_name, userKyc.middle_name, userKyc.last_name].filter(Boolean).join(' ')
       : regInfo?.first_name || regInfo?.name || t('user')
   const senderMobile = regInfo?.mobile ?? regInfo?.reg_mobile ?? user?.mobile ?? ''
-  const senderAccountNumber = walletId || regInfo?.user_ref || regInfo?.acct_number || '-'
+  const senderAccountNumber = firstFilled(
+    getDisplayAccount(debitDetails),
+    walletId,
+    regInfo?.user_ref,
+    regInfo?.acct_number
+  ) || '-'
 
   const amount = details?.amount != null ? Number(details.amount).toFixed(2) : '0.00'
   const rrn = details?.rrn ?? ''
@@ -96,8 +131,11 @@ const SendTransactionDetails = () => {
     details?.beneficiary_name ??
     getFullName(details?.beneficiary, details?.beneficiary_mobile ?? '-')
   const receiverMobile = details?.beneficiary_mobile ?? details?.beneficiary?.reg_mobile ?? '-'
-  const receiverAccountNumber =
-    details?.receiver_account_number ?? details?.beneficiary?.account_number ?? '-'
+  const receiverAccountNumber = firstFilled(
+    details?.receiver_account_number,
+    getDisplayAccount(creditDetails),
+    details?.beneficiary?.account_number
+  ) || '-'
   const handleDownloadPdf = () => {
     openTransactionPrintWindow({
       title: `${t('transaction_details')} ${details?.txn_id ?? ''}`,

@@ -21,8 +21,10 @@ import { generateStan } from '../../utils/generateStan'
 import { sendService } from '../send/send.service'
 import cardService from '../cards/PaysePayCards/card.service'
 import { validateCardBinForTransaction } from '../../services/binValidation.jsx'
+import { resolveCustomerMobileNumber } from '../../utils/customerMobile'
 
 const QUICK_AMOUNTS = [10, 20, 50, 100, 200]
+const MIN_AIRTIME_AMOUNT = 25
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 const isOwnCard = (card) =>
   card?.is_own_card === true ||
@@ -38,18 +40,7 @@ const toLocalAirtimeMobileNo = (value) => {
   }
   return digits || String(value || '').trim()
 }
-const resolveCustomerOtpMobileNo = () => {
-  const user = getAuthUser()
-  const raw =
-    user?.reg_info?.reg_mobile ??
-    user?.reg_mobile ??
-    user?.mobile_no ??
-    ''
-  const digits = String(raw).replace(/\D/g, '')
-  if (!digits) return ''
-  if (digits.startsWith('93')) return `+${digits}`
-  return `+93${digits.slice(-9)}`
-}
+const resolveCustomerOtpMobileNo = () => resolveCustomerMobileNumber(getAuthUser())
 
 const hydrateValidatedCard = async (card, transactionType) => {
   if (!card) return null
@@ -199,6 +190,11 @@ const AirtimePage = () => {
   const validateInput = () => {
     if (!amount || Number(amount) <= 0) {
       toast.error(t('enter_valid_amount'))
+      return false
+    }
+
+    if (Number(amount) < MIN_AIRTIME_AMOUNT) {
+      toast.error(`Minimum airtime amount is ${MIN_AIRTIME_AMOUNT}`)
       return false
     }
 

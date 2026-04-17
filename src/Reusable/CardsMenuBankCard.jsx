@@ -7,6 +7,7 @@ import PayseyLogoWhite from '../assets/PayseyPaymentLogowhite.png'
 import AfganCurrency from '../assets/afgan_currency.svg'
 import { formatCardNumber } from '../utils/formatCardNumber'
 import { resolveCardColorCode } from '../services/binValidation.jsx'
+import { getTextColor } from '../utils/getTextColor'
 
 const BankCard = ({
   card,
@@ -30,11 +31,14 @@ const BankCard = ({
     card.name_on_card ||
     ''
   const cardBackgroundColor = resolveCardColorCode(card.color_code)
+  const textColor = getTextColor(cardBackgroundColor)
+  const secondaryTextColor =
+    textColor === '#000000' ? 'rgba(0, 0, 0, 0.72)' : 'rgba(255, 255, 255, 0.8)'
   const balanceContent = showBalanceSection
     ? card.balance !== undefined
       ? (
           <div className="shrink-0 text-right">
-            <div className="text-xs text-white/80">Balance</div>
+            <div className="text-xs" style={{ color: secondaryTextColor }}>Balance</div>
             <div className="flex items-center justify-end gap-2 text-lg font-semibold">
               <img
                 src={AfganCurrency}
@@ -49,7 +53,8 @@ const BankCard = ({
         ? (
             <button
               onClick={onBalance}
-              className="text-sm font-semibold text-white underline underline-offset-4 hover:text-white/90"
+              className="text-sm font-semibold underline underline-offset-4"
+              style={{ color: textColor }}
             >
               Balance
             </button>
@@ -59,10 +64,10 @@ const BankCard = ({
 
   return (
     <div
-      className={`relative w-full rounded-2xl p-5 shadow-sm overflow-hidden text-white ${
+      className={`relative w-full rounded-2xl p-5 shadow-sm overflow-hidden ${
         withMargin ? 'mb-4' : ''
       } ${className}`.trim()}
-      style={{ backgroundColor: cardBackgroundColor, aspectRatio: '85.6 / 53.98' }}
+      style={{ backgroundColor: cardBackgroundColor, aspectRatio: '85.6 / 53.98', color: textColor }}
     >
       {isMyPayseCard && (
         <img
@@ -73,7 +78,7 @@ const BankCard = ({
       )}
 
       {!isMyPayseCard && (
-        <div className="absolute top-5 right-5 text-base font-semibold text-white z-10">
+        <div className="absolute top-5 right-5 text-base font-semibold z-10" style={{ color: textColor }}>
           {bankName}
         </div>
       )}
@@ -84,7 +89,7 @@ const BankCard = ({
 
       <div className="relative z-10 h-full flex flex-col justify-end pt-24">
         <div className="mb-3">
-          <div className="text-sm text-white/80">Card Number</div>
+          <div className="text-sm" style={{ color: secondaryTextColor }}>Card Number</div>
           <div className="text-lg font-mono tracking-[0.22em]">
             {formattedCardNumber}
           </div>
@@ -92,7 +97,7 @@ const BankCard = ({
 
         <div className="flex items-end justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <div className="text-sm text-white/80">Card Holder Name</div>
+            <div className="text-sm" style={{ color: secondaryTextColor }}>Card Holder Name</div>
             <div className="text-sm font-semibold capitalize truncate">
               {cardholderName}
             </div>

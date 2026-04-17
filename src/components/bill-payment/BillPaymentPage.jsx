@@ -50,7 +50,11 @@ const getFetchedBillAmount = (billInfo) =>
     billInfo?.breshna?.bill_amount,
     billInfo?.breshna?.due_amount,
     billInfo?.breshna?.total_amount,
-    billInfo?.breshna?.bill_amt
+    billInfo?.breshna?.bill_amt,
+    billInfo?.data?.amount,
+    billInfo?.data?.bill_amount,
+    billInfo?.result?.amount,
+    billInfo?.result?.bill_amount
   )
 
 const getBillInfoRows = (billInfo, t) => {
@@ -60,12 +64,12 @@ const getBillInfoRows = (billInfo, t) => {
 
   const rows = [
     { label: t('service'), value: firstFilled(billInfo?.service_name, billInfo?.service, billInfo?.biller_name) },
-    { label: t('account_number'), value: firstFilled(billInfo?.breshna_account, billInfo?.breshna_account_no, bd?.brishna_account_no, bd?.breshna_account_no, billInfo?.acc_number, billInfo?.account_number, billInfo?.account_no, billInfo?.breshna?.breshna_account, billInfo?.breshna?.breshna_account_no, billInfo?.breshna?.acc_number, billInfo?.breshna?.account_number, billInfo?.breshna?.account_no) },
-    { label: t('mobile_number'), value: firstFilled(billInfo?.mobile_no, billInfo?.mobile_number, billInfo?.customer_mobile, billInfo?.breshna?.mobile_no, billInfo?.breshna?.mobile_number, billInfo?.breshna?.customer_mobile) },
-    { label: t('name'), value: firstFilled(billInfo?.customer_name, bd?.customer_name, billInfo?.name, billInfo?.consumer_name, billInfo?.breshna?.customer_name, billInfo?.breshna?.name, billInfo?.breshna?.consumer_name) },
+    { label: t('account_number'), value: firstFilled(billInfo?.breshna_account, billInfo?.breshna_account_no, bd?.brishna_account_no, bd?.breshna_account_no, billInfo?.acc_number, billInfo?.account_number, billInfo?.account_no, billInfo?.consumer_account, billInfo?.customer_account, billInfo?.breshna?.breshna_account, billInfo?.breshna?.breshna_account_no, billInfo?.breshna?.acc_number, billInfo?.breshna?.account_number, billInfo?.breshna?.account_no) },
+    { label: t('mobile_number'), value: firstFilled(billInfo?.mobile_no, billInfo?.mobile_number, billInfo?.customer_mobile, billInfo?.phone_number, billInfo?.breshna?.mobile_no, billInfo?.breshna?.mobile_number, billInfo?.breshna?.customer_mobile) },
+    { label: t('name'), value: firstFilled(billInfo?.customer_name, bd?.customer_name, billInfo?.name, billInfo?.consumer_name, billInfo?.customer_full_name, billInfo?.breshna?.customer_name, billInfo?.breshna?.name, billInfo?.breshna?.consumer_name) },
     { label: t('location'), value: firstFilled(billInfo?.customer_location, bd?.customer_location, billInfo?.breshna?.customer_location) },
     { label: t('bill_due_date'), value: firstFilled(billInfo?.bill_due_date, bd?.bill_due_date, billInfo?.breshna?.bill_due_date) },
-    { label: t('bill_number'), value: firstFilled(billInfo?.bill_number, billInfo?.bill_no) },
+    { label: t('bill_number'), value: firstFilled(billInfo?.bill_number, billInfo?.bill_no, billInfo?.consumer_no, billInfo?.reference_no) },
     { label: t('card_number'), value: firstFilled(billInfo?.card_number, billInfo?.masked_card, billInfo?.breshna?.card_number, billInfo?.breshna?.masked_card) },
     { label: t('card_name'), value: firstFilled(billInfo?.card_name, billInfo?.card_holder_name, billInfo?.cardholder_name, billInfo?.breshna?.card_name, billInfo?.breshna?.card_holder_name, billInfo?.breshna?.cardholder_name) },
   ]
@@ -103,6 +107,10 @@ const generateRrn = () => {
   return part
 }
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
+const isOwnCard = (card) =>
+  card?.is_own_card === true ||
+  card?.card_source === 'OWN_CARD_LIST' ||
+  (!card?.external_inst_name && Boolean(card?.name_on_card || card?.card_type_nature))
 
 const hydrateValidatedCard = async (card, transactionType) => {
   if (!card) return null
@@ -162,17 +170,11 @@ const BillPaymentPage = () => {
 
   const [amount, setAmount] = useState('')
   const [billNumber, setBillNumber] = useState('')
-const [mobileNo, setMobileNo] = useState('')
+  const [mobileNo, setMobileNo] = useState('')
 
-useEffect(() => {
-  try {
-    const mobile = resolveMobileNo()
-    console.log("OTP MOBILE:", mobile) // debug
-    setMobileNo(mobile)
-  } catch (e) {
-    console.error(e)
-  }
-}, [])
+  useEffect(() => {
+    setMobileNo(resolveMobileNo())
+  }, [])
   const [billInfo, setBillInfo] = useState(null)
   const [txnMeta, setTxnMeta] = useState(null)
   const [step, setStep] = useState(null)
@@ -220,6 +222,8 @@ useEffect(() => {
 
       const walletCards = (Array.isArray(walletCardsRes?.data) ? walletCardsRes.data : []).map((card) => ({
         ...card,
+        is_own_card: true,
+        card_source: 'OWN_CARD_LIST',
         cardholder_name: card.name_on_card,
         color_code: card.color_code || '#0fb36c',
         balance: walletBalance,
@@ -231,7 +235,11 @@ useEffect(() => {
             hydrateValidatedCard(card, 'BILL_PAYMENT')
           )
         )
-      ).filter(Boolean)
+      ).filter(Boolean).map((card) => ({
+        ...card,
+        is_own_card: false,
+        card_source: 'BENEFICIARY_CARD_LIST',
+      }))
 
       const list = [...walletCards, ...beneficiaryCards]
       setCards(list)
@@ -263,7 +271,7 @@ useEffect(() => {
       const card = cards[cardIndex]
       if (!card) return
 
-      const isInternalCard = !card.external_inst_name
+      const isInternalCard = isOwnCard(card)
       if (!isInternalCard && !securityData) {
         setBalanceCardIndex(cardIndex)
         setStep('BALANCE_CVV')
@@ -309,6 +317,8 @@ useEffect(() => {
     setLoading(true)
     try {
       if (isBreshnaService) {
+        const selected = cards[activeIndex]
+        const ownCardSelected = isOwnCard(selected)
         const { data } = await billPaymentService.fetchBreshnaBillDetails({
           breshna_account_no: billNumber,
         })
@@ -321,7 +331,7 @@ useEffect(() => {
         }
 
         setBillInfo(enrichedBillInfo)
-        setSelectedCard(cards[activeIndex])
+        setSelectedCard(selected)
         const fetchedAmount = getFetchedBillAmount(enrichedBillInfo)
         if (fetchedAmount != null) {
           setAmount(String(fetchedAmount))
@@ -329,8 +339,11 @@ useEffect(() => {
         setTxnMeta({
           rrn: String(firstFilled(enrichedBillInfo?.rrn, generateRrn())),
           stan: '',
+          is_own_card: ownCardSelected,
         })
-        toast.success(t('bill_details_fetched_otp_sent'))
+        setCvvData(null)
+        setStep('CONFIRM')
+        toast.success(t('bill_details_fetched'))
         return
       }
 
@@ -372,6 +385,7 @@ useEffect(() => {
         stan: String(resolvedStan ?? fallbackStan),
       })
 
+      setStep('CONFIRM')
       toast.success(t('bill_details_fetched_otp_sent'))
     } catch (e) {
       if (!silent) {
@@ -393,7 +407,7 @@ useEffect(() => {
         return
       }
       setSelectedCard(cards[activeIndex])
-      setStep('CVV')
+      setStep(isOwnCard(cards[activeIndex]) ? 'CONFIRM' : 'CVV')
       return
     }
 
@@ -429,19 +443,20 @@ useEffect(() => {
   }
 
   const handleSendBreshnaOtp = async () => {
-    if (!selectedCard || !cvvData || !txnMeta?.rrn) return
+    const ownCardSelected = txnMeta?.is_own_card === true || isOwnCard(selectedCard)
+    if (!selectedCard || !txnMeta?.rrn) return
+    if (!ownCardSelected && !cvvData) return
 
     setLoading(true)
     try {
-if (!mobileNo) {
-  toast.error('Mobile number not available')
-  return
-}
+      if (!mobileNo) {
+        toast.error('Mobile number not available')
+        return
+      }
 
-await sendService.generateTransactionOtp('MOBILE', mobileNo)
+      await sendService.generateTransactionOtp('MOBILE', mobileNo)
 
-
-setTxnMeta((prev) => ({
+      setTxnMeta((prev) => ({
         ...(prev || {}),
         otpEntityType: 'MOBILE',
         otpEntityId: mobileNo,
@@ -456,7 +471,13 @@ setTxnMeta((prev) => ({
   }
 
   const handleBreshnaConfirmOtp = async (otp) => {
-    if (!selectedCard || !cvvData || !txnMeta?.otpEntityType || !txnMeta?.otpEntityId) {
+    const ownCardSelected = txnMeta?.is_own_card === true || isOwnCard(selectedCard)
+    if (!selectedCard || !txnMeta?.otpEntityType || !txnMeta?.otpEntityId) {
+      toast.error(t('session_expired_try_again'))
+      resetFlow()
+      return
+    }
+    if (!ownCardSelected && !cvvData) {
       toast.error(t('session_expired_try_again'))
       resetFlow()
       return
@@ -502,6 +523,25 @@ setTxnMeta((prev) => ({
           service_id: String(serviceId),
           service_name: serviceName,
           bill_number: billNumber,
+          customer_name: firstFilled(data?.customer_name, fetchedTxn?.customer_name, billInfo?.customer_name),
+          customer_location: firstFilled(data?.customer_location, fetchedTxn?.customer_location, billInfo?.customer_location),
+          bill_due_date: firstFilled(data?.bill_due_date, fetchedTxn?.bill_due_date, billInfo?.bill_due_date),
+          mobile_no: firstFilled(
+            data?.mobile_no,
+            fetchedTxn?.mobile_no,
+            billInfo?.mobile_no,
+            billInfo?.mobile_number,
+            billInfo?.customer_mobile
+          ),
+          acc_number: firstFilled(
+            data?.acc_number,
+            data?.breshna_account,
+            fetchedTxn?.acc_number,
+            fetchedTxn?.breshna_account,
+            billInfo?.breshna_account_no,
+            billInfo?.breshna_account,
+            billInfo?.bill_number
+          ),
           breshna_account: data?.breshna_account || billNumber,
           breshna: data?.breshna ?? null,
           bill_info: billInfo,
@@ -630,29 +670,15 @@ setTxnMeta((prev) => ({
   useEffect(() => {
     setCards((prev) =>
       prev.map((c) =>
-        !c.external_inst_name ? { ...c, balance: walletBalance } : c
+        isOwnCard(c) ? { ...c, balance: walletBalance } : c
       )
     )
   }, [walletBalance])
 
-  const footer = (
-    <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
-      <div className="max-w-md mx-auto">
-        <Button
-          fullWidth
-          onClick={handleContinue}
-          disabled={isBreshnaService ? !txnMeta?.rrn || cards.length === 0 || loading : !txnMeta?.rrn || !txnMeta?.stan || loading}
-        >
-          {t('continue')}
-        </Button>
-      </div>
-    </div>
-  )
-
   const fetchedBillRows = getBillInfoRows(billInfo, t)
 
   return (
-    <MobileScreenContainer footer={footer}>
+    <MobileScreenContainer>
       <div className="min-h-full flex flex-col">
         <div className="px-4 py-4 pb-6 max-w-md mx-auto w-full">
         <div className="flex items-center gap-3 mb-5">
@@ -705,13 +731,13 @@ setTxnMeta((prev) => ({
 
           <div className="mt-3">
             <label className="text-sm text-gray-700">
-              {isBreshnaService ? t('account_number') : t('bill_number')}
+              {isBreshnaService ? t('breshna_bill_number') : t('bill_number')}
             </label>
             <input
               type="text"
               value={billNumber}
               onChange={(e) => setBillNumber(e.target.value)}
-              placeholder={isBreshnaService ? t('enter_account_number') : t('enter_bill_number')}
+              placeholder={isBreshnaService ? t('enter_breshna_bill_number') : t('enter_bill_number')}
               className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             />
           </div>
@@ -727,13 +753,7 @@ setTxnMeta((prev) => ({
             </Button>
           </div>
 
-          {txnMeta?.rrn && (
-            <p className="text-xs text-green-700 mt-3">
-              {t('bill_details_fetched_rrn')} <span className="font-mono">{txnMeta.rrn}</span>
-            </p>
-          )}
-
-          {fetchedBillRows.length > 0 && (
+          {!isBreshnaService && fetchedBillRows.length > 0 && (
             <div className="mt-4 rounded-xl border border-[#DCEFE2] bg-[#F7FCF8] p-3 space-y-2">
               <p className="text-sm font-semibold text-[#1F2937]">{t('bill_details')}</p>
               {fetchedBillRows.map((row) => (
@@ -763,18 +783,17 @@ setTxnMeta((prev) => ({
           <div className="space-y-1">
             <p className="font-medium">{serviceName}</p>
             <p className="text-xs">
-              {isBreshnaService ? `${t('account_number')} #${billNumber}` : `${t('bill')} #${billNumber}`}
+              {isBreshnaService ? `${t('bill_number')} #${billNumber}` : `${t('bill')} #${billNumber}`}
             </p>
-            {fetchedBillRows.slice(0, 5).map((row) => (
-              <p key={row.label} className="text-xs">
-                <span className="opacity-70">{row.label}:</span> {row.value}
-              </p>
-            ))}
           </div>
         }
         description={t('bill_payment_for_service', { service: serviceName })}
         loading={loading}
-        onSendOtp={isBreshnaService ? handleSendBreshnaOtp : handleOpenCvv}
+        onSendOtp={
+          isBreshnaService
+            ? (txnMeta?.is_own_card === true || isOwnCard(selectedCard) || cvvData ? handleSendBreshnaOtp : handleOpenCvv)
+            : handleOpenCvv
+        }
         onCancel={resetFlow}
       />
 

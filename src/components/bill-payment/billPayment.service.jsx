@@ -14,6 +14,52 @@ const isSuccess = (res) =>
 
 const normalizeExpiry = (expiry) => String(expiry).replace('/', '').trim()
 
+const normalizeBillInfoPayload = (payload, requestedBillNumber = '', requestedServiceName = '') => {
+  const root = payload && typeof payload === 'object' ? payload : {}
+  const nestedData = root?.data && typeof root.data === 'object' ? root.data : {}
+  const nestedBillInfo = root?.bill_info && typeof root.bill_info === 'object' ? root.bill_info : {}
+  const nestedResult = root?.result && typeof root.result === 'object' ? root.result : {}
+  const serviceBuckets = ['sigtas', 'bill', 'bill_detail', 'bill_details']
+    .map((key) => (root?.[key] && typeof root[key] === 'object' ? root[key] : null))
+    .filter(Boolean)
+
+  const merged = {
+    ...root,
+    ...nestedResult,
+    ...nestedBillInfo,
+    ...nestedData,
+    ...serviceBuckets.reduce((acc, item) => ({ ...acc, ...item }), {}),
+  }
+
+  return {
+    ...merged,
+    rrn: merged?.rrn ?? root?.rrn ?? null,
+    stan: merged?.stan ?? root?.stan ?? null,
+    bill_number:
+      merged?.bill_number ??
+      merged?.bill_no ??
+      merged?.consumer_no ??
+      merged?.reference_no ??
+      String(requestedBillNumber).trim(),
+    service_name:
+      merged?.service_name ??
+      merged?.service ??
+      merged?.biller_name ??
+      String(requestedServiceName).trim(),
+    customer_name:
+      merged?.customer_name ??
+      merged?.consumer_name ??
+      merged?.name ??
+      null,
+    account_number:
+      merged?.account_number ??
+      merged?.account_no ??
+      merged?.acc_number ??
+      merged?.consumer_account ??
+      null,
+  }
+}
+
 const normalizeBreshnaPayload = (payload, requestedAccountNo = '') => {
   const root = payload && typeof payload === 'object' ? payload : {}
   const nested = root?.breshna && typeof root.breshna === 'object' ? root.breshna : {}
@@ -126,7 +172,10 @@ const billPaymentService = {
 
     authService.fetchCustomerBalance().catch(() => {})
 
-    return { data: res?.data ?? res, message: res?.message }
+    return {
+      data: normalizeBillInfoPayload(res?.data ?? res, bill_number, service_id),
+      message: res?.message,
+    }
   },
 
   fetchBreshnaBillDetails: async ({ breshna_account_no }) => {

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import Button from './Button'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import { BENIFICIARY_ADD, CARD_NUMBER_VERIFY } from '../utils/constant'
-import { getAuthToken, deviceId } from '../services/api'
+import { deviceId } from '../services/api'
 import { validateCardBinForTransaction } from '../services/binValidation.jsx'
 import { toast } from 'react-toastify'
 import THEME_COLORS from '../theme/colors'
@@ -267,11 +267,9 @@ const AddBeneficiaryPopup = ({
     try {
       const stan = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
 
-      const response = await fetch(BENIFICIARY_ADD, {
+      const response = await fetchWithRefreshToken(BENIFICIARY_ADD, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getAuthToken()}`,
           deviceInfo: JSON.stringify({
             device_type: 'WEB',
             device_id: deviceId,

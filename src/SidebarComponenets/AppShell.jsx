@@ -9,6 +9,7 @@ import { clearUserDataAuth } from '../Redux/AuthToken'
 import { logout } from '../Redux/store'
 import { LOGOUT_API_URL } from '../utils/constant'
 import THEME_COLORS from '../theme/colors'
+import fetchWithRefreshToken from '../services/fetchWithRefreshToken'
 
 const DESKTOP_BREAKPOINT = 1024
 const INACTIVITY_MS = 8 * 60 * 1000
@@ -37,12 +38,9 @@ const AppShell = ({ children }) => {
     const resetInactivityTimer = () => {
       clearTimeout(inactivityTimeout)
       inactivityTimeout = setTimeout(() => {
-        fetch(LOGOUT_API_URL, {
+        fetchWithRefreshToken(LOGOUT_API_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: {},
         }).catch(() => {}).finally(() => {
           dispatch(clearUserDataAuth())
           dispatch(logout())

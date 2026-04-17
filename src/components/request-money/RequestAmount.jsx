@@ -63,7 +63,7 @@ const RequestAmount = () => {
         note: description,
         isOther: selectedCategory === 'others',
       })
-      const { data } = await requestMoneyService.createRequestMoney({
+      const { data, message } = await requestMoneyService.createRequestMoney({
         cust_id: beneficiary.user_id,
         entity_type: beneficiary.entity_type,
         amount: parsedAmount,
@@ -80,6 +80,7 @@ const RequestAmount = () => {
       }
 
       sessionStorage.setItem('requestMoneySuccess', JSON.stringify(successPayload))
+      toast.success(message || t('money_requested_successfully'))
       navigate('/customer/request-money/success')
     } catch (error) {
       toast.error(error?.message || t('failed_to_create_request'))

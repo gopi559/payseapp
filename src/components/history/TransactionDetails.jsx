@@ -6,6 +6,7 @@ import StatusBadge from '../../Reusable/StatusBadge'
 import { formatAmount } from '../../utils/formatAmount'
 import { formatDateTime } from '../../utils/formatDate'
 import THEME_COLORS from '../../theme/colors'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 
 const TransactionDetails = () => {
   const { id } = useParams()
@@ -48,10 +49,13 @@ const TransactionDetails = () => {
             >
               <span className="text-4xl">{getTransactionIcon(transaction.type)}</span>
             </div>
-            <p className="text-3xl font-bold" style={{ color: contentCard.accentText }}>
-              {transaction.type === 'send' || transaction.type === 'cash_out' ? '-' : '+'}
-              {formatAmount(transaction.amount)}
-            </p>
+            <div className="flex items-center justify-center gap-2" style={{ color: contentCard.accentText }}>
+              <img src={AfganCurrency} alt="Currency" className="h-8 w-8 object-contain" />
+              <p className="text-3xl font-bold">
+                {transaction.type === 'send' || transaction.type === 'cash_out' ? '-' : '+'}
+                {formatAmount(transaction.amount)}
+              </p>
+            </div>
             <StatusBadge status={transaction.status} className="mt-3" />
           </div>
 

@@ -4,6 +4,7 @@ import Button from './Button'
 import { HiExclamationTriangle } from 'react-icons/hi2'
 import { formatCardNumber } from '../utils/formatCardNumber'
 import THEME_COLORS from '../theme/colors'
+import AfganCurrencyGreen from '../assets/afgan_currency_green.svg'
 
 const ConfirmTransactionPopup = ({
   open,
@@ -47,9 +48,10 @@ const ConfirmTransactionPopup = ({
 
   const resolvedTitle = title || t('confirm_transaction')
   const resolvedFromValue = fromValue || fromCardNumber || t('wallet_balance')
-  const resolvedFromSubValue = fromSubValue || fromCardholderName || ''
+  const resolvedFromSubValue =
+    fromSubValue !== undefined ? fromSubValue : fromCardholderName || ''
   const resolvedToValue = toValue || to
-  const resolvedToSubValue = toSubValue || ''
+  const resolvedToSubValue = toSubValue !== undefined ? toSubValue : ''
   const resolvedActionLabel = actionLabel || t('confirm_transaction')
   const resolvedCancelLabel = cancelLabel || t('cancel_transaction')
 
@@ -128,23 +130,28 @@ const ConfirmTransactionPopup = ({
             )}
           </div>
 
-          {showMobile && (
+          {showMobile && mobile && (
             <div className="flex justify-between">
               <span style={{ color: confirmColors.label }}>{t('mobile_number_label')}</span>
               <span
                 className="font-medium font-mono"
                 style={{ color: confirmColors.value }}
               >
-                {mobile ? mobile.replace(/^\+93\s?/, '') : t('not_available')}
+                {mobile.replace(/^\+93\s?/, '')}
               </span>
             </div>
           )}
 
           <div className="flex justify-between pt-2">
             <span style={{ color: confirmColors.label }}>{t('amount')}</span>
-            <span className="font-semibold" style={{ color: confirmColors.value }}>
-              {Number(amount).toFixed(2)}
-            </span>
+            <div className="flex items-center gap-2 font-semibold" style={{ color: confirmColors.value }}>
+              <img
+                src={AfganCurrencyGreen}
+                alt={t('currency')}
+                className="h-5 w-5"
+              />
+              <span>{Number(amount).toFixed(2)}</span>
+            </div>
           </div>
 
           <div className="flex justify-between">

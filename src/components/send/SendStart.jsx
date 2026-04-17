@@ -13,6 +13,7 @@ import OtpPopup from '../../Reusable/OtpPopup'
 import THEME_COLORS from '../../theme/colors'
 import { IoArrowBack } from 'react-icons/io5'
 import { sendService } from './send.service'
+import { resolveCustomerMobileNumber } from '../../utils/customerMobile'
 
 const normalizeMobile = (value) => {
   const trimmed = String(value || '').trim()
@@ -36,6 +37,18 @@ const getCustomerId = (user) =>
   user?.user_id ??
   user?.id ??
   null
+
+const getUserFullName = (user, fallback = '') => {
+  const regInfo = user?.reg_info || user
+  const userKyc = user?.user_kyc || null
+
+  return (
+    [userKyc?.first_name, userKyc?.middle_name, userKyc?.last_name].filter(Boolean).join(' ').trim() ||
+    [regInfo?.first_name, regInfo?.middle_name, regInfo?.last_name].filter(Boolean).join(' ').trim() ||
+    regInfo?.name ||
+    fallback
+  )
+}
 
 const getDailyLimitErrorParams = (message) => {
   const text = String(message || '')
@@ -81,10 +94,10 @@ const SendStart = () => {
   const [step, setStep] = useState(null)
   const contentCard = THEME_COLORS.contentCard
 
-  const senderMobile =
-    user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
+  const senderMobile = resolveCustomerMobileNumber(user)
   const currentUserId = getCustomerId(user)
   const currentUserMobile = normalizeMobile(senderMobile)
+  const senderName = getUserFullName(user, t('user'))
 
   const handleValidate = async () => {
     if (!mobile || mobile === '+93') {
@@ -234,7 +247,9 @@ const SendStart = () => {
         amount={amount}
         to={beneficiaryName}
         mobile={beneficiary?.reg_mobile ?? mobile}
-        description={t('send_money')}
+        description={t('wallet_to_wallet')}
+        fromValue={senderName}
+        fromSubValue=""
         loading={loading}
         onSendOtp={async () => {
           setLoading(true)
@@ -282,10 +297,24 @@ const SendStart = () => {
               beneficiary?.entity_type ?? 'MOBILE'
             )
 
+            let fetchedTransaction = null
+            const transactionRrn = data?.rrn
+
+            if (transactionRrn) {
+              try {
+                const { data: rrnData } = await sendService.fetchTransactionByRrn(transactionRrn)
+                fetchedTransaction = rrnData
+              } catch (fetchError) {
+                console.error(fetchError)
+              }
+            }
+
             sessionStorage.setItem(
               'sendSuccess',
               JSON.stringify({
+                ...(fetchedTransaction || {}),
                 ...data,
+                sender_name: senderName,
                 beneficiary_name: beneficiaryName,
                 beneficiary_mobile: beneficiary.reg_mobile,
                 amount,

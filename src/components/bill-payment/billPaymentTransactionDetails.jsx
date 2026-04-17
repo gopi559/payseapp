@@ -7,6 +7,7 @@ import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop, FaFi
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import { formatPrintDateTime, openTransactionPrintWindow } from '../../utils/transactionPrint'
 import billPaymentService from './billPayment.service'
@@ -118,12 +119,21 @@ const BillPaymentTransactionDetails = () => {
   const fromCard = details?.from_card ?? ''
   const maskedFromCard = fromCard ? formatCardNumber(fromCard) : '-'
   const fromCardName = firstFilled(details?.from_card_name, details?.card_name)
-  const serviceName = details?.service_name ?? t('bill_payment')
+  const serviceName = firstFilled(details?.service_name, details?.bill_info?.service_name) ?? t('bill_payment')
   const serviceId = details?.service_id ?? '-'
-  const billNumber = details?.bill_number ?? '-'
-  const mobileNo = details?.mobile_no ?? '-'
-  const accountNumber = details?.acc_number ?? '-'
-  const responseCardNumber = firstFilled(details?.response_card_number, details?.card_number, details?.from_card)
+  const billNumber = firstFilled(details?.bill_number, details?.bill_info?.bill_number, details?.bill_info?.breshna_account_no) ?? '-'
+  const customerName = firstFilled(details?.customer_name, details?.bill_info?.customer_name)
+  const customerLocation = firstFilled(details?.customer_location, details?.bill_info?.customer_location)
+  const billDueDate = firstFilled(details?.bill_due_date, details?.bill_info?.bill_due_date)
+  const mobileNo = firstFilled(details?.mobile_no, details?.bill_info?.mobile_no, details?.bill_info?.mobile_number)
+  const accountNumber = firstFilled(
+    details?.acc_number,
+    details?.breshna_account,
+    details?.bill_info?.breshna_account_no,
+    details?.bill_info?.breshna_account,
+    details?.bill_info?.bill_number
+  ) ?? '-'
+  const responseCardNumber = firstFilled(details?.response_card_number, details?.card_number)
   const maskedResponseCardNumber = responseCardNumber ? formatCardNumber(responseCardNumber) : '-'
   const responseCardName = firstFilled(details?.response_card_name)
 
@@ -159,11 +169,14 @@ const BillPaymentTransactionDetails = () => {
         {
           title: t('credit_details'),
           rows: [
-            { label: t('service'), value: details?.service_name ?? t('bill_payment') },
+            { label: t('service'), value: serviceName },
             { label: t('service_id'), value: details?.service_id ?? '-' },
-            { label: t('bill_number'), value: details?.bill_number ?? '-' },
-            { label: t('mobile_number'), value: details?.mobile_no ?? '-' },
-            { label: t('account_number'), value: details?.acc_number ?? '-' },
+            { label: t('bill_number'), value: billNumber },
+            { label: t('name'), value: customerName ?? '-' },
+            { label: t('location'), value: customerLocation ?? '-' },
+            { label: t('bill_due_date'), value: billDueDate ?? '-' },
+            { label: t('mobile_number'), value: mobileNo ?? '-' },
+            { label: t('account_number'), value: accountNumber },
             { label: t('card_number'), value: details?.response_card_number ? formatCardNumber(details.response_card_number) : details?.from_card ? formatCardNumber(details.from_card) : '-' },
             { label: t('card_name'), value: details?.response_card_name ?? '-' },
             { label: t('rrn'), value: details?.rrn ?? '-' },
@@ -200,7 +213,10 @@ const BillPaymentTransactionDetails = () => {
               <span className="text-3xl text-brand-secondary">&#10003;</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
-            <p className="text-3xl font-bold mb-4">{amount}</p>
+            <div className="mb-4 flex items-center gap-2">
+              <img src={AfganCurrency} alt={t('currency')} className="h-8 w-8 object-contain" />
+              <p className="text-3xl font-bold">{amount}</p>
+            </div>
             <div className="bg-white/20 rounded-lg px-4 py-2">
               <span className="text-sm font-medium">{serviceName}</span>
             </div>
@@ -256,7 +272,10 @@ const BillPaymentTransactionDetails = () => {
               <FaMoneyBillWave className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('amount')}</p>
-                <p className="text-sm font-medium text-gray-800">{amount}</p>
+                <div className="flex items-center gap-2">
+                  <img src={AfganCurrency} alt={t('currency')} className="w-5 h-5 object-contain" />
+                  <p className="text-sm font-medium text-gray-800">{amount}</p>
+                </div>
               </div>
             </div>
 
@@ -330,13 +349,45 @@ const BillPaymentTransactionDetails = () => {
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number')}</p>
-                <p className="text-sm font-medium text-gray-800">{mobileNo}</p>
+            {customerName && (
+              <div className="flex items-start gap-3">
+                <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('name')}</p>
+                  <p className="text-sm font-medium text-gray-800">{customerName}</p>
+                </div>
               </div>
-            </div>
+            )}
+
+            {customerLocation && (
+              <div className="flex items-start gap-3">
+                <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('location')}</p>
+                  <p className="text-sm font-medium text-gray-800">{customerLocation}</p>
+                </div>
+              </div>
+            )}
+
+            {billDueDate && (
+              <div className="flex items-start gap-3">
+                <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('bill_due_date')}</p>
+                  <p className="text-sm font-medium text-gray-800">{billDueDate}</p>
+                </div>
+              </div>
+            )}
+
+            {mobileNo && (
+              <div className="flex items-start gap-3">
+                <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number')}</p>
+                  <p className="text-sm font-medium text-gray-800">{mobileNo}</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-start gap-3">
               <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
@@ -346,21 +397,25 @@ const BillPaymentTransactionDetails = () => {
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
-                <p className="text-sm font-medium text-gray-800 font-mono">{maskedResponseCardNumber}</p>
+            {responseCardNumber && (
+              <div className="flex items-start gap-3">
+                <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('card_number')}</p>
+                  <p className="text-sm font-medium text-gray-800 font-mono">{maskedResponseCardNumber}</p>
+                </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex items-start gap-3">
-              <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
-              <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
-                <p className="text-sm font-medium text-gray-800">{responseCardName ?? '-'}</p>
+            {responseCardName && (
+              <div className="flex items-start gap-3">
+                <IoInformationCircleOutline className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-0.5">{t('card_name')}</p>
+                  <p className="text-sm font-medium text-gray-800">{responseCardName}</p>
+                </div>
               </div>
-            </div>
+            )}
 
           </div>
         </div>

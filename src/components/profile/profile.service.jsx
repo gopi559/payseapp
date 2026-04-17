@@ -1,4 +1,5 @@
-import { getAuthToken, deviceId } from '../../services/api.jsx'
+import { deviceId } from '../../services/api.jsx'
+import fetchWithRefreshToken from '../../services/fetchWithRefreshToken.js'
 import { DOCUMENT_LIST, PERSONAL_INFORMATION_LIST, PROFILE_IMAGE, PROFILE_IMAGE_UPLOAD } from '../../utils/constant.jsx'
 
 const extractDocumentArray = (data) => {
@@ -14,11 +15,9 @@ const extractDocumentArray = (data) => {
 
 const profileService = {
   getPersonalInformationList: async () => {
-    const response = await fetch(PERSONAL_INFORMATION_LIST, {
+    const response = await fetchWithRefreshToken(PERSONAL_INFORMATION_LIST, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${getAuthToken()}`,
-        'Content-Type': 'application/json',
         deviceInfo: JSON.stringify({
           device_type: 'WEB',
           device_id: deviceId,
@@ -42,11 +41,9 @@ const profileService = {
       throw new Error('Valid image ID is required')
     }
 
-    const response = await fetch(PROFILE_IMAGE, {
+    const response = await fetchWithRefreshToken(PROFILE_IMAGE, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${getAuthToken()}`,
-        'Content-Type': 'application/json',
         deviceInfo: JSON.stringify({
           device_type: 'WEB',
           device_id: deviceId,
@@ -78,10 +75,9 @@ const profileService = {
     body.append('user_id', id)
     body.append('image', file)
 
-    const response = await fetch(PROFILE_IMAGE_UPLOAD, {
+    const response = await fetchWithRefreshToken(PROFILE_IMAGE_UPLOAD, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${getAuthToken()}`,
         deviceInfo: JSON.stringify({
           device_type: 'WEB',
           device_id: deviceId,
@@ -107,11 +103,9 @@ const profileService = {
       throw new Error('Valid image ID is required')
     }
 
-    const response = await fetch(PROFILE_IMAGE, {
+    const response = await fetchWithRefreshToken(PROFILE_IMAGE, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${getAuthToken()}`,
-        'Content-Type': 'application/json',
         deviceInfo: JSON.stringify({
           device_type: 'WEB',
           device_id: deviceId,
@@ -160,19 +154,11 @@ const profileService = {
 
     let hadSuccess = false
     let lastError = null
-    const bearerToken = getAuthToken()
-
-    if (!bearerToken) {
-      throw new Error('Missing bearer token')
-    }
-
     for (const body of dedupedPayloads) {
       try {
-        const response = await fetch(DOCUMENT_LIST, {
+        const response = await fetchWithRefreshToken(DOCUMENT_LIST, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${bearerToken}`,
-            'Content-Type': 'application/json',
             deviceInfo: JSON.stringify({
               device_type: 'WEB',
               device_id: deviceId,

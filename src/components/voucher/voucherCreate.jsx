@@ -16,6 +16,7 @@ import {
   ID_TYPE_LIST,
 } from '../../utils/constant.jsx'
 import { fetchWithBasicAuth } from '../../services/basicAuth.service.js'
+import { resolveCustomerMobileNumber } from '../../utils/customerMobile'
 
 const normalizeReceiverMobile = (value) => {
   let digits = String(value || '').replace(/\D/g, '')
@@ -76,9 +77,7 @@ const VoucherCreate = () => {
 
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
-  const currentUserMobile = normalizeReceiverMobile(
-    user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
-  )
+  const currentUserMobile = normalizeReceiverMobile(resolveCustomerMobileNumber(user))
 
   useEffect(() => {
     Promise.all([

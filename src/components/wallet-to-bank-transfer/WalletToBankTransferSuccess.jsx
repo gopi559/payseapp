@@ -51,6 +51,11 @@ const WalletToBankTransferSuccess = () => {
             ...data,
             rrn: parsed?.rrn || data?.rrn,
             txn_id: parsed?.rrn || parsed?.txn_id || data?.txn_id || data?.rrn,
+            from: parsed?.from || data?.from,
+            wallet_no: parsed?.wallet_no || data?.wallet_no,
+            to_bank_name: parsed?.to_bank_name || data?.to_bank_name,
+            to_account_number: parsed?.to_account_number || data?.to_account_number,
+            to_account_holder_name: parsed?.to_account_holder_name || data?.to_account_holder_name,
           }
           setDetails(merged)
           sessionStorage.setItem('walletToBankTransferSuccess', JSON.stringify(merged))
@@ -110,15 +115,15 @@ const WalletToBankTransferSuccess = () => {
           </div>
         </div>
 
-        {/* <div className="mt-6 w-full">
+        <div className="mt-6 w-full">
           <button
             onClick={() => navigate('/customer/wallet-to-bank-transfer/details')}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-full border-2 border-[#2F7D12] text-[#2F7D12] font-medium"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-full border-2 border-green-500 text-green-600 font-medium"
           >
             <IoInformationCircleOutline className="w-5 h-5" />
             {t('view_more')}
           </button>
-        </div> */}
+        </div>
 
         <div className="mt-6 w-full">
           <Button

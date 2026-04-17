@@ -25,13 +25,26 @@ const maskAccountNumber = (value) => {
 }
 
 const normalizeWalletNumber = (value) => String(value || '').replace(/[^\d]/g, '').trim()
+const getUserFullName = (user, fallback = '') => {
+  const regInfo = user?.reg_info || user
+  const userKyc = user?.user_kyc || null
+
+  return (
+    [userKyc?.first_name, userKyc?.middle_name, userKyc?.last_name].filter(Boolean).join(' ').trim() ||
+    [regInfo?.first_name, regInfo?.middle_name, regInfo?.last_name].filter(Boolean).join(' ').trim() ||
+    regInfo?.name ||
+    fallback
+  )
+}
 
 const CashInBankTransferAmount = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const walletBalance = useSelector((state) => state.wallet?.balance ?? 0)
   const walletId = useSelector((state) => state.wallet?.walletId ?? '')
+  const user = useSelector((state) => state.auth?.user)
   const walletNumber = normalizeWalletNumber(walletId)
+  const customerFullName = getUserFullName(user, t('user'))
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
   const [pinPopupOpen, setPinPopupOpen] = useState(false)
@@ -173,7 +186,7 @@ const CashInBankTransferAmount = () => {
         from_bank_name: transferData.account?.bankName,
         from_account_number: transferData.gbBalance?.accountNumber || transferData.account?.accountNumber,
         from_account_holder_name: transferData.account?.accountHolderName,
-        to: t('wallet'),
+        to: customerFullName,
         currency: transferData.currency || 'AFN',
         gb: pushData?.gb || data?.gb || {},
         remarks: transferData.remarks,
@@ -287,7 +300,7 @@ const CashInBankTransferAmount = () => {
         }}
         fromValue={confirmData?.account?.bankName || '-'}
         fromSubValue={t('bank_account_masked', { number: maskAccountNumber(confirmData?.account?.accountNumber) })}
-        toValue={t('wallet')}
+        toValue={customerFullName}
         toSubValue=""
         actionLabel={t('confirm_transaction')}
         cancelLabel={t('cancel')}

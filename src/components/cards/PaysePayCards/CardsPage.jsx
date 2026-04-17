@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'react-toastify'
 import { HiCreditCard, HiUserCircle, HiInformationCircle } from 'react-icons/hi2'
 import { PiCreditCardLight } from 'react-icons/pi'
 import { MdBrowserUpdated } from 'react-icons/md'
@@ -77,7 +78,9 @@ const CardsPage = () => {
         setSelectedCard(first)
       }
     } catch (err) {
-      setError(err?.message || t('failed_to_load_cards'))
+      const message = err?.message || t('failed_to_load_cards')
+      setError(message)
+      if (pageNum === 1) toast.error(message)
       setCards((prev) => (append ? prev : []))
     } finally {
       setLoading(false)
@@ -209,8 +212,11 @@ const CardsPage = () => {
 
       setSelectedCardAction(null)
       await loadList(1, false)
+      toast.success(res?.message || t('card_status_updated_successfully'))
     } catch (err) {
-      setError(err?.message || t('failed_to_update_card_status'))
+      const message = err?.message || t('failed_to_update_card_status')
+      setError(message)
+      toast.error(message)
     } finally {
       setIsUpdatingStatus(false)
     }

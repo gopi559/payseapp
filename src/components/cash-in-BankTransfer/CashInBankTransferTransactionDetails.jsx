@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { IoArrowBack, IoInformationCircleOutline } from 'react-icons/io5'
 import { HiOutlineBuildingLibrary, HiOutlineWallet, HiOutlineUser } from 'react-icons/hi2'
 import { FaClock, FaExchangeAlt, FaFingerprint, FaMoneyBillWave, FaDesktop } from 'react-icons/fa'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import AfganCurrency from '../../assets/afgan_currency.svg'
 import { formatPrintDateTime, openTransactionPrintWindow } from '../../utils/transactionPrint'
 
 const maskAccount = (value) => {
@@ -15,9 +17,29 @@ const maskAccount = (value) => {
   return raw.length <= 4 ? raw : `****${raw.slice(-4)}`
 }
 
+const normalizeReceiverName = (value, fallback) => {
+  const text = String(value || '').trim()
+  if (!text) return fallback
+  if (text.toLowerCase() === 'wallet') return fallback
+  return text
+}
+
+const getUserFullName = (user, fallback = '') => {
+  const regInfo = user?.reg_info || user
+  const userKyc = user?.user_kyc || null
+
+  return (
+    [userKyc?.first_name, userKyc?.middle_name, userKyc?.last_name].filter(Boolean).join(' ').trim() ||
+    [regInfo?.first_name, regInfo?.middle_name, regInfo?.last_name].filter(Boolean).join(' ').trim() ||
+    regInfo?.name ||
+    fallback
+  )
+}
+
 const CashInBankTransferTransactionDetails = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const user = useSelector((state) => state.auth?.user)
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
@@ -37,6 +59,7 @@ const CashInBankTransferTransactionDetails = () => {
   if (!details) return null
 
   const amount = Number(details?.txn_amount ?? details?.amount ?? 0).toFixed(2)
+  const receiverName = normalizeReceiverName(details?.to, getUserFullName(user, t('user')) || t('wallet'))
 
   const handleDownloadPdf = () => {
     openTransactionPrintWindow({
@@ -72,8 +95,8 @@ const CashInBankTransferTransactionDetails = () => {
         {
           title: t('receiver_details'),
           rows: [
-            { label: t('wallet'), value: details?.to ?? t('wallet') },
-            { label: t('wallet_number'), value: details?.wallet_no ?? '-' },
+            { label: t('mobile_number'), value: receiverName },
+            { label: t('mobile_number_label'), value: details?.wallet_no ?? '-' },
           ],
         },
       ],
@@ -101,7 +124,10 @@ const CashInBankTransferTransactionDetails = () => {
               <span className="text-2xl text-brand-secondary">V</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
-            <p className="text-[1.75rem] font-bold mb-3">{amount}</p>
+            <div className="mb-3 flex items-center gap-2">
+              <img src={AfganCurrency} alt={t('currency')} className="h-7 w-7" />
+              <p className="text-[1.75rem] font-bold">{amount}</p>
+            </div>
             <div className="bg-white/20 rounded-lg px-4 py-2">
               <span className="text-sm font-medium">{t('money_added')}</span>
             </div>
@@ -153,7 +179,10 @@ const CashInBankTransferTransactionDetails = () => {
               <FaMoneyBillWave className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('amount')}</p>
-                <p className="text-sm font-medium text-gray-800">{amount}</p>
+                <div className="flex items-center gap-2">
+                  <img src={AfganCurrency} alt={t('currency')} className="h-4 w-4" />
+                  <p className="text-sm font-medium text-gray-800">{amount}</p>
+                </div>
               </div>
             </div>
 
@@ -214,15 +243,15 @@ const CashInBankTransferTransactionDetails = () => {
             <div className="flex items-start gap-3">
               <HiOutlineWallet className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('wallet')}</p>
-                <p className="text-sm font-medium text-gray-800">{details?.to ?? t('wallet')}</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number')}</p>
+                <p className="text-sm font-medium text-gray-800">{receiverName}</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
               <HiOutlineWallet className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-xs text-gray-500 mb-0.5">{t('wallet_number')}</p>
+                <p className="text-xs text-gray-500 mb-0.5">{t('mobile_number_label')}</p>
                 <p className="text-sm font-medium text-gray-800 font-mono">{details?.wallet_no ?? '-'}</p>
               </div>
             </div>

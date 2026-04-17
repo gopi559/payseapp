@@ -408,7 +408,9 @@ const CashInCardList = () => {
         open={step === 'CONFIRM'}
         card={selectedCard}
         amount={amount}
-        to={t('wallet')}
+        fromSubValue=""
+        toValue={customerFullName}
+        toSubValue=""
         description={t('add_money_to_wallet')}
         showMobile={false}
         loading={loading}

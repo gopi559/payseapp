@@ -148,7 +148,14 @@ const WalletToCardCardList = () => {
             .filter((card) => Number(card?.beneficiary_type) === 1)
             .map((card) => hydrateValidatedCard(card, 'CASH_OUT'))
         )
-      ).filter(Boolean)
+      ).filter(Boolean).map((card) => ({
+        ...card,
+        cardholder_name:
+          card?.cardholder_name?.trim() ||
+          card?.cardholder_nick_name?.trim() ||
+          card?.name_on_card?.trim() ||
+          '',
+      }))
 
       setDestCards(bankCards)
     } catch (e) {
@@ -230,7 +237,8 @@ const WalletToCardCardList = () => {
             fetchedTxn?.card_name,
             fetchedTxn?.receiver_name,
             dest?.cardholder_name,
-            dest?.cardholder_nick_name
+            dest?.cardholder_nick_name,
+            dest?.name_on_card
           ),
           from: sourceCard?.cardholder_name,
         })
@@ -268,7 +276,7 @@ const WalletToCardCardList = () => {
   const getBankName = (card) =>
     card?.external_inst_name?.trim() || card?.inst_short_name?.trim() || t('bank')
   const getCardholderName = (card) =>
-    card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || ''
+    card?.cardholder_name?.trim() || card?.cardholder_nick_name?.trim() || card?.name_on_card?.trim() || ''
 
   const footer = (
     <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white">
@@ -409,7 +417,7 @@ const WalletToCardCardList = () => {
             </div>
           ) : null
         }
-        description={t('withdraw_to_card')}
+        description={t('wallet_to_card')}
         showMobile={false}
         loading={loading}
         onSendOtp={handleSendOtp}
@@ -419,6 +427,7 @@ const WalletToCardCardList = () => {
       <OtpPopup
         open={step === 'OTP'}
         loading={loading}
+        length={6}
         onConfirm={handleConfirmOtp}
         onCancel={resetFlow}
       />

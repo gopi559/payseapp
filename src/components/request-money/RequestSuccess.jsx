@@ -1,14 +1,28 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import AfganCurrency from '../../assets/afgan_currency_green.svg'
 import THEME_COLORS from '../../theme/colors'
 
+const getUserFullName = (user, fallback = '-') => {
+  const regInfo = user?.reg_info || user
+  const userKyc = user?.user_kyc || null
+
+  return (
+    [userKyc?.first_name, userKyc?.middle_name, userKyc?.last_name].filter(Boolean).join(' ').trim() ||
+    [regInfo?.first_name, regInfo?.middle_name, regInfo?.last_name].filter(Boolean).join(' ').trim() ||
+    regInfo?.name ||
+    fallback
+  )
+}
+
 const RequestSuccess = () => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+  const user = useSelector((state) => state.auth?.user)
   const [details, setDetails] = useState(null)
 
   useEffect(() => {
@@ -36,7 +50,7 @@ const RequestSuccess = () => {
 
   if (!details) return null
 
-  const txnId = details?.txn_rrn || details?.req_id || '-'
+  const fromName = getUserFullName(user, t('user'))
   const toName = details?.to_name || '-'
   const remarks = details?.remarks || '-'
   const amount = Number(details?.amount || 0).toFixed(2)
@@ -73,13 +87,8 @@ const RequestSuccess = () => {
 
         <div className="mt-6 w-full rounded-2xl px-5 py-4 space-y-3" style={{ backgroundColor: THEME_COLORS.contentCard.background }}>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">{t('transaction_id')}</span>
-            <span className="font-medium text-gray-900">{txnId}</span>
-          </div>
-
-          <div className="flex justify-between text-sm">
             <span className="text-gray-600">{t('from')}</span>
-            <span className="font-medium text-gray-900">{t('you')}</span>
+            <span className="font-medium text-gray-900">{fromName}</span>
           </div>
 
           <div className="flex justify-between text-sm">
@@ -101,7 +110,7 @@ const RequestSuccess = () => {
           </div>
         </div>
 
-        <div className="mt-6 w-full">
+      {/* <div className="mt-6 w-full">
           <button
             onClick={handleViewMore}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-full border-2 font-medium"
@@ -110,7 +119,7 @@ const RequestSuccess = () => {
             <IoInformationCircleOutline className="w-5 h-5" />
             {t('view_more')}
           </button>
-        </div>
+        </div> */}
 
         <div className="mt-4 w-full">
           <button

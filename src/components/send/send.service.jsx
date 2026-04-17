@@ -4,6 +4,7 @@ import {
   SEND_MONEY,
   GENERATE_TRANSACTION_OTP,
   VERIFY_TRANSACTION_OTP,
+  FETCH_BY_RRN,
 } from '../../utils/constant.jsx'
 import authService from '../../Login/auth.service.jsx'
 
@@ -114,6 +115,25 @@ const sendService = {
 
     return {
       data: res?.data,
+      message: res?.message,
+    }
+  },
+
+  fetchTransactionByRrn: async (rrn) => {
+    const response = await fetchWithRefreshToken(FETCH_BY_RRN, {
+      method: 'POST',
+      body: JSON.stringify({
+        rrn: String(rrn).trim(),
+      }),
+    })
+
+    const res = await response.json().catch(() => null)
+
+    if (!response.ok) throw new Error(res?.message || '')
+    if (!isSuccess(res)) throw new Error(res?.message || '')
+
+    return {
+      data: res?.data ?? null,
       message: res?.message,
     }
   },

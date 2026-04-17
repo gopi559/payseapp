@@ -9,6 +9,16 @@ import OtpInput from '../../Reusable/OtpInput'
 import cashInService from './cashIn.service'
 import { generateStan } from '../../utils/generateStan'
 
+const getCashInErrorMessage = (error, t, fallbackKey) => {
+  const message = String(error?.message || '').trim().toLowerCase()
+
+  if (message === 'transaction failed: transaction processed') {
+    return t('cash_in_transaction_already_processed')
+  }
+
+  return error?.message || t(fallbackKey)
+}
+
 const CashInConfirm = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -53,7 +63,7 @@ const CashInConfirm = () => {
       setOtp('')
       toast.success(t('otp_sent_successfully'))
     } catch (err) {
-      const msg = err?.message || t('failed_to_send_otp_try_again')
+      const msg = getCashInErrorMessage(err, t, 'failed_to_send_otp_try_again')
       setError(msg)
       toast.error(msg)
     } finally {
@@ -97,7 +107,7 @@ const CashInConfirm = () => {
         navigate('/customer/cash-in/success')
       }, 800)
     } catch (err) {
-      const msg = err?.message || t('invalid_or_expired_otp')
+      const msg = getCashInErrorMessage(err, t, 'invalid_or_expired_otp')
       setOtpError(msg)
       toast.error(msg)
     } finally {

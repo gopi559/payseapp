@@ -13,6 +13,7 @@ import { FaFingerprint, FaExchangeAlt, FaClock, FaMoneyBillWave, FaDesktop } fro
 import MobileScreenContainer from '../../Reusable/MobileScreenContainer'
 import Button from '../../Reusable/Button'
 import PAYSEY_LOGO_URL from '../../assets/PayseyPaylogoGreen.png'
+import AfganCurrency from '../../assets/afgan_currency_green.svg'
 import { formatCardNumber } from '../../utils/formatCardNumber'
 import { formatPrintDateTime, openTransactionPrintWindow } from '../../utils/transactionPrint'
 import walletToWalletService from './walletToWallet.service'
@@ -202,7 +203,10 @@ const WalletToWalletTransactionDetails = () => {
               <span className="text-3xl text-brand-secondary">V</span>
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('transaction_completed')}</h2>
-            <p className="text-3xl font-bold mb-4">{amount}</p>
+            <div className="mb-4 flex items-center gap-2">
+              <img src={AfganCurrency} alt={t('currency')} className="h-8 w-8 object-contain" />
+              <p className="text-3xl font-bold">{amount}</p>
+            </div>
             <div className="bg-white/20 rounded-lg px-4 py-2">
               <span className="text-sm font-medium">{t('money_sent')}</span>
             </div>
@@ -258,7 +262,10 @@ const WalletToWalletTransactionDetails = () => {
               <FaMoneyBillWave className="w-5 h-5 text-brand-secondary mt-0.5 shrink-0" />
               <div className="flex-1">
                 <p className="text-xs text-gray-500 mb-0.5">{t('amount')}</p>
-                <p className="text-sm font-medium text-gray-800">{amount}</p>
+                <div className="flex items-center gap-2">
+                  <img src={AfganCurrency} alt={t('currency')} className="w-5 h-5 object-contain" />
+                  <p className="text-sm font-medium text-gray-800">{amount}</p>
+                </div>
               </div>
             </div>
 

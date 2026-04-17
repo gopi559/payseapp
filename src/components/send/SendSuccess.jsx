@@ -14,6 +14,12 @@ const getFullName = (person, fallback = '-') =>
   person?.name ||
   fallback
 
+const getSenderName = (details, fallback) =>
+  details?.sender_name ||
+  details?.from ||
+  details?.customer_name ||
+  fallback
+
 const SendSuccess = () => {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -52,17 +58,11 @@ const SendSuccess = () => {
     navigate('/customer/send/details')
   }
 
-  const txnId = details?.txn_id ?? '-'
-  const from = details?.sender_name ?? t('your_wallet')
+  const txnId = details?.rrn ?? details?.txn_id ?? '-'
+  const from = getSenderName(details, t('your_wallet'))
   const to =
     details?.beneficiary_name ??
     getFullName(details?.beneficiary, details?.beneficiary_mobile ?? '-')
-  const transactionType = isPayRequestFlow
-    ? 'W2W'
-    : details?.txn_type === 'WALLET_TO_WALLET'
-      ? 'W2W'
-      : details?.txn_type ?? '-'
-
   const amount = details?.amount ? Number(details.amount).toFixed(2) : '0.00'
   const dateTime = details?.txn_time
     ? new Date(details.txn_time.replace(' ', 'T')).toLocaleString(i18n.language === 'ar' ? 'ar' : 'en-IN', {
@@ -102,7 +102,7 @@ const SendSuccess = () => {
 
         <div className="mt-6 w-full bg-green-100 rounded-2xl px-5 py-4 space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">{t('transaction_id')}</span>
+            <span className="text-gray-600">{t('rrn')}</span>
             <span className="font-medium text-gray-900">{txnId}</span>
           </div>
 
@@ -114,11 +114,6 @@ const SendSuccess = () => {
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">{t('to')}</span>
             <span className="font-medium text-gray-900">{to}</span>
-          </div>
-
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">{t('transaction_type')}</span>
-            <span className="font-medium text-gray-900">{transactionType}</span>
           </div>
 
           <div className="flex justify-between items-center pt-2 border-t border-green-200">

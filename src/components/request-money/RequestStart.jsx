@@ -8,6 +8,7 @@ import MobileInput from '../../Reusable/MobileInput'
 import THEME_COLORS from '../../theme/colors'
 import requestMoneyService from './requestMoney.service'
 import { getCustomerId, normalizeMobile } from './requestMoney.utils'
+import { resolveCustomerMobileNumber } from '../../utils/customerMobile'
 
 const isBeneficiaryNotFoundError = (message) =>
   /beneficiary\s*not\s*found|user\s*not\s*found|customer\s*not\s*found|not\s*found/i.test(
@@ -23,9 +24,7 @@ const RequestStart = () => {
   const menuGreenHover = THEME_COLORS.sidebar.logoutHoverBackground
 
   const currentUserId = getCustomerId(user)
-  const currentUserMobile = normalizeMobile(
-    user?.reg_info?.mobile ?? user?.reg_info?.reg_mobile ?? user?.mobile ?? ''
-  )
+  const currentUserMobile = normalizeMobile(resolveCustomerMobileNumber(user))
 
   const [mobile, setMobile] = useState('+93')
   const [loading, setLoading] = useState(false)

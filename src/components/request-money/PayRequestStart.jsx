@@ -12,6 +12,7 @@ import THEME_COLORS from '../../theme/colors'
 
 import { sendService } from '../send/send.service'
 import requestMoneyService from './requestMoney.service'
+import { resolveCustomerMobileNumber } from '../../utils/customerMobile'
 
 const getExistingOtpExpiryTime = (error) => {
   const directExpiry = error?.data?.expiry_time
@@ -36,11 +37,7 @@ const PayRequestStart = () => {
   const menuGreen = THEME_COLORS.header.background
   const menuGreenHover = THEME_COLORS.sidebar.logoutHoverBackground
 
-  const senderMobile =
-    user?.reg_info?.mobile ??
-    user?.reg_info?.reg_mobile ??
-    user?.mobile ??
-    ''
+  const senderMobile = resolveCustomerMobileNumber(user)
 
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState(null)
